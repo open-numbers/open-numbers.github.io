@@ -1,1 +1,5 @@
 theme: jekyll-theme-cayman
+repository: open-numbers/open-numbers.github.io
+title: "Open Numbers"
+description: "Crowd-sourced harmonization of global & local statistics"
+is_project_page: false
