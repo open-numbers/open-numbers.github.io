@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Södertörnsmodellen</title>
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    <link rel="stylesheet" type="text/css" href="libs/barchart-ds.css">
+    <link rel="stylesheet" type="text/css" href="libs/barrankchart.css">
+    <link rel="stylesheet" type="text/css" href="libs/bubblechart.css">
+    <link rel="stylesheet" type="text/css" href="libs/extapimap.css">
+    <link rel="stylesheet" type="text/css" href="libs/linechart.css">
+        
+    <script src="libs/vizabi.js"></script>
+
+    <script src="libs/barchart-ds.js"></script>
+    <script src="libs/extapimap.js"></script>
+    <script src="libs/bubblechart.js"></script>
+    <script src="libs/barrankchart.js"></script>
+    <script src="libs/linechart.js"></script>
+    <script src="combo.js"></script>
+
+    <script src="libs/vizabi-ddfcsv-reader.js"></script>
+    <script src="libs/vizabi-ws-reader.js"></script>
+    
+    <style>
+      .header {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 35px;
+        padding-left: 20px;
+        padding-right: 20px;
+        background-color: #333333;
+        overflow: hidden;
+      }
+      .header div a {
+        text-transform: uppercase;
+        font-size: calc(7px + .5vw);
+        letter-spacing: 1px;
+        text-decoration: underline;
+        cursor: pointer;
+        color: #a6c4ff;
+        font-family: Lucida Sans Unicode, Lucida Grande, sans-serif;
+        margin-right: 10px;
+        padding: 2px;
+        line-height: 35px;
+      }
+      .header div a.active {
+        cursor: default;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      #placeholder {
+        border-top: 2px solid #f2fafc;
+        position: absolute;
+        top: 35px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      body {
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+    
+      <div id="langlist" style="float: right">
+      </div>
+
+      <div id="toolslist" style="float: left"> 
+      </div>
+    </div>
+
+    <script>
+            
+      //WS reader integration
+      var wsReader = WsReader.WsReader.getReader();
+      Vizabi.Reader.extend("waffle", wsReader);
+
+      //DDFCSV reader integration
+      var ddfReader = new DDFCsvReader.getDDFCsvReaderObject()
+      Vizabi.Reader.extend("ddf", ddfReader);
+
+      var viz = null;
+      var VIZABI_MODEL = {};
+      
+      var tools = {
+        "bubbles": {name: "Bubblar", config: "BubbleChart-sodertorn.js", toolID: "BubbleChart"},
+        "map-kommun": {name: "Kommun karta", config: "ExtApiMap-sodertorn-kommun.js", toolID: "ExtApiMap"},
+        "map-basomrade": {name: "Basområde karta", config: "ExtApiMap-sodertorn.js", toolID: "ExtApiMap"},
+        "combo": {name: "Karta och bubblar kombo", config: "Combo-map-and-bubbles.js", toolID: "combo"},
+        //"barchart-ds": {name: "Inkomst och utbildning efter kön", config: "BarChartDS-sodertorn.js", toolID: "BubbleChart"}
+      }
+      
+      var locales = {
+        "sv-SE": "se",
+        //"en": "en"
+      }
+      
+      var toolLinks = d3.select("#toolslist")
+        .selectAll("a").data(d3.keys(tools)).enter().append("a")
+        .on("click", d => setTool(d))
+        .html(d => tools[d].name)
+      
+      var langLinks = d3.select("#langlist")
+        .selectAll("a").data(d3.keys(locales)).enter().append("a")
+        .on("click", d => setLocale(d))
+        .html(d => locales[d])
+
+      function setLocale(arg){
+        if (!arg) arg = appState.language;
+        if (!viz || !viz.model) return;
+        
+        viz.model.locale.id = arg;
+        appState.language = arg;
+        updateView();
+      }
+      
+      function setTool(arg){
+        if (!arg) arg = appState.tool;
+        
+        Vizabi.clearInstances();
+        
+        d3.select("#placeholder").remove();        
+        d3.select("body").append("div").attr("id","placeholder");
+                
+        loadJS(tools[arg].config, function(){
+          VIZABI_MODEL.locale = {
+            "id": appState.language,
+            "filePath": "assets/translation/"
+          };
+          
+          viz = Vizabi(tools[arg].toolID, document.getElementById('placeholder'), VIZABI_MODEL);
+        }, document.body);
+        
+        appState.tool = arg;
+        updateView();
+      }
+      
+      var updateView = function(){
+        toolLinks.classed("active", d => appState.tool === d);
+        langLinks.classed("active", d => appState.language === d);
+      }
+      
+      var loadJS = function(url, implementationCode, location){
+        //url is URL of external file, implementationCode is the code
+        //to be called from the file, location is the location to 
+        //insert the <script> element
+
+        var scriptTag = document.createElement('script');
+        scriptTag.src = url;
+
+        scriptTag.onload = implementationCode;
+        scriptTag.onreadystatechange = implementationCode;
+
+        location.appendChild(scriptTag);
+      };
+
+      
+      var appState = {tool: "bubbles", language: "sv-SE"};
+      setTool();  
+      
+    </script>
+  </body>
+</html>
+
+
+
+
