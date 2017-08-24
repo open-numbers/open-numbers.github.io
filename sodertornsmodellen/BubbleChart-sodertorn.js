@@ -91,7 +91,7 @@ VIZABI_MODEL = {
   "data": {
     reader: 'waffle',
     path: 'https://waffle-server-dev.gapminderdev.org/api/ddf/ql',
-    dataset: 'open-numbers/ddf--sodertornsmodellen#develop'
+    dataset: 'open-numbers/ddf--sodertornsmodellen'
   },
   "ui": {
     datawarning: {
