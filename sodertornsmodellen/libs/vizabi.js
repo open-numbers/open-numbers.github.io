@@ -3734,12 +3734,13 @@ var IndPicker = _component2.default.extend({
           marker.getFrame(_this.model.time.value, function (frame) {
             if (_this._highlighted || !frame) return;
 
+            var isHookFrameValuesMD = _this.multiDim && !mdl.isDiscrete() && mdl.which !== marker._getFirstDimension({ type: "time" });
             // should be replaced by dimension of entity set for this hook (if use == property)
-            var dimension = mdl.getEntity().getDimension();
+            var dimension = isHookFrameValuesMD ? null : mdl.getEntity().getDimension();
             var _highlightedEntity = marker.getHighlighted(dimension);
             if (_highlightedEntity.length) {
 
-              var value = _this.multiDim && !mdl.isDiscrete() ? utils.getValueMD(_highlightedEntity[0], frame[mdl._name], _this.KEYS) : frame[mdl._name][_highlightedEntity[0]];
+              var value = isHookFrameValuesMD ? utils.getValueMD(_highlightedEntity[0], frame[mdl._name], _this.KEYS) : frame[mdl._name][_highlightedEntity[0]];
 
               // resolve strings via the color legend model
               if (value && mdl._type === "color" && mdl.isDiscrete()) {
@@ -8262,7 +8263,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1503526276063,
+  build: 1503781838799,
   version: "0.25.1-1"
 };
 
@@ -11659,7 +11660,7 @@ var Marker = _model2.default.extend({
           utils.forEach(pValues, function (values, hook) {
             dataBetweenFrames[hook] = {};
 
-            if (_this._multiDim && _this[hook].use == "indicator") {
+            if (_this._multiDim && _this[hook].use == "indicator" && _this[hook].which !== _this._getFirstDimension({ type: "time" })) {
               var hookDataBF = dataBetweenFrames[hook];
               var query = _this[hook].dataSource.getData(_this[hook]._dataId, "query");
               var TIME = query.animatable;
@@ -11846,6 +11847,8 @@ var Marker = _model2.default.extend({
             _this.cachedFrames[cachePath][forceFrame] = _this.partialResult[cachePath][forceFrame];
             resolve();
           });
+        } else {
+          resolve();
         }
       }
     });
@@ -13677,7 +13680,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503526276063 }
+  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
 
 });
 
@@ -25438,7 +25441,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503526276063 }
+  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
 
 });
 
@@ -25551,7 +25554,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503526276063 }
+  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
 
 });
 
