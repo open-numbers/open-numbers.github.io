@@ -94,11 +94,36 @@
       var VIZABI_MODEL = {};
       
       var tools = {
-        "bubbles": {name: "Bubblar", config: "BubbleChart-sodertorn.js", toolID: "BubbleChart"},
-        "map-kommun": {name: "Kommun karta", config: "ExtApiMap-sodertorn-kommun.js", toolID: "ExtApiMap"},
-        "map-basomrade": {name: "Basområde karta", config: "ExtApiMap-sodertorn.js", toolID: "ExtApiMap"},
-        "combo": {name: "Karta och bubblar kombo", config: "Combo-map-and-bubbles.js", toolID: "combo"},
-        "barchart-ds": {name: "Inkomst och utbildning efter kön", config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"}
+        "bubbles": {config: "BubbleChart-sodertorn.js", toolID: "BubbleChart"},
+        "map-kommun": {config: "ExtApiMap-sodertorn-kommun.js", toolID: "ExtApiMap"},
+        "map-basomrade": {config: "ExtApiMap-sodertorn.js", toolID: "ExtApiMap"},
+        "combo": {config: "Combo-map-and-bubbles.js", toolID: "combo"},
+        "barchart-ds": {config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"}
+      }
+      
+      var TRANSLATION_DICTIONARY = {
+        "en": {
+          "bubbles":"Bubbles",
+          "map-kommun":"Municipality map",
+          "map-basomrade":"Locality map", 
+          "combo":"Map and bubbles combo",
+          "barchart-ds":"Income and education by gender",
+          "en": "en",
+          "sv-SE": "sv"
+        },
+        "sv-SE": {
+          "bubbles":"Bubblar",
+          "map-kommun":"Kommun karta",
+          "map-basomrade":"Basområde karta", 
+          "combo":"Karta och bubblar kombo",
+          "barchart-ds":"Inkomst och utbildning efter kön",
+          "en": "en",
+          "sv-SE": "sv"
+        }
+      }
+      
+      var translate = function(string){
+        return (TRANSLATION_DICTIONARY[appState.language] || {})[string || ""] || string;
       }
       
       var locales = {
@@ -108,13 +133,11 @@
       
       var toolLinks = d3.select("#toolslist")
         .selectAll("a").data(d3.keys(tools)).enter().append("a")
-        .on("click", d => setTool(d))
-        .html(d => tools[d].name)
+        .on("click", d => setTool(d));
       
       var langLinks = d3.select("#langlist")
         .selectAll("a").data(d3.keys(locales)).enter().append("a")
-        .on("click", d => setLocale(d))
-        .html(d => locales[d])
+        .on("click", d => setLocale(d));
 
       function setLocale(arg){
         if (!arg) arg = appState.language;
@@ -147,8 +170,12 @@
       }
       
       var updateView = function(){
-        toolLinks.classed("active", d => appState.tool === d);
-        langLinks.classed("active", d => appState.language === d);
+        toolLinks
+          .classed("active", d => appState.tool === d)
+          .html(d => translate(d));
+        langLinks
+          .classed("active", d => appState.language === d)
+          .html(d => translate(d));
       }
       
       var loadJS = function(url, implementationCode, location){
