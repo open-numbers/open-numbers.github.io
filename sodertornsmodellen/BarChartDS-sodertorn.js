@@ -63,11 +63,20 @@ VIZABI_MODEL = {
       },
       "axis_x": {
         "use": "indicator",
-        "which": "mean_income_aged_gt_20"
+        "which": "mean_income_aged_gt_20",
+        "allow": {
+          "scales": ["linear"],
+          "namesOnlyThese": true,
+          "names": ["mean_income_aged_gt_20","median_income_aged_gt_20"]
+        }
       },
       "color": {
         "use": "indicator",
         "which": "post_secondary_education_min_3_years_aged_25_64",
+        "allow": {
+          "namesOnlyThese": true,
+          "names": ["post_secondary_education_min_3_years_aged_25_64"]
+        },
         "spaceRef": "entities",
         "palette": {
         "0": "hsl(270, 80%, 55%)",
@@ -141,6 +150,12 @@ VIZABI_MODEL = {
     }
   },
   "ui": {
+    "buttons": ["colors", "find", "moreoptions", "fullscreen"],
+    "dialogs": {
+      "popup": ["timedisplay", "colors", "find", "moreoptions"],
+      "sidebar": ["timedisplay", "colors", "find"],
+      "moreoptions": ["opacity", "speed", "colors", "presentation", "about"]
+    },
     "splash": true
   },
   "data": {

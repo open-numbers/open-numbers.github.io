@@ -8263,7 +8263,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1503781838799,
+  build: 1503937042449,
   version: "0.25.1-1"
 };
 
@@ -13680,7 +13680,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
+  versionInfo: { version: "0.25.1-1", build: 1503937042449 }
 
 });
 
@@ -25441,7 +25441,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
+  versionInfo: { version: "0.25.1-1", build: 1503937042449 }
 
 });
 
@@ -25554,7 +25554,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.25.1-1", build: 1503781838799 }
+  versionInfo: { version: "0.25.1-1", build: 1503937042449 }
 
 });
 
@@ -27939,6 +27939,7 @@ var TreeMenu = _component2.default.extend({
           if (_this._targetModel.allow && _this._targetModel.allow.names) {
             if (_this._targetModel.allow.names.indexOf("!" + f) != -1) return false;
             if (_this._targetModel.allow.names.indexOf(f) != -1) return true;
+            if (_this._targetModel.allow.namesOnlyThese) return false;
           }
           //keep indicator if nothing is specified in tool properties
           if (!_this._targetModel.allow || !_this._targetModel.allow.scales) return true;
