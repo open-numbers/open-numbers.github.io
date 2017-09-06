@@ -162,6 +162,13 @@
             "filePath": "assets/translation/"
           };
           
+          VIZABI_MODEL.data = {
+            "reader": 'waffle',
+            "path": 'https://waffle-server.gapminder.org/api/ddf/ql',
+            "dataset": 'open-numbers/ddf--sodertornsmodellen',
+            "assetsPath": 'https://import-waffle-server.gapminder.org/api/ddf/assets/'
+          };
+          
           viz = Vizabi(tools[arg].toolID, document.getElementById('placeholder'), VIZABI_MODEL);
         }, document.body);
         

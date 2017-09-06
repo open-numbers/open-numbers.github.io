@@ -88,11 +88,6 @@ VIZABI_MODEL = {
       "skipFilter": true
     }
   },
-  "data": {
-    reader: 'waffle',
-    path: 'https://waffle-server-dev.gapminderdev.org/api/ddf/ql',
-    dataset: 'open-numbers/ddf--sodertornsmodellen'
-  },
   "ui": {
     datawarning: {
       doubtDomain: [2000, 2014],
