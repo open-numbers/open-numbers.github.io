@@ -40,7 +40,7 @@
       }
       .header div a {
         text-transform: uppercase;
-        font-size: calc(7px + .5vw);
+        font-size: calc(7px + .4vw);
         letter-spacing: 1px;
         text-decoration: underline;
         cursor: pointer;
@@ -55,6 +55,15 @@
         color: white;
         text-decoration: none;
         font-weight: bold;
+      }
+      #langlist {
+        position: absolute;
+        right: 0;
+      }
+      #toolslist {
+        position: absolute;
+        left: 10px;
+        margin-right: 50px;
       }
       #placeholder {
         border-top: 2px solid #f2fafc;
@@ -72,12 +81,8 @@
 
   <body>
     <div class="header">
-    
-      <div id="langlist" style="float: right">
-      </div>
-
-      <div id="toolslist" style="float: left"> 
-      </div>
+      <div id="langlist"></div>
+      <div id="toolslist"></div>
     </div>
 
     <script>
@@ -98,12 +103,14 @@
         "map-kommun": {config: "ExtApiMap-sodertorn-kommun.js", toolID: "ExtApiMap"},
         "map-basomrade": {config: "ExtApiMap-sodertorn.js", toolID: "ExtApiMap"},
         "combo": {config: "Combo-map-and-bubbles.js", toolID: "combo"},
-        "barchart-ds": {config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"}
+        "barchart-ds": {config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"},
+        "bubbles-sdrtrn": {config: "BubbleChart-only-sodertorn.js", toolID: "BubbleChart"}
       }
       
       var TRANSLATION_DICTIONARY = {
         "en": {
           "bubbles":"Bubbles",
+          "bubbles-sdrtrn":"Only Södertörn",
           "map-kommun":"Municipality map",
           "map-basomrade":"Locality map", 
           "combo":"Map and bubbles combo",
@@ -113,6 +120,7 @@
         },
         "sv-SE": {
           "bubbles":"Bubblar",
+          "bubbles-sdrtrn":"Bara Södertörn",
           "map-kommun":"Kommun karta",
           "map-basomrade":"Basområde karta", 
           "combo":"Karta och bubblar kombo",
