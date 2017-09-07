@@ -11,7 +11,7 @@ VIZABI_MODEL = {
       "dim": "basomrade",
       "show": {
         "size": "big",
-        "municipality": {"$in": ["0192_nynashamn","0127_botkyrka","0136_haninge","0126_huddinge","0182_nacka","0128_salem","0181_sodertalje","0138_tyreso"]}
+        "municipality": {"$in": ["0192_nynashamn","0127_botkyrka","0136_haninge","0126_huddinge","0128_salem","0138_tyreso"]}
       }
     },
     "entities_colorlegend": {
