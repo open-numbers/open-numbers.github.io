@@ -3,7 +3,7 @@ VIZABI_MODEL = {
     "time": {
       "startOrigin": "2000",
       "endOrigin": "2014",
-      "value": "2014",
+      "value": "2000",
       "step": 1,
       "delayThresholdX2": 0,
       "delayThresholdX4": 0,

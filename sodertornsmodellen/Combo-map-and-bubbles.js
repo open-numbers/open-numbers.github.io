@@ -3,7 +3,7 @@ VIZABI_MODEL = {
     "time": {
       "startOrigin": "1993",
       "endOrigin": "2015",
-      "value": "2014",
+      "value": "2000",
       "dim": "year",
       "delay": 700
     },
