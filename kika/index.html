@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Södertörnsmodellen</title>
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    <link rel="stylesheet" type="text/css" href="libs/bubblechart.css">
+        
+    <script src="libs/vizabi.js"></script>
+    <script src="libs/bubblechart.js"></script>
+
+    <script src="libs/vizabi-ddfcsv-reader.js"></script>
+    
+    <style>
+      #placeholder {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      body {
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="placeholder"></div>
+
+    <script>     
+      //DDFCSV reader integration
+      var ddfReader = new DDFCsvReader.getDDFCsvReaderObject()
+      Vizabi.Reader.extend("ddf", ddfReader);
+      
+      var VIZABI_MODEL = {};
+
+      VIZABI_MODEL.locale = {
+        "id": "en",
+        "filePath": "assets/translation/"
+      };
+
+      VIZABI_MODEL.data = {
+        "reader": 'ddf',
+        "path": 'https://raw.githubusercontent.com/' + location.hash.replace("#",""),
+      };
+      
+
+      var viz = Vizabi("BubbleChart", document.getElementById('placeholder'), VIZABI_MODEL);
+    </script>
+  </body>
+</html>
+
+
+
+
