@@ -8690,7 +8690,7 @@ var DataModel = _model2.default.extend({
       concept["format"] = d.format;
       concept["name"] = d.name || d.concept || "";
       concept["name_catalog"] = d.name_catalog || "";
-      concept["name_short"] = d.name_short || "";
+      concept["name_short"] = d.name_short || d.name || d.concept || "";
       concept["description"] = d.description;
       _this4.conceptDictionary[d.concept] = concept;
       _this4.conceptArray.push(concept);
@@ -8750,7 +8750,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1505506794499,
+  build: 1505572027699,
   version: "0.26.0"
 };
 
@@ -14352,7 +14352,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505506794499 }
+  versionInfo: { version: "0.26.0", build: 1505572027699 }
 
 });
 
@@ -26397,7 +26397,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505506794499 }
+  versionInfo: { version: "0.26.0", build: 1505572027699 }
 
 });
 
@@ -26521,7 +26521,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505506794499 }
+  versionInfo: { version: "0.26.0", build: 1505572027699 }
 
 });
 
