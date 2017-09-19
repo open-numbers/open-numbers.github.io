@@ -1,4 +1,4 @@
-country;year;w4_regions;four_income_levels;many_income_levels;gdp_pcap;lex;tfr;pop;u5mr
+country;year;World region;Four income levels;Many income levels;GDP per capita;Life expectancy;Fertility;Population;Child mortality
 Afghanistan;1800;asia;l1;l1;603;28.21;7;3280000;468.58
 Afghanistan;1801;asia;l1;l1;603;28.2;7;3280000;468.58
 Afghanistan;1802;asia;l1;l1;603;28.19;7;3280000;468.58
