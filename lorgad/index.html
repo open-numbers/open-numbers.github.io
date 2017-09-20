@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Södertörnsmodellen</title>
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    <link rel="stylesheet" type="text/css" href="libs/bubblechart.css">
+        
+    <script src="libs/vizabi.js"></script>
+
+    <script src="libs/bubblechart.js"></script>
+
+    <script src="libs/vizabi-ws-reader.js"></script>
+    
+    <style>
+      #placeholder {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      body {
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="placeholder"></div>
+
+    <script>     
+      //WS reader integration
+      var wsReader = WsReader.WsReader.getReader();
+      Vizabi.Reader.extend("waffle", wsReader);
+
+      
+      var VIZABI_MODEL = {
+        "state": {
+          "time": {
+            "dim": "time"
+          },
+          "entities": {
+            "dim": "geo",
+            "show": {
+              "g77_and_oecd_countries": {"$in": ["oecd"]}
+            }
+          },
+          "entities_colorlegend": {
+            "show": {},
+            "dim": "country"
+          },
+          "entities_tags": {
+            "dim": "tag"
+          },
+          "time": {
+            "startOrigin": "1800",
+            "endOrigin": "2015",
+            "value": "1960",
+            "dim": "time"
+          },
+          "marker": {
+            "space": ["entities", "time"],
+            "label": {
+              "use": "property",
+              "which": "name"
+            },
+            "axis_y": {
+              "use": "indicator",
+              "which": "children_per_woman_total_fertility"
+            },
+            "axis_x": {
+              "use": "indicator",
+              "domainMax": 100,
+              "domainMin": 0,
+              "zoomedMax": 30,
+              "zoomedMin": 0,
+              "which": "Migrant stock (% of population)",
+              "data": "data_csv"
+            },
+            "size": {
+              "use": "indicator",
+              "which": "population_total",
+              "domainMin": 15,
+              "domainMax": 1400000000,
+              "scaleType": "linear",
+              "allow": {
+              }
+            },
+            "color": {
+              "use": "property",
+              "which": "country",
+              "syncModels": ["marker_colorlegend"]
+            }
+          },
+          "marker_colorlegend":{
+            "space": ["entities_colorlegend"],
+            "opacityRegular": 0.8,
+            "opacityHighlightDim": 0.3,
+            "label": {
+              "use": "property",
+              "which": "name"
+            },
+            "hook_rank": {
+              "use": "property",
+              "which": "rank"
+            },
+            "hook_geoshape": {
+              "use": "property",
+              "which": "shape_lores_svg"
+            }
+          },
+          "marker_tags": {
+            "space": ["entities_tags"],
+            "label": {
+              "use": "property",
+              "which": "name"
+            },
+            "hook_parent": {
+              "use": "property",
+              "which": "parent"
+            }
+          }
+        },
+        "ui": {
+          "datawarning": {
+            "doubtDomain": [1800, 1950, 2015],
+            "doubtRange": [1.0, 0.3, 0.2]
+          },
+          "splash": false,
+          dialogs: {
+            sidebar: ['find', 'size', 'zoom']
+          }
+        },
+        "data": {
+          "reader": "waffle",
+          "path": "https://waffle-server.gapminder.org/api/ddf/ql"
+        },
+        "data_csv": {
+          "reader": "csv",
+          "path": "migrant-stock.csv"
+        }
+      };
+
+      VIZABI_MODEL.locale = {
+        "id": "en",
+        "filePath": "assets/translation/"
+      };
+
+      var viz = Vizabi("BubbleChart", document.getElementById('placeholder'), VIZABI_MODEL);
+    </script>
+  </body>
+</html>
+
+
+
+
+
