@@ -61,7 +61,8 @@
             "startOrigin": "1800",
             "endOrigin": "2015",
             "value": "1960",
-            "dim": "time"
+            "dim": "time",
+            "delay": 350
           },
           "marker": {
             "space": ["entities", "time"],
@@ -71,7 +72,9 @@
             },
             "axis_y": {
               "use": "indicator",
-              "which": "children_per_woman_total_fertility"
+              "which": "children_per_woman_total_fertility",
+              "zoomedMax": 4.2,
+              "zoomedMin": 0,
             },
             "axis_x": {
               "use": "indicator",
@@ -84,11 +87,11 @@
             },
             "size": {
               "use": "indicator",
-              "which": "population_total",
-              "domainMin": 15,
-              "domainMax": 1400000000,
+              "which": "income_per_person_gdppercapita_ppp_inflation_adjusted",
               "scaleType": "linear",
+              "extent": [0, 0.51],
               "allow": {
+                scales: ["linear"]
               }
             },
             "color": {
