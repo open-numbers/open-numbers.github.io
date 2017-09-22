@@ -40,4 +40,4 @@ In the future, it is very well possible that DDF will be represented in other fo
 
 ## **The Query Language: DDFQL**
 
-To retrieve data from DDF we have developed the DDF Query Language *DDFQL*. This query language has a strong likeness to SQL with specific features to support the possibilities of the DDF data model.
+To retrieve data from DDF we have developed the DDF Query Language *DDFQL*. This query language has a strong likeness to SQL with specific features to support the possibilities of the DDF data model. [Read about DDFql](https://docs.google.com/document/d/1olFm-XXjWxQ4LrTCfM42an6LbjbIgnt__V1DZxSmnuQ/edit?usp=drive_web) 
