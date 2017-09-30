@@ -132,7 +132,7 @@ module.exports = $export;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.printAutoconfigResult = exports.approxEqual = undefined;
+exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.cathetus = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.printAutoconfigResult = exports.approxEqual = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -168,7 +168,7 @@ var approxEqual = exports.approxEqual = function approxEqual(a, b, tolerance) {
  * prints out a string like this "AUTOCONFIG: axis_x choses armed_conflicts_internal from data to be WHICH"
  */
 var printAutoconfigResult = exports.printAutoconfigResult = function printAutoconfigResult(mdl) {
-  console.info("AUTOCONFIG: " + mdl._name + " choses " + (mdl.dim || mdl.which) + " from " + (mdl.dataSource ? mdl.dataSource._name : mdl.getClosestModel(mdl.autogenerate.data)._name) + " to be " + (mdl.dim ? "DIM" : "WHICH"));
+  console.info("AUTOCONFIG: " + mdl._name + " choses " + (mdl.dim || mdl.which) + " from " + (mdl.dataSource ? mdl.dataSource._name : "<DATA SOURCE MISSING!>") + " to be " + (mdl.dim ? "DIM" : "WHICH"));
 };
 
 /*
@@ -933,13 +933,23 @@ var radiusToArea = exports.radiusToArea = function radiusToArea(r) {
 };
 
 /*
- * Computes hypotenuse of a right triangle, given the catets
+ * Computes hypotenuse of a right triangle, given the catheti
  * @param {Number} x
  * @param {Number} y
  * @returns {Number} square root of sum of the squares of x and y
  */
 var hypotenuse = exports.hypotenuse = function hypotenuse(x, y) {
   return Math.sqrt(x * x + y * y);
+};
+
+/*
+ * Computes cathetus of a right triangle, given the hypotenuse and cathetus
+ * @param {Number} h
+ * @param {Number} c
+ * @returns {Number} square root of difference of the squares of h and c
+ */
+var cathetus = exports.cathetus = function cathetus(h, c) {
+  return Math.sqrt(h * h - c * c);
 };
 
 /*
@@ -3809,7 +3819,7 @@ var Hook = _dataconnected2.default.extend({
   //that means, if X or Y doesn't have data at some point, we can't show markers
   _important: false,
 
-  objectLeafs: ["autogenerate"],
+  objectLeafs: ["autoconfig"],
   dataConnectedChildren: ["use", "which"],
 
   getClassDefaults: function getClassDefaults() {
@@ -3881,12 +3891,12 @@ var Hook = _dataconnected2.default.extend({
     return this._super();
   },
   afterPreload: function afterPreload() {
-    this.autoGenerateModel();
+    this.autoconfigureModel();
   },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null && this.autogenerate) {
-      this.which = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType).concept;
-
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.which) {
+      var concept = this.dataSource.getConcept(this.autoconfig);
+      if (concept) this.which = concept.concept;
       utils.printAutoconfigResult(this);
     }
   },
@@ -6276,8 +6286,10 @@ var SingleHandleSlider = _brushslider2.default.extend({
 
     this.name = "singlehandleslider";
 
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
 
     //this.template = this.template || require("./brushslider.html");
 
@@ -8386,16 +8398,12 @@ var AxisModel = _hook2.default.extend({
     };
     return utils.deepExtend(this._super(), defaults);
   },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null && this.autogenerate) {
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.which) {
 
-      var concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
+      var concept = this.dataSource.getConcept(this.autoconfig) || this.dataSource.getConcept({ type: "measure" }) || this.dataSource.getConcept({ type: "time" });
 
-      if (!concept) {
-        concept = this.dataSource.getConceptByIndex(0, "time");
-      }
-
-      this.which = concept.concept;
+      if (concept) this.which = concept.concept;
       utils.printAutoconfigResult(this);
     }
   },
@@ -8699,11 +8707,25 @@ var DataModel = _model2.default.extend({
   getConceptprops: function getConceptprops(which) {
     return which ? utils.getProp(this, ["conceptDictionary", which]) || utils.warn("The concept " + which + " is not found in the dictionary") : this.conceptDictionary;
   },
-  getConceptByIndex: function getConceptByIndex(index, type) {
-    //if(!concept && type == "measure") concept = this.conceptArray.filter(f => f.concept_type==="time")[0];
-    return this.conceptArray.filter(function (f) {
-      return !type || !f.concept_type || f.concept_type === type;
-    })[index];
+  getConcept: function getConcept() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$index = _ref.index,
+        index = _ref$index === undefined ? 0 : _ref$index,
+        _ref$type = _ref.type,
+        type = _ref$type === undefined ? null : _ref$type,
+        _ref$includeOnlyIDs = _ref.includeOnlyIDs,
+        includeOnlyIDs = _ref$includeOnlyIDs === undefined ? [] : _ref$includeOnlyIDs,
+        _ref$excludeIDs = _ref.excludeIDs,
+        excludeIDs = _ref$excludeIDs === undefined ? [] : _ref$excludeIDs;
+
+    if (!type && includeOnlyIDs.length == 0 && excludeIDs.length == 0) {
+      return null;
+    }
+
+    var filtered = this.conceptArray.filter(function (f) {
+      return (!type || !f.concept_type || f.concept_type === type) && (includeOnlyIDs.length == 0 || includeOnlyIDs.indexOf(f.concept) !== -1) && (excludeIDs.length == 0 || excludeIDs.indexOf(f.concept) == -1);
+    });
+    return filtered[index] || filtered[filtered.length - 1];
   },
   getDatasetName: function getDatasetName() {
     if (this.readerObject.getDatasetInfo) {
@@ -8750,8 +8772,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1505572027699,
-  version: "0.26.0"
+  build: 1506807138831,
+  version: "0.26.3"
 };
 
 /***/ }),
@@ -10939,24 +10961,18 @@ var ColorModel = _hook2.default.extend({
     };
     return utils.deepExtend(this._super(), defaults);
   },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null) {
-      var concept = void 0;
-      if (this.autogenerate) {
-        concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.which) {
+      var concept = this.dataSource.getConcept(this.autoconfig);
 
-        if (concept) {
-          var obj = {
-            which: concept.concept,
-            use: concept.use || "indicator",
-            scaleType: concept.scales && concept.scales[0] ? concept.scales[0] : "linear"
-          };
-          this.set(obj);
-        }
-
-        utils.printAutoconfigResult(this);
-      }
-      if (!concept) {
+      if (concept) {
+        var obj = {
+          which: concept.concept,
+          use: concept.use || "indicator",
+          scaleType: concept.scales && concept.scales[0] ? concept.scales[0] : "linear"
+        };
+        this.set(obj);
+      } else {
         var _obj = {
           which: "_default",
           use: "constant",
@@ -10964,9 +10980,8 @@ var ColorModel = _hook2.default.extend({
         };
         this.set(_obj);
       }
-    }
-    if (this.scaleType == null) {
-      this.scaleType = this.dataSource.getConceptprops(this.which).scales[0];
+
+      utils.printAutoconfigResult(this);
     }
   },
 
@@ -11274,7 +11289,7 @@ var EntitiesModel = _dataconnected2.default.extend({
   },
 
 
-  objectLeafs: ["show", "autogenerate"],
+  objectLeafs: ["show", "autoconfig"],
   dataConnectedChildren: ["show", "dim", "grouping"],
 
   /**
@@ -11289,10 +11304,18 @@ var EntitiesModel = _dataconnected2.default.extend({
 
     this._super(name, values, parent, bind);
   },
+  preloadData: function preloadData() {
+    this.dataSource = this.getClosestModel(this.data || "data");
+    return this._super();
+  },
   afterPreload: function afterPreload() {
-    if (this.dim == null && this.autogenerate) {
-      var dataSource = this.getClosestModel(this.autogenerate.data);
-      this.dim = dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType).concept;
+    this.autoconfigureModel();
+  },
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.dim) {
+      var concept = this.dataSource.getConcept(this.autoconfig) || this.dataSource.getConcept({ type: "entity_domain" });
+
+      if (concept) this.dim = concept.concept;
       utils.printAutoconfigResult(this);
     }
   },
@@ -11535,6 +11558,15 @@ var LabelModel = _hook2.default.extend({
     this._type = "label";
 
     this._super(name, values, parent, bind);
+  },
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.which) {
+
+      var concept = this.dataSource.getConcept(this.autoconfig) || this.dataSource.getConcept({ type: "entity_domain" });
+
+      if (concept) this.which = concept.concept;
+      utils.printAutoconfigResult(this);
+    }
   }
 });
 
@@ -12756,28 +12788,21 @@ var SizeModel = _axis2.default.extend({
     //but then also clamp a numeric scale
     if (this.scaleType !== "ordinal") this.scale.clamp(true);
   },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null) {
-      var concept = void 0;
-      if (this.autogenerate) {
-        concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.which) {
+      var concept = this.dataSource.getConcept(this.autoconfig) || this.dataSource.getConcept({ type: "measure" });
 
-        if (concept) {
-          this.which = concept.concept;
-          this.use = "indicator";
-          this.scaleType = "linear";
-        }
-
-        utils.printAutoconfigResult(this);
-      }
-      if (!concept) {
+      if (concept) {
+        this.which = concept.concept;
+        this.use = "indicator";
+        this.scaleType = "linear";
+      } else {
         this.which = "_default";
         this.use = "constant";
         this.scaleType = "ordinal";
       }
-    }
-    if (this.scaleType == null) {
-      this.scaleType = this.dataSource.getConceptprops(this.which).scales[0];
+
+      utils.printAutoconfigResult(this);
     }
   }
 });
@@ -12931,7 +12956,7 @@ var formats = {
 
 var TimeModel = _dataconnected2.default.extend({
 
-  objectLeafs: ["autogenerate"],
+  objectLeafs: ["autoconfig"],
 
   /**
    * Default values for this model
@@ -13019,11 +13044,18 @@ var TimeModel = _dataconnected2.default.extend({
     }
     this.validateFormatting();
   },
+  preloadData: function preloadData() {
+    this.dataSource = this.getClosestModel(this.data || "data");
+    return this._super();
+  },
   afterPreload: function afterPreload() {
-    if (this.dim == null && this.autogenerate) {
-      var dataSource = this.getClosestModel(this.autogenerate.data);
-      this.dim = dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType).concept;
+    this.autoconfigureModel();
+  },
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.dim) {
+      var concept = this.dataSource.getConcept(this.autoconfig) || this.dataSource.getConcept({ type: "time" });
 
+      if (concept) this.dim = concept.concept;
       utils.printAutoconfigResult(this);
     }
   },
@@ -13470,6 +13502,7 @@ function quarterFormat() {
   };
 
   var formatQuarter = function formatQuarter(d) {
+    if (!(d instanceof Date)) d = new Date(+d);
     return (d.getUTCMonth() / 3 | 0) + 1;
   };
 
@@ -14212,9 +14245,7 @@ var CSVReader = _reader2.default.extend({
   },
   _guessDelimiter: function _guessDelimiter(text) {
     var stringsToCheck = 2;
-    var rows = this._getRows(text, stringsToCheck).map(function (row) {
-      return row.replace(/".*?"/g, "");
-    });
+    var rows = this._getRows(text.replace(/"[^\r]*?"/g, ""), stringsToCheck);
 
     if (rows.length !== stringsToCheck) {
       throw this.error(this.ERRORS.NOT_ENOUGH_ROWS_IN_FILE);
@@ -14352,7 +14383,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505572027699 }
+  versionInfo: { version: "0.26.3", build: 1506807138831 }
 
 });
 
@@ -14418,8 +14449,10 @@ var BubbleSize = _brushslider2.default.extend({
 
     this.name = "bubblesize";
 
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
 
     //this.template = this.template || require("./bubblesize.html");
 
@@ -14656,8 +14689,10 @@ var SizeSlider = _brushslider2.default.extend({
 
     this.name = "sizeslider";
 
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
 
     //this.template = this.template || require("./sizeslider.html");
 
@@ -16020,7 +16055,7 @@ var ColorLegend = _component2.default.extend({
             shapeString = tempdivEl.select("svg").select("path").attr("d");
           }
 
-          d3.select(this).attr("d", shapeString).style("fill", cScale(d[_this.colorlegendDim])).append("title").html(_this.frame.label[d[_this.colorlegendDim]]);
+          d3.select(this).attr("d", shapeString).style("fill", cScale(d[_this.colorlegendDim])).append("title").text(_this.frame.label[d[_this.colorlegendDim]]);
 
           tempdivEl.html("");
         });
@@ -16135,7 +16170,7 @@ var ColorLegend = _component2.default.extend({
     };
   },
   resize: function resize() {
-    this.updateView();
+    if (this.frame) this.updateView();
     this.colorPicker.resize(d3.select(".vzb-colorpicker-svg"));
   },
 
@@ -26345,16 +26380,12 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
       var indicatorKey = columns[_this.keySize];
 
       var concepts = rows.reduce(function (result, row) {
-        Object.keys(row).forEach(function (concept) {
-          concept = concept === indicatorKey ? row[indicatorKey] : concept;
-
-          if (String(Number(concept)) !== String(concept) && !result.includes(concept)) {
-            result.push(concept);
-          }
-        });
-
+        var concept = row[indicatorKey];
+        if (!result.includes(concept) && concept) {
+          result.push(concept);
+        }
         return result;
-      }, []);
+      }, columns.slice(0, _this.keySize));
       concepts.splice(1, 0, _this.timeKey);
 
       var indicators = concepts.slice(2);
@@ -26397,7 +26428,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505572027699 }
+  versionInfo: { version: "0.26.3", build: 1506807138831 }
 
 });
 
@@ -26521,7 +26552,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0", build: 1505572027699 }
+  versionInfo: { version: "0.26.3", build: 1506807138831 }
 
 });
 
@@ -27825,8 +27856,8 @@ var TimeSlider = _component2.default.extend({
     this.xAxis.labelerOptions({
       scaleType: "time",
       removeAllLabels: !show_ticks,
-      limitMaxTickNumber: 1,
-      showOuter: true,
+      limitMaxTickNumber: 3,
+      showOuter: false,
       toolMargin: {
         left: 10,
         right: 10,
@@ -32073,7 +32104,7 @@ var label = function label(context) {
         return f[KEY] == d[KEY];
       });
 
-      label._repositionLabels(d, i, this, resolvedX, resolvedY, resolvedX0, resolvedY0, 0, null, lineGroup);
+      label._repositionLabels(d, i, null, this, resolvedX, resolvedY, resolvedX0, resolvedY0, 0, null, lineGroup);
     }).on("end", function (d, i) {
       var KEY = _this.KEY;
       if (_this.druging) {
@@ -32085,8 +32116,8 @@ var label = function label(context) {
       }
     });
 
-    function label(container) {
-      container.call(labelDragger).each(function (d, index) {
+    function label(container, isTooltip) {
+      container.each(function (d, index) {
         var view = d3.select(this);
 
         // Ola: Clicking bubble label should not zoom to countries boundary #811
@@ -32116,54 +32147,60 @@ var label = function label(context) {
           text.classed("stroke", false);
         }
 
-        var cross = view.append("g").attr("class", _cssPrefix + "-label-x vzb-transparent");
-        utils.setIcon(cross, _iconset.close);
+        if (!isTooltip) {
+          var cross = view.append("g").attr("class", _cssPrefix + "-label-x vzb-transparent");
+          utils.setIcon(cross, _iconset.close);
 
-        cross.insert("circle", "svg");
+          cross.insert("circle", "svg");
 
-        cross.select("svg").attr("class", _cssPrefix + "-label-x-icon").attr("width", "0px").attr("height", "0px");
+          cross.select("svg").attr("class", _cssPrefix + "-label-x-icon").attr("width", "0px").attr("height", "0px");
 
-        cross.on("click", function () {
-          //default prevented is needed to distinguish click from drag
-          if (d3.event.defaultPrevented) return;
-          d3.event.stopPropagation();
-          _this.model.marker.clearHighlighted();
-          _this.model.marker.selectMarker(d);
-        });
-      }).on("mouseover", function (d) {
-        if (utils.isTouchDevice()) return;
-        _this.model.marker.highlightMarker(d);
-        var KEY = _this.KEY || _this.model.entities.getDimension();
-        // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
-        _this.entityLabels.sort(function (a, b) {
-          return a[KEY] != d[KEY] ? -1 : 1;
-        });
-        d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", false);
-      }).on("mouseout", function (d) {
-        if (utils.isTouchDevice()) return;
-        _this.model.marker.clearHighlighted();
-        d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", true);
-      }).on("click", function (d) {
-        if (!utils.isTouchDevice()) return;
-        var cross = d3.select(this).selectAll("." + _cssPrefix + "-label-x");
-        var KEY = _this.KEY || _this.model.entities.getDimension();
-        var hidden = cross.classed("vzb-transparent");
-        if (hidden) {
+          cross.on("click", function () {
+            //default prevented is needed to distinguish click from drag
+            if (d3.event.defaultPrevented) return;
+            d3.event.stopPropagation();
+            _this.model.marker.clearHighlighted();
+            _this.model.marker.selectMarker(d);
+          });
+        }
+      });
+
+      if (!isTooltip) {
+        container.call(labelDragger).on("mouseover", function (d) {
+          if (utils.isTouchDevice()) return;
+          _this.model.marker.highlightMarker(d);
+          var KEY = _this.KEY || _this.model.entities.getDimension();
           // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
           _this.entityLabels.sort(function (a, b) {
             return a[KEY] != d[KEY] ? -1 : 1;
           });
-          _this.showCloseCross(null, false);
-        }
-        cross.classed("vzb-transparent", !hidden);
-        if (!_this.options.SUPPRESS_HIGHLIGHT_DURING_PLAY || !_this.model.time.playing) {
+          d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", false);
+        }).on("mouseout", function (d) {
+          if (utils.isTouchDevice()) return;
+          _this.model.marker.clearHighlighted();
+          d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", true);
+        }).on("click", function (d) {
+          if (!utils.isTouchDevice()) return;
+          var cross = d3.select(this).selectAll("." + _cssPrefix + "-label-x");
+          var KEY = _this.KEY || _this.model.entities.getDimension();
+          var hidden = cross.classed("vzb-transparent");
           if (hidden) {
-            _this.model.marker.setHighlight(d);
-          } else {
-            _this.model.marker.clearHighlighted();
+            // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
+            _this.entityLabels.sort(function (a, b) {
+              return a[KEY] != d[KEY] ? -1 : 1;
+            });
+            _this.showCloseCross(null, false);
           }
-        }
-      });
+          cross.classed("vzb-transparent", !hidden);
+          if (!_this.options.SUPPRESS_HIGHLIGHT_DURING_PLAY || !_this.model.time.playing) {
+            if (hidden) {
+              _this.model.marker.setHighlight(d);
+            } else {
+              _this.model.marker.clearHighlighted();
+            }
+          }
+        });
+      }
 
       return label;
     }
@@ -32173,9 +32210,9 @@ var label = function label(context) {
     };
 
     label._repositionLabels = _repositionLabels;
-    function _repositionLabels(d, i, labelContext, _X, _Y, _X0, _Y0, duration, showhide, lineGroup) {
+    function _repositionLabels(d, i, _cache, labelContext, _X, _Y, _X0, _Y0, duration, showhide, lineGroup) {
 
-      var cache = _this.cached[d[_this.KEY]];
+      var cache = _cache || _this.cached[d[_this.KEY]];
 
       var labelGroup = d3.select(labelContext);
 
@@ -32190,28 +32227,36 @@ var label = function label(context) {
       var viewWidth = _this.context.width;
       var viewHeight = _this.context.height;
       var rectBBox = cache.rectBBox;
-      var width = rectBBox.width;
       var height = rectBBox.height;
+      var offsetX = cache.rectOffsetX;
+      var offsetY = cache.rectOffsetY;
 
       //apply limits so that the label doesn't stick out of the visible field
-      if (_X - width <= 0) {
+      if (_X + rectBBox.x <= 0) {
         //check left
-        _X = width;
+        _X = -rectBBox.x;
         cache.labelX_ = (_X - _this.xScale(cache.labelX0)) / viewWidth;
-      } else if (_X + 5 > viewWidth) {
+      } else if (_X + offsetX > viewWidth) {
         //check right
-        _X = viewWidth - 5;
+        _X = viewWidth - offsetX;
         cache.labelX_ = (_X - _this.xScale(cache.labelX0)) / viewWidth;
       }
-      if (_Y - height * 0.75 <= 0) {
+      if (_Y + rectBBox.y <= 0) {
         // check top
-        _Y = height * 0.75;
+        _Y = -rectBBox.y;
         cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
-      } else if (_Y + height * 0.35 > viewHeight) {
+      } else if (_Y + offsetY > viewHeight) {
         //check bottom
-        _Y = viewHeight - height * 0.35;
+        _Y = viewHeight - offsetY;
         cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
       }
+      // if (_Y - height * 0.75 <= 0) { // check top
+      //   _Y = height * 0.75;
+      //   cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
+      // } else if (_Y + height * 0.35 > viewHeight) { //check bottom
+      //   _Y = viewHeight - height * 0.35;
+      //   cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
+      // }
 
       if (duration == null) duration = _this.context.duration;
       if (cache._new) {
@@ -32398,6 +32443,7 @@ var Labels = _class2.default.extend({
     this.updateIndicators();
     this.updateSize();
     this.selectDataPoints();
+    this._initLabelTooltip();
   },
   config: function config(newOptions) {
     utils.extend(this.options, newOptions);
@@ -32520,11 +32566,7 @@ var Labels = _class2.default.extend({
 
       if (cached.scaledS0 == null || cached.labelX0 == null || cached.labelY0 == null) {
         //initialize label once
-        if (valueS || valueS === 0) cached.scaledS0 = utils.areaToRadius(this.context.sScale(valueS));
-        cached.labelX0 = valueX;
-        cached.labelY0 = valueY;
-        cached.valueLST = valueLST;
-        cached.scaledC0 = valueC != null ? this.context.cScale(valueC) : this.context.COLOR_WHITEISH;
+        this._initNewCache(cached, valueX, valueY, valueS, valueC, valueLST);
       }
 
       if (cached.labelX_ == null || cached.labelY_ == null) {
@@ -32554,16 +32596,49 @@ var Labels = _class2.default.extend({
 
         var text = labelGroup.selectAll("." + _cssPrefix + "-label-content").text(valueL);
 
-        _this._updateLabelSize(d, index, labelGroup, valueLST, text);
+        _this._updateLabelSize(d, index, null, labelGroup, valueLST, text);
 
-        _this.positionLabel(d, index, this, duration, showhide, lineGroup);
+        _this.positionLabel(d, index, null, this, duration, showhide, lineGroup);
       });
     }
   },
-  _updateLabelSize: function _updateLabelSize(d, index, labelGroup, valueLST, text) {
+  _initNewCache: function _initNewCache(cached, valueX, valueY, valueS, valueC, valueLST) {
+    if (valueS || valueS === 0) cached.scaledS0 = utils.areaToRadius(this.context.sScale(valueS));
+    cached.labelX0 = valueX;
+    cached.labelY0 = valueY;
+    cached.valueLST = valueLST;
+    cached.scaledC0 = valueC != null ? this.context.cScale(valueC) : this.context.COLOR_WHITEISH;
+  },
+  _initLabelTooltip: function _initLabelTooltip() {
+    this.tooltipEl = this.labelsContainer.append("g").attr("class", this.options.CSS_PREFIX + "-tooltip");
+  },
+  setTooltip: function setTooltip(d, tooltipText, tooltipCache, labelValues) {
+    if (tooltipText) {
+      var position = 0;
+      var _cssPrefix = this.options.CSS_PREFIX;
+      this.tooltipEl.raise().text(null);
+      this.label(this.tooltipEl, true);
+      if (d) {
+        var cache = {};
+        this._initNewCache(cache, labelValues.valueX, labelValues.valueY, labelValues.valueS, labelValues.valueC, labelValues.valueLST);
+        this.tooltipEl.classed(this.options.CSS_PREFIX + "-tooltip", false).classed(this.options.CSS_PREFIX + "-entity", true).selectAll("." + _cssPrefix + "-label-content").text(labelValues.labelText);
+        this._updateLabelSize(d, null, cache, this.tooltipEl, labelValues.valueLST);
+        position = this.positionLabel(d, null, cache, this.tooltipEl.node(), 0, null, this.tooltipEl.select(".lineemptygroup"));
+      }
+      this.tooltipEl.classed(this.options.CSS_PREFIX + "-entity", false).classed(this.options.CSS_PREFIX + "-tooltip", true).selectAll("." + _cssPrefix + "-label-content").text(tooltipText);
+      this._updateLabelSize(d, null, tooltipCache, this.tooltipEl, null);
+      this.positionLabel(d, null, tooltipCache, this.tooltipEl.node(), 0, null, this.tooltipEl.select(".lineemptygroup"), position);
+    } else {
+      this.tooltipEl.text(null);
+    }
+  },
+  setTooltipFontSize: function setTooltipFontSize(fontSize) {
+    this.tooltipEl.style("font-size", fontSize);
+  },
+  _updateLabelSize: function _updateLabelSize(d, index, cache, labelGroup, valueLST, text) {
     var _this = this;
     var KEY = this.KEY;
-    var cached = _this.cached[d[KEY]];
+    var cached = cache || _this.cached[d[KEY]];
 
     var _cssPrefix = this.options.CSS_PREFIX;
 
@@ -32600,8 +32675,8 @@ var Labels = _class2.default.extend({
 
       //cache label bound rect for reposition
       cached.rectBBox = rect.node().getBBox();
-      //cached.moveX = 5;
-      //cached.moveY = contentBBox.height * .3;
+      cached.rectOffsetX = cached.rectBBox.width + cached.rectBBox.x;
+      cached.rectOffsetY = cached.rectBBox.height + cached.rectBBox.y;
     }
 
     var glowRect = labelGroup.select(".vzb-label-glow");
@@ -32620,11 +32695,11 @@ var Labels = _class2.default.extend({
 
     this.entityLabels.each(function (d, index) {
       var cached = _this.cached[d[KEY]];
-      _this._updateLabelSize(d, index, d3.select(this), _this.context.frame.size_label[d[KEY]]);
+      _this._updateLabelSize(d, index, null, d3.select(this), _this.context.frame.size_label[d[KEY]]);
       var lineGroup = _this.entityLines.filter(function (f) {
         return f[KEY] == d[KEY];
       });
-      _this.positionLabel(d, index, this, 0, null, lineGroup);
+      _this.positionLabel(d, index, null, this, 0, null, lineGroup);
     });
   },
   updateLabelOnlyPosition: function updateLabelOnlyPosition(d, index, cache) {
@@ -32640,7 +32715,7 @@ var Labels = _class2.default.extend({
     this.entityLabels.filter(function (f) {
       return f[KEY] == d[KEY];
     }).each(function (groupData) {
-      _this.positionLabel(d, index, this, 0, null, lineGroup);
+      _this.positionLabel(d, index, null, this, 0, null, lineGroup);
     });
   },
   updateLabelOnlyColor: function updateLabelOnlyColor(d, index, cache) {
@@ -32653,50 +32728,96 @@ var Labels = _class2.default.extend({
       return f[KEY] == d[KEY];
     });
 
-    _this._updateLabelSize(d, index, labelGroup, null);
+    _this._updateLabelSize(d, index, null, labelGroup, null);
   },
-  positionLabel: function positionLabel(d, index, context, duration, showhide, lineGroup) {
+  positionLabel: function positionLabel(d, index, cache, context, duration, showhide, lineGroup, position) {
     var KEY = this.KEY;
-    var cached = this.cached[d[KEY]];
+    var cached = cache || this.cached[d[KEY]];
 
+    var lockPosition = position || position === 0;
+    var hPos = (position || 0) & 1;
+    var vPos = ((position || 0) & 2) >> 1;
+    var hPosNew = 0;
+    var vPosNew = 0;
     var viewWidth = this.context.width;
     var viewHeight = this.context.height;
 
     var resolvedX0 = this.xScale(cached.labelX0);
     var resolvedY0 = this.yScale(cached.labelY0);
 
+    var offsetX = cached.rectOffsetX;
+    var offsetY = cached.rectOffsetY;
+
     if (!cached.labelOffset) cached.labelOffset = [0, 0];
-    cached.labelX_ = cached.labelOffset[0] || (-cached.scaledS0 * 0.75 - 5) / viewWidth;
-    cached.labelY_ = cached.labelOffset[1] || (-cached.scaledS0 * 0.75 - 11) / viewHeight;
+
+    cached.labelX_ = cached.labelOffset[0] || (-cached.scaledS0 * 0.75 - offsetX) / viewWidth;
+    cached.labelY_ = cached.labelOffset[1] || (-cached.scaledS0 * 0.75 - offsetY) / viewHeight;
 
     //check default label position and switch to mirror position if position
     //does not bind to visible field
-
     var resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-    if (cached.labelOffset[0] == 0) {
-      if (resolvedX - cached.rectBBox.width <= 0) {
-        //check left
-        cached.labelX_ = (cached.scaledS0 * 0.75 + cached.rectBBox.width) / viewWidth;
-        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-      } else if (resolvedX + 15 > viewWidth) {
-        //check right
-        cached.labelX_ = (viewWidth - 15 - resolvedX0) / viewWidth;
-        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-      }
-    }
     var resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
-    if (cached.labelOffset[1] == 0) {
-      if (resolvedY - cached.rectBBox.height <= 0) {
+    if (cached.labelOffset[0] + cached.labelOffset[1] == 0) {
+      if (!lockPosition && resolvedY - cached.rectBBox.height + offsetY <= 0 || vPos) {
         // check top
-        cached.labelY_ = (cached.scaledS0 * 0.75 + cached.rectBBox.height) / viewHeight;
-        resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
-      } else if (resolvedY + 10 > viewHeight) {
-        //check bottom
-        cached.labelY_ = (viewHeight - 10 - resolvedY0) / viewHeight;
+        vPosNew = 1;
+        cached.labelY_ = (cached.scaledS0 * 0.75 + cached.rectBBox.height - offsetY) / viewHeight;
         resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
       }
+      //  else if (resolvedY + 10 > viewHeight) { //check bottom
+      //   cached.labelY_ = (viewHeight - 10 - resolvedY0) / viewHeight;
+      //   resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
+      // }
+
+      if (!lockPosition && resolvedX - cached.rectBBox.width + offsetX <= 0 || hPos) {
+        //check left
+        hPosNew = 1;
+        cached.labelX_ = (cached.scaledS0 * 0.75 + cached.rectBBox.width - offsetX) / viewWidth;
+        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+        if (resolvedX > viewWidth) {
+          hPosNew = 0;
+          vPosNew = vPosNew == 0 && resolvedY0 - offsetY * 0.5 - cached.scaledS0 < cached.rectBBox.height ? 1 : vPosNew;
+          cached.labelY_ = vPosNew ? -offsetY * 0.5 + cached.rectBBox.height + cached.scaledS0 : -offsetY * 1.5 - cached.scaledS0;
+          cached.labelY_ /= viewHeight;
+          resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
+          cached.labelX_ = (cached.rectBBox.width - offsetX - resolvedX0) / viewWidth;
+          resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+        }
+      }
+      //  else if (resolvedX + 15 > viewWidth) { //check right
+      //   cached.labelX_ = (viewWidth - 15 - resolvedX0) / viewWidth;
+      //   resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+      // }
     }
-    this.label._repositionLabels(d, index, context, resolvedX, resolvedY, resolvedX0, resolvedY0, duration, showhide, lineGroup);
+
+    if (lockPosition) {
+      var topCornerCase = false;
+      if (resolvedX - cached.rectBBox.width + offsetX <= 0) {
+        var deltaX = resolvedX0 - cached.rectBBox.width;
+        var deltaY = deltaX > 0 ? utils.cathetus(cached.scaledS0, deltaX) : cached.scaledS0;
+        resolvedY = vPosNew ? resolvedY0 + cached.rectBBox.height - offsetY * 0.5 + deltaY : resolvedY0 - offsetY * 1.5 - deltaY;
+        if (resolvedY - cached.rectBBox.height < 0) {
+          topCornerCase = true;
+        }
+      }
+      if (resolvedY - cached.rectBBox.height + offsetY <= 0) {
+        var _deltaY = resolvedY0 - cached.rectBBox.height;
+        var _deltaX = _deltaY > 0 ? utils.cathetus(cached.scaledS0, _deltaY) : cached.scaledS0;
+        resolvedX = hPosNew ? resolvedX0 + cached.rectBBox.width + _deltaX : resolvedX0 - offsetX * 2 - _deltaX;
+        if (resolvedX - cached.rectBBox.width < 0 || resolvedX > viewWidth) {
+          topCornerCase = true;
+        }
+      }
+      if (topCornerCase) {
+        vPosNew++;
+        var _deltaX2 = resolvedX0 - cached.rectBBox.width;
+        resolvedY = resolvedY0 + cached.rectBBox.height - offsetY * 0.5 + (_deltaX2 > 0 ? utils.cathetus(cached.scaledS0, _deltaX2) : cached.scaledS0);
+      }
+    }
+
+    this.label._repositionLabels(d, index, cache, context, resolvedX, resolvedY, resolvedX0, resolvedY0, duration, showhide, lineGroup);
+
+    return vPosNew * 2 + hPosNew;
   },
   updateSize: function updateSize() {
     var profiles = {
