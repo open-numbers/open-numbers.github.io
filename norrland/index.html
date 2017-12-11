@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>PCBS Census 2017</title>
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
+    <link rel="stylesheet" type="text/css" href="libs/barrankchart.css">
+    <link rel="stylesheet" type="text/css" href="libs/bubblechart.css">
+    <link rel="stylesheet" type="text/css" href="libs/extapimap.css">
+    <link rel="stylesheet" type="text/css" href="libs/linechart.css">
+        
+    <script src="libs/vizabi.min.js"></script>
+
+    <script src="libs/extapimap.js"></script>
+    <script src="libs/bubblechart.js"></script>
+    <script src="libs/barrankchart.js"></script>
+    <script src="libs/linechart.js"></script>
+    <script src="combo.js"></script>
+    <script src="libs/urlon.js"></script>
+    <script src="libs/url.js"></script>
+
+    <script src="libs/vizabi-ddfcsv-reader.js"></script>
+    <script src="libs/vizabi-ws-reader.js"></script>
+    
+    <style>
+      .header {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 35px;
+        padding-left: 20px;
+        padding-right: 20px;
+        background-color: #333333;
+        overflow: hidden;
+      }
+      .header div a {
+        text-transform: uppercase;
+        font-size: calc(7px + .4vw);
+        letter-spacing: 1px;
+        text-decoration: underline;
+        cursor: pointer;
+        color: #a6c4ff;
+        font-family: Lucida Sans Unicode, Lucida Grande, sans-serif;
+        margin-right: 10px;
+        padding: 2px;
+        line-height: 35px;
+      }
+      .header div a.active {
+        cursor: default;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      #langlist {
+        position: absolute;
+        right: 0;
+      }
+      #toolslist {
+        position: absolute;
+        left: 10px;
+        margin-right: 50px;
+      }
+      #placeholder {
+        border-top: 2px solid #f2fafc;
+        position: absolute;
+        top: 35px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      body {
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <div id="langlist"></div>
+      <div id="toolslist"></div>
+    </div>
+
+    <script>
+     //mapshaper commands
+     //$ -proj webmercator 
+     //$ -filter [11,18,7,19].indexOf(ID_1)>-1
+      
+      var poppedState = null;
+
+      //WS reader integration
+      var wsReader = WsReader.WsReader.getReader();
+      Vizabi.Reader.extend("waffle", wsReader);
+
+      //DDFCSV reader integration
+      var ddfReader = new DDFCsvReader.getDDFCsvReaderObject()
+      Vizabi.Reader.extend("ddf", ddfReader);
+
+      var viz = null;
+      var VIZABI_MODEL = {};
+      
+      var tools = {
+        "bubbles": {config: "BubbleChart.js", toolID: "BubbleChart"},
+        "map": {config: "ExtApiMap.js", toolID: "ExtApiMap"},
+        "combo": {config: "Combo-map-and-bubbles.js", toolID: "combo"}
+      }
+      
+      var TRANSLATION_DICTIONARY = {
+        "en": {
+          "bubbles":"Bubbles",
+          "map":"Map",
+          "combo":"Map+bubbles",
+          "en": "en",
+          "sv-SE": "se"
+        },
+        "sv-SE": {
+          "bubbles":"Bubblar",
+          "map":"Karta",
+          "combo":"Karta+bubblar",
+          "en": "en",
+          "sv-SE": "se"
+        }
+      }
+      
+      var translate = function(string){
+        return (TRANSLATION_DICTIONARY[appState.language] || {})[string || ""] || string;
+      }
+      
+      var locales = {
+        "sv-SE": "sv-SE",
+        "en": "en"
+      }
+      
+      var toolLinks = d3.select("#toolslist")
+        .selectAll("a").data(d3.keys(tools)).enter().append("a")
+        .on("click", d => {
+          resetURL();
+          setTool(d)
+        });
+      
+      var langLinks = d3.select("#langlist")
+        .selectAll("a").data(d3.keys(locales)).enter().append("a")
+        .on("click", d => { setLocale(d) });
+
+      function setLocale(arg){
+        if (!arg) arg = appState.language;
+        if (!viz || !viz.model) return;
+        
+        viz.model.locale.id = arg;
+        appState.language = arg;
+        updateView();
+      }
+      
+      function setTool(arg){
+        if (!arg) arg = appState.tool;
+
+        Vizabi.clearInstances();
+        
+        d3.select("#placeholder").remove();        
+        d3.select("body").append("div").attr("id","placeholder");
+
+        loadJS(tools[arg].config, function(){
+          
+          console.log(VIZABI_MODEL)
+          
+          VIZABI_MODEL.locale = {
+            "id": appState.language,
+            "filePath": "assets/translation/"
+          };
+
+          VIZABI_MODEL.bind = {
+            'ready': function(evt) {
+              updateURL();
+            },
+            'persistentChange': function(evt) {
+              updateURL(evt); // force update
+            }            
+          }
+          
+          VIZABI_MODEL.data = {
+            "reader": 'csv',
+            "path": 'data/norrland.csv',
+          };
+
+          VIZABI_PAGE_MODEL = Vizabi.utils.deepExtend({}, VIZABI_MODEL);
+          delete VIZABI_PAGE_MODEL.bind;         
+
+          viz = Vizabi(tools[arg].toolID, document.getElementById('placeholder'), Vizabi.utils.deepExtend({}, VIZABI_MODEL, URLI.model, true));
+        }, document.body);
+        
+        appState.tool = arg;
+        updateView();
+      }
+      
+      var updateView = function(){
+        toolLinks
+          .classed("active", d => appState.tool === d)
+          .html(d => translate(d));
+        langLinks
+          .classed("active", d => appState.language === d)
+          .html(d => translate(d));
+      }
+      
+      var loadJS = function(url, implementationCode, location){
+        //url is URL of external file, implementationCode is the code
+        //to be called from the file, location is the location to 
+        //insert the <script> element
+
+        var scriptTag = document.createElement('script');
+        scriptTag.src = url;
+
+        scriptTag.onload = implementationCode;
+        scriptTag.onreadystatechange = implementationCode;
+
+        location.appendChild(scriptTag);
+      };
+
+
+  
+      parseURL();
+      
+      var appState = {tool: URLI.tool || "bubbles", language: "en"};
+      setTool();  
+      
+    </script>
+  </body>
+</html>
+
+
+
+
