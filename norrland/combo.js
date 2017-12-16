@@ -25,15 +25,15 @@ Vizabi.Tool.extend('combo', {
     this.components = this.components = [{
       component: Vizabi.Component.get("bubblechart"),
       placeholder: ".vzb-tool-viz-bubble",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui"]
+      model: ["state.time", "state.marker", "locale", "ui"]
     }, {
       component: Vizabi.Component.get("extapimap"),
       placeholder: ".vzb-tool-viz-map",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui", "data"]
+      model: ["state.time", "state.marker", "locale", "ui", "data"]
     }, {
       component: Vizabi.Component.get("timeslider"),
       placeholder: ".vzb-tool-timeslider",
-      model: ["state.time", "state.entities", "state.marker", "ui"]
+      model: ["state.time", "state.marker", "ui"]
     }, {
       component: Vizabi.Component.get("dialogs"),
       placeholder: ".vzb-tool-dialogs",

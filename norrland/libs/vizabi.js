@@ -1,4 +1,4 @@
-((function(){})({version: '"0.27.0"'}));(function webpackUniversalModuleDefinition(root, factory) {
+((function(){})({version: '"0.28.0"'}));(function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
@@ -132,20 +132,22 @@ module.exports = $export;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSubtitle = exports.replaceNumberSpacesToNonBreak = exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.cathetus = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.printAutoconfigResult = exports.approxEqual = undefined;
+exports.getSubtitle = exports.replaceNumberSpacesToNonBreak = exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToValues = exports.nestArrayToObjWithFlatKeys = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.cathetus = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.printAutoconfigResult = exports.approxEqual = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 exports.makeAbsoluteContext = makeAbsoluteContext;
 exports.firstBy = firstBy;
 exports.transform = transform;
-exports.getValueMD = getValueMD;
+exports.getKey = getKey;
 
 var _interpolators = __webpack_require__(389);
 
 var _interpolators2 = _interopRequireDefault(_interpolators);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 /*
  * Check if value A is in +- proximity of value B
@@ -1321,6 +1323,41 @@ var nestArrayToObj = exports.nestArrayToObj = function nestArrayToObj(arr) {
   return res;
 };
 
+var nestArrayToObjWithFlatKeys = exports.nestArrayToObjWithFlatKeys = function nestArrayToObjWithFlatKeys(arr) {
+  var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var keys = arguments[2];
+  var key = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+
+  if (!arr || !arr.length || !arr[0].key) {
+    if (keys) {
+      keys += "]";
+      !res[keys] && (res[keys] = {});
+      res[keys][key] = arr;
+    } else {
+      res[key] = arr;
+    }
+    return arr;
+  }
+  if (key) keys = keys ? keys + "," + JSON.stringify(key) : "[" + JSON.stringify(key);
+  for (var i = 0; i < arr.length; i++) {
+    nestArrayToObjWithFlatKeys(arr[i].values || arr[i].value, res, keys, arr[i].key);
+  }
+  return res;
+};
+
+var nestArrayToValues = exports.nestArrayToValues = function nestArrayToValues(arr) {
+  var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+  if (!arr || !arr.length || !arr[0].key) {
+    res.push.apply(res, _toConsumableArray(arr));
+    return;
+  }
+  for (var i = 0; i < arr.length; i++) {
+    nestArrayToValues(arr[i].values || arr[i].value, res);
+  }
+  return res;
+};
+
 var interpolateVector = exports.interpolateVector = function interpolateVector() {};
 
 /**
@@ -1645,13 +1682,12 @@ var isMobileOrTablet = exports.isMobileOrTablet = function isMobileOrTablet() {
   );
 };
 
-function getValueMD(d, values, keysArray) {
-  var value = values;
-  for (var i = 0, j = keysArray.length; i < j; i++) {
-    value = value[d[keysArray[i]]];
-    if (!value) break;
+function getKey(d, keysArray) {
+  var key = d[keysArray[0]];
+  for (var i = 1, j = keysArray.length; i < j; i++) {
+    key = key + "," + d[keysArray[i]];
   }
-  return value;
+  return key;
 }
 
 var isFunction = exports.isFunction = function isFunction(value) {
@@ -3281,6 +3317,8 @@ var Hook = _dataconnected2.default.extend({
   },
   preloadData: function preloadData() {
     this.dataSource = this.getClosestModel(this.data);
+    //TODO
+    if (!this.spaceRef) this.spaceRef = this.updateSpaceReference();
     return this._super();
   },
   afterPreload: function afterPreload() {
@@ -3311,6 +3349,12 @@ var Hook = _dataconnected2.default.extend({
 
       utils.printAutoconfigResult(this);
     }
+  },
+  updateSpaceReference: function updateSpaceReference() {
+    if (this.use !== "property") return null;
+    var newSpaceRef = "entities" + this._name.replace(this._type, "");
+
+    return this._space[newSpaceRef] ? newSpaceRef : this._parent.getSpace()[0]._name;
   },
 
 
@@ -3376,11 +3420,6 @@ var Hook = _dataconnected2.default.extend({
   afterLoad: function afterLoad(dataId) {
     this._dataId = dataId;
 
-    var grouping = this._parent._getGrouping();
-    if (grouping) {
-      this.dataSource.setGrouping(dataId, grouping);
-    }
-
     utils.timeStamp("Vizabi Model: Data loaded: " + this._id);
   },
 
@@ -3404,11 +3443,8 @@ var Hook = _dataconnected2.default.extend({
     // select
     // we remove this.which from values if it duplicates a dimension
     var allDimensions = utils.unique(this._getAllDimensions(exceptions));
-    var dimensions = prop && allDimensions.length > 1 ? [this.spaceRef ? this._space[this.spaceRef].dim : this.which] : allDimensions;
+    var dimensions = this.use === "property" && allDimensions.length > 1 ? [this.spaceRef ? this._space[this.spaceRef].dim : this.which] : allDimensions;
 
-    dimensions = dimensions.filter(function (f) {
-      return f !== "_default";
-    }); // && f!==null);
     if (!dimensions || !dimensions.length) {
       utils.warn("getQuery() produced no query because no keys are available");
       return true;
@@ -3451,8 +3487,15 @@ var Hook = _dataconnected2.default.extend({
       join = j;
     }
 
+    // grouping
+    var grouping = this._parent._getGrouping();
+    if (grouping) {
+      grouping = utils.clone(grouping, dimensions);
+      if (utils.isEmpty(grouping)) grouping = false;
+    }
+
     //return query
-    return {
+    var query = {
       "language": this.getClosestModel("locale").id,
       "from": from,
       "animatable": animatable,
@@ -3461,6 +3504,8 @@ var Hook = _dataconnected2.default.extend({
       "join": join,
       "order_by": prop ? ["rank"] : [this._space.time.dim]
     };
+    if (grouping) query["grouping"] = grouping;
+    return query;
   },
 
 
@@ -3792,19 +3837,12 @@ var Hook = _dataconnected2.default.extend({
       limitsDim[id] = limits;
     };
 
-    var iterateGroupKeys = function iterateGroupKeys(data, deep, result, cb) {
-      deep--;
-      utils.forEach(data, function (d, id) {
-        if (deep) {
-          result[id] = {};
-          iterateGroupKeys(d, deep, result[id], cb);
-        } else {
-          cb(d, result, id);
-        }
+    utils.forEach(filtered, function (times, key) {
+      var limit = limitsDim[JSON.parse(key).join(",")] = {};
+      utils.forEach(times, function (item, time) {
+        countLimits(item, limit, time);
       });
-    };
-
-    iterateGroupKeys(filtered, dims.length, limitsDim, countLimits);
+    });
 
     return limitsDim;
   },
@@ -3858,6 +3896,12 @@ var Hook = _dataconnected2.default.extend({
   },
   getEntity: function getEntity() {
     return this._space[this.spaceRef || this._parent.getSpace()[0]];
+  },
+  getDataKeys: function getDataKeys() {
+    var query = this.dataSource.getData(this._dataId, "query");
+    return query.select.key.filter(function (key) {
+      return key !== query.animatable;
+    });
   }
 });
 
@@ -4580,13 +4624,10 @@ var IndPicker = _component2.default.extend({
           marker.getFrame(_this.model.time.value, function (frame) {
             if (_this._highlighted || !frame) return;
 
-            var isHookFrameValuesMD = _this.multiDim && !mdl.isDiscrete() && mdl.which !== marker._getFirstDimension({ type: "time" });
-            // should be replaced by dimension of entity set for this hook (if use == property)
-            var dimension = isHookFrameValuesMD ? null : mdl.getEntity().getDimension();
-            var _highlightedEntity = marker.getHighlighted(dimension);
+            var _highlightedEntity = marker.getHighlighted();
             if (_highlightedEntity.length) {
-
-              var value = isHookFrameValuesMD ? utils.getValueMD(_highlightedEntity[0], frame[mdl._name], _this.KEYS) : frame[mdl._name][_highlightedEntity[0]];
+              var KEYS = mdl.getDataKeys();
+              var value = frame[mdl._name][utils.getKey(_highlightedEntity[0], KEYS)];
 
               // resolve strings via the color legend model
               if (value && mdl._type === "color" && mdl.isDiscrete()) {
@@ -4617,8 +4658,6 @@ var IndPicker = _component2.default.extend({
     this.targetProp = config.targetProp || this.model.targetModel instanceof _hook2.default ? "which" : this.model.targetModel instanceof _entities2.default ? "dim" : this.model.targetModel instanceof _marker2.default ? "space" : null;
   },
   ready: function ready() {
-    this.KEYS = this.model.targetModel.isHook() ? utils.unique(this.model.targetModel._parent._getAllDimensions({ exceptType: "time" })) : [];
-    this.multiDim = this.KEYS.length > 1;
     this.updateView();
   },
   readyOnce: function readyOnce() {
@@ -7215,8 +7254,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 /*!
  * HOOK MODEL
  */
@@ -7242,13 +7279,11 @@ var Marker = _model2.default.extend({
     this._visible = [];
 
     this._super(name, value, parent, binds, persistent);
-    this.on("readyOnce", function () {
-      var exceptions = { exceptType: "time" };
-      var allDimensions = _this._getAllDimensions(exceptions);
-      _this._multiDim = allDimensions.length > 1;
-    });
+
     this.on("change", "space", this.updateSpaceReferences.bind(this));
-    this.updateSpaceReferences();
+    utils.defer(function () {
+      return _this.updateSpaceReferences();
+    });
   },
   updateSpaceReferences: function updateSpaceReferences() {
     var _this2 = this;
@@ -7442,11 +7477,13 @@ var Marker = _model2.default.extend({
     if (!this.allowSelectMultiple) return;
 
     var added = void 0;
-    var dimension = this._getFirstDimension({ exceptType: "time" });
+    var dimensions = utils.unique(this._getAllDimensions({ exceptType: "time" }));
 
     this.select = this._visible.map(function (d) {
       added = {};
-      added[dimension] = d[dimension];
+      dimensions.forEach(function (dimension) {
+        return added[dimension] = d[dimension];
+      });
       return added;
     });
   },
@@ -7556,8 +7593,11 @@ var Marker = _model2.default.extend({
   setLabelOffset: function setLabelOffset(d, xy) {
     if (xy[0] === 0 && xy[1] === 1) return;
 
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    var KEY = KEYS.join(",");
+
     this.select.find(function (selectedMarker) {
-      return utils.comparePlainObjects(selectedMarker, d);
+      return utils.getKey(selectedMarker, KEYS) == d[KEY];
     }).labelOffset = [Math.round(xy[0] * 1000) / 1000, Math.round(xy[1] * 1000) / 1000];
 
     //force the model to trigger events even if value is the same
@@ -7630,7 +7670,7 @@ var Marker = _model2.default.extend({
     var _this = this;
     var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
 
-    return KEYS.map(function (key) {
+    return KEYS.reduce(function (result, key) {
       var names = {};
       utils.forEach(_this._dataCube || _this.getSubhooks(true), function (hook, name) {
         if (hook._type === "label" && hook.getEntity().dim === key) {
@@ -7641,89 +7681,127 @@ var Marker = _model2.default.extend({
         }
         return !names.label || !names.key;
       });
-      return names.label || names.key;
-    });
+      result[key] = names.label || names.key;
+      return result;
+    }, {});
   },
-  getKeysMD: function getKeysMD() {
-    var _this = this;
-    var resultKeys = [];
-
+  getDataKeysPerHook: function getDataKeysPerHook() {
     var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
-    var TIME = this._getFirstDimension({ type: "time" });
-
+    var result = {};
     utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
-      if (hook.use === "constant" || hook.use === "property" || !hook._important) return;
-
-      var nested = hook.getNestedItems(KEYS.concat(TIME));
-
-      iterateKeys({}, nested, KEYS, 0, KEYS.length - 1);
-
-      function iterateKeys(keyObj, nested, keyNames, deep, deepMax) {
-        var keys = Object.keys(nested);
-        if (deep < deepMax) {
-          var _deep = deep + 1;
-          for (var i = 0, j = keys.length; i < j; i++) {
-            var _keyObj = {};
-            _keyObj[keyNames[deep]] = keys[i];
-            iterateKeys(_keyObj, nested[keys[i]], keyNames, _deep, deepMax);
-          }
-        } else {
-          resultKeys.push.apply(resultKeys, _toConsumableArray(keys.map(function (key) {
-            var obj = Object.assign({}, keyObj);
-            obj[keyNames[deep]] = key;
-            return obj;
-          })));
-        }
-      }
+      result[name] = hook._dataId ? hook.getDataKeys() : KEYS;
     });
-
-    return resultKeys;
+    return result;
   },
+
 
   /**
    * Computes the intersection of keys in all hooks: a set of keys that have data in each hook
    * @returns array of keys that have data in all hooks of this._datacube
    */
-  getKeys: function getKeys(KEY) {
+  getKeys: function getKeys(KEYS) {
     var _this = this;
-    var resultKeys = [];
+    var resultKeys = void 0;
 
-    KEY = KEY || this._getFirstDimension();
+    KEYS = KEYS || utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    KEYS = Array.isArray(KEYS) ? KEYS : [KEYS];
     var TIME = this._getFirstDimension({ type: "time" });
 
-    var grouping = this._getGrouping();
+    var subHooks = this._dataCube || this.getSubhooks(true);
 
-    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
+    var hooksPerKey = KEYS.map(function (_) {
+      return [];
+    });
+    var dataSourcePerKey = KEYS.map(function (_) {
+      return [];
+    });
+    //try to find hooks with entity queries for each subkey of KEYS
+    utils.forEach(subHooks, function (hook, name) {
+      if (hook.use === "property") {
+        var keyIndex = KEYS.indexOf(hook.getEntity().dim);
+        if (keyIndex !== -1 && !dataSourcePerKey[keyIndex].includes(hook.dataSource)) {
+          hooksPerKey[keyIndex].push(hook);
+          dataSourcePerKey[keyIndex].push(hook.dataSource);
+        }
+      }
+    });
 
+    //try to get keys from indicators if marker does not have hooks with entity queries
+    //in each dataSource for some subkey of KEYS
+    utils.forEach(subHooks, function (hook, name) {
+      if (hook.use === "indicator") {
+        hook.getDataKeys().forEach(function (key) {
+          var keyIndex = KEYS.indexOf(key);
+          if (keyIndex !== -1 && !dataSourcePerKey[keyIndex].includes(hook.dataSource)) {
+            hooksPerKey[keyIndex].push(hook);
+          }
+        });
+      }
+    });
+
+    hooksPerKey.forEach(function (hooks, keyIndex) {
+      var keys = [];
+      hooks.forEach(function (hook) {
+        var hookKeys = hook.getDataKeys();
+        var hookKeyIndex = hookKeys.indexOf(KEYS[keyIndex]);
+        keys = keys.concat(Object.keys(hook.getNestedItems(hookKeys.concat(TIME))).map(function (key) {
+          return [JSON.parse(key)[hookKeyIndex]];
+        }));
+      });
+      keys = utils.unique(keys);
+      resultKeys = resultKeys ? d3.cross(resultKeys, keys, function (a, b) {
+        return a.concat(b);
+      }) : keys;
+    });
+
+    utils.forEach(subHooks, function (hook, name) {
       // If hook use is constant, then we can provide no additional info about keys
       // We can just hope that we have something else than constants =)
-      if (hook.use === "constant") return;
+      if (!hook._important || hook.use === "constant") return;
+
+      var hookKEYS = hook.getDataKeys();
+      var hookKEYSIndexes = hookKEYS.map(function (key) {
+        return KEYS.indexOf(key);
+      }).reduce(function (indexes, index, i) {
+        if (index !== -1) indexes[i] = index;
+        return indexes;
+      }, []);
+
+      if (!hookKEYSIndexes.length) return;
 
       // Get keys in data of this hook
-      var nested = hook.getNestedItems([KEY, TIME]);
+      var nested = hook.getNestedItems(hookKEYS.concat(TIME));
       var noDataPoints = hook.getHaveNoDataPointsPerKey();
-
-      if (nested["undefined"]) delete nested["undefined"];
 
       var keys = Object.keys(nested);
       var keysNoDP = Object.keys(noDataPoints || []);
 
-      if (keys.length > 0 && grouping && grouping.key === KEY) {
-        var _grouping = grouping.grouping;
-        keys = keys.filter(function (key) {
-          return +key % _grouping === 0;
-        });
-      }
-      // If ain't got nothing yet, set the list of keys to result
-      if (resultKeys.length == 0) resultKeys = keys;
+      // Remove the keys with no timepoints
+      var keysSizeEqual = KEYS.every(function (key, i) {
+        return key === hookKEYS[i];
+      });
+      var filteredKeys = keys.reduce(function (keys, key) {
+        if (keysNoDP.indexOf(key) == -1) keys[JSON.stringify(hookKEYSIndexes.map(function (_, i) {
+          return JSON.parse(key)[i];
+        }))] = true;
+        return keys;
+      }, {});
 
-      // Remove the keys from it that are not in this hook
-      if (hook._important) resultKeys = resultKeys.filter(function (f) {
-        return keys.indexOf(f) > -1 && keysNoDP.indexOf(f) == -1;
+      var resultKeysMapped = resultKeys.map(function (key) {
+        return JSON.stringify(hookKEYSIndexes.map(function (index) {
+          return key[index];
+        }));
+      });
+
+      resultKeys = resultKeys.filter(function (_, i) {
+        return filteredKeys[resultKeysMapped[i]];
       });
     });
-    return resultKeys.map(function (d) {
-      var r = {};r[KEY] = d;return r;
+
+    return resultKeys.map(function (key) {
+      var r = {};KEYS.map(function (KEY, i) {
+        return r[KEY] = key[i];
+      });return r;
     });
   },
 
@@ -7735,19 +7813,15 @@ var Marker = _model2.default.extend({
   _getCachePath: function _getCachePath(keys) {
     //array of steps -- names of all frames
     var steps = this._parent.time.getAllSteps();
-    var cachePath = this.getClosestModel("locale").id + " - " + steps[0] + " - " + steps[steps.length - 1];
+    var cachePath = this.getClosestModel("locale").id + " - " + steps[0] + " - " + steps[steps.length - 1] + " - step:" + this._parent.time.step;
     this._dataCube = this._dataCube || this.getSubhooks(true);
     var dataLoading = false;
-    var grouping = this._getGrouping();
     utils.forEach(this._dataCube, function (hook, name) {
       if (hook._loadCall) dataLoading = true;
       cachePath = cachePath + "_" + hook._dataId + hook.which;
     });
     if (dataLoading) {
       return null;
-    }
-    if (grouping) {
-      cachePath = cachePath + "_grouping_" + grouping.key + ":" + grouping.grouping;
     }
     if (keys) {
       cachePath = cachePath + "_" + keys.join(",");
@@ -7760,12 +7834,10 @@ var Marker = _model2.default.extend({
     var result = {};
     utils.forEach(space, function (entities) {
       if (entities.grouping) {
-        result.grouping = entities.grouping;
-        result.key = entities.dim;
-        return false;
+        result[entities.dim] = { grouping: entities.grouping };
       }
     });
-    return result.grouping ? result : false;
+    return utils.isEmpty(result) ? false : result;
   },
   _getAllDimensions: function _getAllDimensions(opts) {
 
@@ -7922,64 +7994,21 @@ var Marker = _model2.default.extend({
           utils.forEach(pValues, function (values, hook) {
             dataBetweenFrames[hook] = {};
 
-            if (_this._multiDim && _this[hook].use == "indicator" && _this[hook].which !== _this._getFirstDimension({ type: "time" })) {
-              var hookDataBF = dataBetweenFrames[hook];
-              var query = _this[hook].dataSource.getData(_this[hook]._dataId, "query");
-              var TIME = query.animatable;
-              var KEY = query.select.key.slice(0);
-              if (TIME && KEY.indexOf(TIME) != -1) KEY.splice(KEY.indexOf(TIME), 1);
-
-              var lastIndex = KEY.length - 1;
-              var iterateKeys = function iterateKeys(firstKeyObject, lastKeyObject, firstKey, pValues, nValues, index) {
-                var keys = Object.keys(pValues);
-                for (var i = 0, j = keys.length; i < j; i++) {
-                  if (index == 0) {
-                    firstKey = keys[i]; //root level
-                  }
-                  if (index == lastIndex) {
-                    mapValue(hookDataBF, firstKey, keys[i], firstKeyObject, lastKeyObject, pValues[keys[i]], nValues[keys[i]]);
-                  } else {
-                    if (index == 0) {
-                      lastKeyObject = firstKeyObject = {};
-                    }
-                    var nextIndex = index + 1;
-                    lastKeyObject[keys[i]] = {};
-                    iterateKeys(firstKeyObject, lastKeyObject[keys[i]], firstKey, pValues[keys[i]], nValues[keys[i]], nextIndex);
-                  }
-                }
-              };
-
-              iterateKeys(null, null, null, values, nValues[hook], 0);
-            } else {
-              //loop across the entities
-              utils.forEach(values, function (val1, key) {
-                var val2 = nValues[hook][key];
-                if (utils.isDate(val1)) {
-                  dataBetweenFrames[hook][key] = time;
-                } else if (!utils.isNumber(val1)) {
-                  //we can be interpolating string values
-                  dataBetweenFrames[hook][key] = val1;
-                } else {
-                  //interpolation between number and null should rerurn null, not a value in between (#1350)
-                  dataBetweenFrames[hook][key] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
-                }
-              });
-            }
+            //loop across the entities
+            utils.forEach(values, function (val1, key) {
+              var val2 = nValues[hook][key];
+              if (utils.isDate(val1)) {
+                dataBetweenFrames[hook][key] = time;
+              } else if (!utils.isNumber(val1)) {
+                //we can be interpolating string values
+                dataBetweenFrames[hook][key] = val1;
+              } else {
+                //interpolation between number and null should rerurn null, not a value in between (#1350)
+                dataBetweenFrames[hook][key] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
+              }
+            });
           });
           cb(dataBetweenFrames);
-
-          function mapValue(hookDataBF, firstKey, lastKey, firstKeyObject, lastKeyObject, val1, val2) {
-            hookDataBF[firstKey] = firstKeyObject[firstKey];
-            if (utils.isDate(val1)) {
-              lastKeyObject[lastKey] = time;
-            } else if (!utils.isNumber(val1)) {
-              //we can be interpolating string values
-              lastKeyObject[lastKey] = val1;
-            } else {
-              //interpolation between number and null should rerurn null, not a value in between (#1350)
-              lastKeyObject[lastKey] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
-            }
-          }
         }, keys);
       }, keys);
     }
@@ -7988,7 +8017,7 @@ var Marker = _model2.default.extend({
     var _this = this;
     if (!this.cachedFrames) this.cachedFrames = {};
 
-    var KEY = this._getFirstDimension();
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
     var TIME = this._getFirstDimension({ type: "time" });
 
     if (!this.frameQueues) this.frameQueues = {}; //static queue of frames
@@ -8024,15 +8053,15 @@ var Marker = _model2.default.extend({
             steps.forEach(function (t) {
               _this.partialResult[cachePath][t][name] = {};
               keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = hook.which;
+                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = hook.which;
               });
             });
-          } else if (hook.which === KEY) {
+          } else if (KEYS.includes(hook.which)) {
             //special case: fill data with keys to data itself
             steps.forEach(function (t) {
               _this.partialResult[cachePath][t][name] = {};
               keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = key[KEY];
+                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = key[hook.which];
               });
             });
           } else if (hook.which === TIME) {
@@ -8040,7 +8069,7 @@ var Marker = _model2.default.extend({
             steps.forEach(function (t) {
               _this.partialResult[cachePath][t][name] = {};
               keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = new Date(t);
+                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = new Date(t);
               });
             });
           } else {
@@ -8090,7 +8119,7 @@ var Marker = _model2.default.extend({
         var promises = [];
         utils.forEach(_this._dataCube, function (hook, name) {
           //exception: we know that these are knonwn, no need to calculate these
-          if (hook.use !== "constant" && hook.which !== KEY && hook.which !== TIME) {
+          if (hook.use !== "constant" && !KEYS.includes(hook.which) && hook.which !== TIME) {
             (function (_hook, _name) {
               promises.push(new Promise(function (res, rej) {
                 _hook.getFrame(steps, forceFrame, selected).then(function (response) {
@@ -8117,7 +8146,7 @@ var Marker = _model2.default.extend({
   },
   listenFramesQueue: function listenFramesQueue(keys, cb) {
     var _this = this;
-    var KEY = this._getFirstDimension();
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
     var TIME = this._getFirstDimension({ type: "time" });
     var steps = this._parent.time.getAllSteps();
     var preparedFrames = {};
@@ -8128,7 +8157,7 @@ var Marker = _model2.default.extend({
     var isDataLoaded = false;
 
     utils.forEach(_this._dataCube, function (hook, name) {
-      if (!(hook.use === "constant" || hook.which === KEY || hook.which === TIME)) {
+      if (!(hook.use === "constant" || KEYS.includes(hook.which) || hook.which === TIME)) {
         if (!dataIds.includes(hook._dataId)) {
           dataIds.push(hook._dataId);
 
@@ -9689,12 +9718,16 @@ var DataModel = _model2.default.extend({
     if (this.version) query.version = this.version;
     var dataId = _datastorage.DataStorage.getDataId(query, this.readerObject, parsers);
     if (dataId) {
-      return Promise.resolve(dataId);
+      if (!query.grouping) return Promise.resolve(dataId);
+      return _datastorage.DataStorage.aggregateData(dataId, query, this.readerObject, this.getConceptprops());
     }
     utils.timeStamp("Vizabi Data: Loading Data");
     _events2.default.freezeAll(["hook_change", "resize"]);
 
     return _datastorage.DataStorage.loadFromReader(query, parsers, this.readerObject).then(function (dataId) {
+      if (!query.grouping) return dataId;
+      return _datastorage.DataStorage.aggregateData(dataId, query, _this.readerObject, _this.getConceptprops());
+    }).then(function (dataId) {
       _events2.default.unfreezeAll();
       return dataId;
     }).catch(function (error) {
@@ -10117,8 +10150,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1512982321837,
-  version: "0.27.0"
+  build: 1513413552525,
+  version: "0.28.0"
 };
 
 /***/ }),
@@ -13560,7 +13593,7 @@ var TimeModel = _dataconnected2.default.extend({
 
     this.allSteps[hash] = [];
     var is = this.getIntervalAndStep();
-    var curr = d3["utc" + is.interval].offset(this.start, this.offset);
+    var curr = d3["utc" + is.interval].count(this.start, this.end) < this.offset ? new Date(this.start) : d3["utc" + is.interval].offset(this.start, this.offset);
     while (+curr <= +this.end) {
       var _is = this.getIntervalAndStep();
       this.allSteps[hash].push(curr);
@@ -14636,7 +14669,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.27.0", build: 1512982321837 }
+  versionInfo: { version: "0.28.0", build: 1513413552525 }
 
 });
 
@@ -16106,12 +16139,16 @@ var ColorLegend = _component2.default.extend({
   ready: function ready() {
     var _this = this;
 
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     this.KEY = this.model.entities.getDimension();
     this.colorlegendDim = this.KEY;
     this.canShowMap = false;
 
     if (this.colorModel.isDiscrete() && this.colorModel.use !== "constant" && this.colorlegendMarker) {
       if (!this.colorlegendMarker._ready) return;
+
+      this.markerKeys = _this.model.marker.getKeys();
+      this.colorDataKey = _this.colorModel.getDataKeys()[0];
 
       this.colorlegendDim = this.colorModel.getColorlegendEntities().getDimension();
 
@@ -16367,16 +16404,20 @@ var ColorLegend = _component2.default.extend({
         var view = d3.select(this);
         var target = d[colorlegendDim];
 
-        var values = _this.colorModel.getValidItems()
+        var colorDataKey = _this.colorDataKey;
+
+        var filterHash = _this.colorModel.getValidItems()
         //filter so that only countries of the correct target remain
         .filter(function (f) {
           return f[_this.colorModel.which] == target;
-        })
-        //fish out the "key" field, leave the rest behind
-        .map(function (d) {
-          return utils.clone(d, [KEY]);
-        });
-        _this._highlight(values);
+        }).reduce(function (result, item) {
+          result[item[colorDataKey]] = true;
+          return result;
+        }, {});
+
+        _this._highlight(_this.markerKeys.filter(function (key) {
+          return filterHash[key[colorDataKey]];
+        }));
       },
       mouseout: function mouseout(d, i) {
         _this.moreOptionsHint.classed("vzb-hidden", true);
@@ -17940,9 +17981,7 @@ var Find = _dialog2.default.extend("find", {
     this._super();
 
     var _this = this;
-    var KEY = this.KEY = this.model.state.entities.getDimension();
     var KEYS = this.KEYS = utils.unique(this.model.state.marker._getAllDimensions({ exceptType: "time" }));
-    this.multiDim = KEYS.length > 1;
 
     this.importantHooks = _this.model.state.marker.getImportantHooks();
     var labelNames = _this.model.state.marker.getLabelHookNames();
@@ -17951,20 +17990,13 @@ var Find = _dialog2.default.extend("find", {
     this.model.state.marker.getFrame(this.time, function (values) {
       if (!values) return;
 
-      var data = _this.multiDim ? _this.model.state.marker.getKeysMD().map(function (pointer) {
-        pointer.brokenData = false;
-        pointer.name = KEYS.map(function (key, index) {
-          return values[labelNames[index]][pointer[key]];
+      var data = _this.model.state.marker.getKeys().map(function (d) {
+        d.brokenData = false;
+        d.name = KEYS.map(function (key) {
+          return values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key];
         }).join(", ");
 
-        return pointer;
-      }) : _this.model.state.marker.getKeys().map(function (d) {
-        var pointer = {};
-        pointer[KEY] = d[KEY];
-        pointer.brokenData = false;
-        pointer.name = values.label[d[KEY]];
-
-        return pointer;
+        return d;
       });
 
       //sort data alphabetically
@@ -18007,43 +18039,26 @@ var Find = _dialog2.default.extend("find", {
   },
   redrawDataPoints: function redrawDataPoints(values) {
     var _this = this;
-    var KEY = this.KEY;
     var KEYS = this.KEYS;
 
-    if (this.multiDim) {
-      _this.items.each(function (d) {
-        var view = d3.select(this).select("label");
-        d.brokenData = false;
+    _this.items.each(function (d) {
+      var view = d3.select(this).select("label");
+      d.brokenData = false;
 
-        utils.forEach(_this.importantHooks, function (name) {
-          var hook = values[name];
-          if (!hook) return;
-          var value = utils.getValueMD(d, hook, KEYS) || false;
-          if (!value && value !== 0) {
-            d.brokenData = true;
-            return false;
-          }
-        });
-
-        var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
-        view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
+      utils.forEach(_this.importantHooks, function (name) {
+        if (_this.model.state.marker[name].use == "constant") return;
+        var hook = values[name];
+        if (!hook) return;
+        var value = hook[utils.getKey(d, KEYS)];
+        if (!value && value !== 0) {
+          d.brokenData = true;
+          return false;
+        }
       });
-    } else {
-      _this.items.each(function (d) {
-        var view = d3.select(this).select("label");
 
-        d.brokenData = false;
-        utils.forEach(values, function (hook, name) {
-          //TODO: remove the hack with hardcoded hook names (see discussion in #1389)
-          if (name !== "color" && name !== "size_label" && _this.model.state.marker[name].use !== "constant" && !hook[d[KEY]] && hook[d[KEY]] !== 0) {
-            d.brokenData = true;
-          }
-        });
-
-        var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
-        view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
-      });
-    }
+      var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
+      view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
+    });
   },
   selectDataPoints: function selectDataPoints() {
     var _this = this;
@@ -25916,6 +25931,8 @@ var Storage = exports.Storage = function () {
 
         this.reader = function (query, parsers, defer) {
           var _queue = this;
+          // && !(_queue.readerObject.compatibility || {}).aggregateValues
+          var _query = query.grouping ? utils.clone(query, null, ["grouping"]) : query;
           return new function () {
             var _this3 = this;
 
@@ -25923,10 +25940,10 @@ var Storage = exports.Storage = function () {
             this.query = query;
             this.parsers = parsers;
             this.dataId = null;
-            _queue.readerObject.read(this.query, this.parsers).then(function (response) {
+            _queue.readerObject.read(_query, this.parsers).then(function (response) {
               //success reading
               _this3.checkQueryResponse(query, response);
-              _this3.dataId = utils.hashCode([query, _queue.readerObject._basepath]);
+              _this3.dataId = utils.hashCode([_query, _queue.readerObject._basepath]);
               _context._collection[_this3.dataId] = {};
               _context._collectionPromises[_this3.dataId] = {};
               var col = _context._collection[_this3.dataId];
@@ -25972,9 +25989,79 @@ var Storage = exports.Storage = function () {
       }();
     }
   }, {
-    key: "setGrouping",
-    value: function setGrouping(dataId, grouping) {
-      this._collection[dataId].grouping = grouping;
+    key: "aggregateData",
+    value: function aggregateData(dataId, query, readerObject, conceptProps) {
+      if (Object.keys(query.grouping).every(function (key) {
+        return query.grouping[key]["grouping"] === 1;
+      })) {
+        return Promise.resolve(dataId);
+      }
+
+      var queryMergeId = _getQueryId(query, readerObject._basepath, readerObject._lastModified, readerObject._name);
+      var dataIdAggr = utils.hashCode([query, readerObject._basepath]);
+
+      if (!this._collection[dataIdAggr] || this._collection[dataIdAggr]._queryMergeId !== queryMergeId) {
+        var grouping = query.grouping = query.grouping;
+        var queryKeys = query.select.key;
+        var queryMeasures = query.select.value.filter(function (value) {
+          return conceptProps[value]["concept_type"] === "measure";
+        });
+
+        var order = query.from === "datapoints" ? queryKeys.concat(query.animatable) : queryKeys.slice(0);
+
+        var groupKeys = Object.keys(grouping || {}).filter(function (key) {
+          return order.indexOf(key) !== -1 && queryKeys.indexOf(key) !== -1 && grouping[key]["grouping"] > 1;
+        });
+        var groupKeyCalcs = groupKeys.reduce(function (calcs, key) {
+          return function (group) {
+            calcs[key] = function (d) {
+              return ~~(+d / group) * group;
+            };
+            return calcs;
+          }(grouping[key]["grouping"]);
+        }, {});
+
+        var nest = d3.nest();
+        for (var i = 0; i < order.length; i++) {
+          nest = nest.key(function (k, groupKeyCalc) {
+            return groupKeyCalc ? function (d) {
+              return groupKeyCalc(d[k]);
+            } : function (d) {
+              return d[k];
+            };
+          }(order[i], groupKeyCalcs[order[i]]));
+        }
+
+        if (groupKeys.length) {
+          nest = nest.rollup(function (values) {
+            var obj = Object.assign({}, values[0]);
+            groupKeys.forEach(function (key) {
+              return obj[key] = groupKeyCalcs[key](obj[key]);
+            });
+            queryMeasures.forEach(function (measure) {
+              return obj[measure] = d3.sum(values, function (d) {
+                return +d[measure];
+              });
+            });
+            return [obj];
+          });
+        }
+
+        this._collection[dataIdAggr] = {};
+        this._collectionPromises[dataIdAggr] = {};
+        var col = this._collection[dataIdAggr];
+        col.data = utils.nestArrayToValues(nest.entries(this._collection[dataId]["data"]));
+        col.valid = {};
+        col.nested = {};
+        col.unique = {};
+        col.limits = {};
+        col.frames = {};
+        col.haveNoDataPointsPerKey = {};
+        col.query = query;
+        col._queryMergeId = queryMergeId;
+      }
+
+      return Promise.resolve(dataIdAggr);
     }
   }, {
     key: "getData",
@@ -26091,21 +26178,33 @@ var Storage = exports.Storage = function () {
       // Nests are objects of key-value pairs
       // Example:
       //
-      // order = ["geo", "time"];
+      // order = ["geo", "gender", "time"];
       //
       // original_data = [
-      //   { geo: "afg", time: 1800, gdp: 23424, lex: 23}
-      //   { geo: "afg", time: 1801, gdp: 23424, lex: null}
-      //   { geo: "chn", time: 1800, gdp: 23587424, lex: 46}
-      //   { geo: "chn", time: 1801, gdp: null, lex: null}
+      //   { geo: "afg", gender: "male", time: 1800, gdp: 23424, lex: 23}
+      //   { geo: "afg", gender: "female", time: 1800, gdp: 23424, lex: 23}
+      //   { geo: "afg", gender: "male", time: 1801, gdp: 23424, lex: null}
+      //   { geo: "afg", gender: "female", time: 1801, gdp: 23424, lex: null}
+      //   { geo: "chn", gender: "male", time: 1800, gdp: 23587424, lex: 46}
+      //   { geo: "chn", gender: "female", time: 1800, gdp: 23587424, lex: 46}
+      //   { geo: "chn", gender: "male", time: 1801, gdp: null, lex: null}
+      //   { geo: "chn", gender: "female", time: 1801, gdp: null, lex: null}
       // ];
       //
       // nested_data = {
-      //   afg: {
+      //   ["afg","male"]: {
       //     1800: {gdp: 23424, lex: 23},
       //     1801: {gdp: 23424, lex: null}
       //   }
-      //   chn: {
+      //   ["afg","female"]: {
+      //     1800: {gdp: 23424, lex: 23},
+      //     1801: {gdp: 23424, lex: null}
+      //   }
+      //   ["chn","male"]: {
+      //     1800: {gdp: 23587424, lex: 46 },
+      //     1801: {gdp: null, lex: null }
+      //   }
+      //   ["chn","female"]: {
       //     1800: {gdp: 23587424, lex: 46 },
       //     1801: {gdp: null, lex: null }
       //   }
@@ -26120,7 +26219,7 @@ var Storage = exports.Storage = function () {
         }(order[i]));
       }
 
-      return utils.nestArrayToObj(nest.entries(this._collection[dataId]["data"]));
+      return utils.nestArrayToObjWithFlatKeys(nest.entries(this._collection[dataId]["data"]));
     }
   }, {
     key: "getFrames",
@@ -26383,28 +26482,21 @@ var Storage = exports.Storage = function () {
         if (TIME && KEY.indexOf(TIME) != -1) KEY.splice(KEY.indexOf(TIME), 1);
 
         var filtered = {};
-        var k = void 0,
-            c = void 0,
-            items = void 0,
+        var items = void 0,
             itemsIndex = void 0,
             oneFrame = void 0,
             method = void 0,
             use = void 0,
             next = void 0;
 
-        var entitiesByKey = {};
-        if (KEY.length > 1) {
-          for (k = 1; k < KEY.length; k++) {
-            var _nested = _this.getData(dataId, "nested", [KEY[k]].concat([TIME]));
-            entitiesByKey[KEY[k]] = Object.keys(_nested);
-          }
-        }
-
         // We _nest_ the flat dataset in two levels: first by “key” (example: geo), then by “animatable” (example: year)
         // See the _getNested function for more details
-        var nested = _this.getData(dataId, "nested", KEY.concat([TIME]));
-        keys = keys ? keys : Object.keys(nested);
-        entitiesByKey[KEY[0]] = keys;
+        var nested = _this.getData(dataId, "nested", KEY.concat([TIME]), indicatorsDB);
+        var nestedKeys = Object.keys(nested);
+        keys = keys ? keys : nestedKeys.map(function (k) {
+          return JSON.parse(k).join(",");
+        });
+
         // Get the list of columns that are in the dataset, exclude key column and animatable column
         // Example: [“lex”, “gdp”, “u5mr"]
         var query = _this._collection[dataId].query;
@@ -26414,32 +26506,22 @@ var Storage = exports.Storage = function () {
 
         var cLength = columns.length;
 
-        var lastIndex = KEY.length - 1;
-        function createFiltered(parent, index) {
-          var keys = entitiesByKey[KEY[index]];
-          for (var i = 0, j = keys.length; i < j; i++) {
-            parent[keys[i]] = {};
-            if (index == lastIndex) {
-              for (c = 0; c < cLength; c++) {
-                parent[keys[i]][columns[c]] = null;
-              }
-            } else {
-              var nextIndex = index + 1;
-              createFiltered(parent[keys[i]], nextIndex);
-            }
+        var key = void 0,
+            nestedKey = void 0,
+            k = void 0,
+            column = void 0,
+            c = void 0;
+
+        for (k = 0; k < keys.length; k++) {
+          filtered[keys[k]] = {};
+          for (c = 0; c < cLength; c++) {
+            filtered[keys[k]][columns[c]] = null;
           }
         }
 
-        createFiltered(filtered, 0);
-
         for (c = 0; c < cLength; c++) {
           _this._collection[dataId].haveNoDataPointsPerKey[columns[c]] = {};
-        }
-        var _ref = _this._collection[dataId].grouping || {},
-            groupKey = _ref.key,
-            groupValue = _ref.grouping;
-
-        var buildFrame = function buildFrame(frameName, entitiesByKey, KEY, dataId, callback) {
+        }var buildFrame = function buildFrame(frameName, keys, dataId, callback) {
           var frame = {};
           if (query.from !== "datapoints") {
             // we populate the regular set with a single value (unpack properties into constant time series)
@@ -26453,127 +26535,81 @@ var Storage = exports.Storage = function () {
                 //check data for properties with missed data. If founded then write key to haveNoDataPointsPerKey with
                 //count of broken datapoints
                 if (d[columns[c]] == null) {
-                  _this._collection[dataId].haveNoDataPointsPerKey[columns[c]][d[KEY[0]]] = dataset.length;
+                  _this._collection[dataId].haveNoDataPointsPerKey[columns[c]][JSON.stringify([d[KEY[0]]])] = dataset.length;
                 }
               }
             }
           } else {
-            var _iterateKeys = function _iterateKeys(lastKeyObject, nested, filtered, index) {
-              var _lastKeyObject = {};
-              var keys = entitiesByKey[KEY[index]];
-              for (var _i = 0, j = keys.length, key; _i < j; _i++) {
-                key = keys[_i];
-                if (nested[key]) {
-                  if (index == lastIndex) {
-                    for (c = 0; c < cLength; c++) {
-                      lastKeyObject[c][key] = _mapValue(columns[c], nested[key], filtered[key], key);
-                    }
-                  } else {
-                    for (c = 0; c < cLength; c++) {
-                      _lastKeyObject[c] = lastKeyObject[c][key] = {};
-                    }
-                    _iterateKeys(_lastKeyObject, nested[key], filtered[key], index + 1);
-                  }
-                }
-              }
-            };
-
-            var _iterateKeysWithGrouping = function _iterateKeysWithGrouping(lastKeyObject, nested, filtered, index) {
-              var _lastKeyObject = {};
-              var keys = entitiesByKey[KEY[index]];
-              var grouping = KEY[index] === groupKey;
-              for (var _i2 = 0, j = keys.length, key, gKey; _i2 < j; _i2++) {
-                key = keys[_i2];
-                gKey = grouping ? ~~(+key / groupValue) * groupValue : key;
-                if (index == lastIndex) {
-                  var value = void 0;
-                  for (c = 0; c < cLength; c++) {
-                    value = _mapValue(columns[c], nested[key], filtered[key], key);
-                    if (value !== null) {
-                      lastKeyObject[c][gKey] = (lastKeyObject[c][gKey] || 0) + value;
-                    } else if (lastKeyObject[c][gKey] === undefined) {
-                      lastKeyObject[c][gKey] = value;
-                    }
-                  }
-                } else {
-                  for (c = 0; c < cLength; c++) {
-                    _lastKeyObject[c] = lastKeyObject[c][gKey] = lastKeyObject[c][gKey] || {};
-                  }
-                  _iterateKeysWithGrouping(_lastKeyObject, nested[key], filtered[key], index + 1);
-                }
-              }
-            };
-
-            var _mapValue = function _mapValue(column, nested, filtered, key) {
-
-              //If there are some points in the array with valid numbers, then
-              //interpolate the missing point and save it to the “clean regular set”
-              method = indicatorsDB[column] ? indicatorsDB[column].interpolation : null;
-
-              // Inside of this 3-level loop is the following:
-              if (nested && nested[frameName] && (nested[frameName][0][column] || nested[frameName][0][column] === 0)) {
-
-                // Check if the piece of data for [this key][this frame][this column] exists
-                // and is valid. If so, then save it into a “clean regular set”
-                return nested[frameName][0][column];
-              }
-
-              // the piece of data is not available and the interpolation is set to "none"
-              if (method === "none") return null;
-
-              // If the piece of data doesn’t exist or is invalid, then we need to inter- or extapolate it
-
-              // Let’s take a slice of the nested set, corresponding to the current key nested[key]
-              // As you remember it has the data nested further by frames.
-              // At every frame the data in the current column might or might not exist.
-              // Thus, let’s filter out all the frames which don’t have the data for the current column.
-              // Let’s cache it because we will most likely encounter another gap in the same column for the same key
-              items = filtered[column];
-              if (items === null) {
-                var givenFrames = Object.keys(nested);
-                items = new Array(givenFrames.length);
-                itemsIndex = 0;
-
-                for (var z = 0, length = givenFrames.length; z < length; z++) {
-                  oneFrame = nested[givenFrames[z]];
-                  if (oneFrame[0][column] || oneFrame[0][column] === 0) items[itemsIndex++] = oneFrame[0];
-                }
-
-                //trim the length of the array
-                items.length = itemsIndex;
-
-                if (itemsIndex === 0) {
-                  filtered[column] = [];
-                } else {
-                  filtered[column] = items;
-                }
-
-                if (items.length == 0) _this._collection[dataId].haveNoDataPointsPerKey[column][key] = items.length;
-              }
-
-              // Now we are left with a fewer frames in the filtered array. Let's check its length.
-              //If the array is empty, then the entire column is missing for the key
-              //So we let the key have missing values in this column for all frames
-              if (items && items.length > 0) {
-                next = null;
-                return utils.interpolatePoint(items, use, column, next, TIME, frameName, method);
-              }
-            };
-
             // If there is a time field in query.where clause, then we are dealing with indicators in this request
 
             // Put together a template for cached filtered sets (see below what's needed)
 
             // Now we run a 3-level loop: across frames, then across keys, then and across data columns (lex, gdp)
 
-            var firstKeyObject = {};
             for (c = 0; c < cLength; c++) {
-              firstKeyObject[c] = frame[columns[c]] = {};
-            }if (groupKey) {
-              _iterateKeysWithGrouping(firstKeyObject, nested, filtered, 0);
-            } else {
-              _iterateKeys(firstKeyObject, nested, filtered, 0);
-            }
+              frame[columns[c]] = {};
+            }for (k = 0; k < keys.length; k++) {
+              key = keys[k];
+              nestedKey = nestedKeys[k];
+
+              for (c = 0; c < cLength; c++) {
+                column = columns[c];
+
+                //If there are some points in the array with valid numbers, then
+                //interpolate the missing point and save it to the “clean regular set”
+                method = indicatorsDB[column] ? indicatorsDB[column].interpolation : null;
+
+                // Inside of this 3-level loop is the following:
+                if (nested[nestedKey] && nested[nestedKey][frameName] && (nested[nestedKey][frameName][0][column] || nested[nestedKey][frameName][0][column] === 0)) {
+
+                  // Check if the piece of data for [this key][this frame][this column] exists
+                  // and is valid. If so, then save it into a “clean regular set”
+                  frame[column][key] = nested[nestedKey][frameName][0][column];
+                } else if (method === "none") {
+
+                  // the piece of data is not available and the interpolation is set to "none"
+                  frame[column][key] = null;
+                } else {
+                  // If the piece of data doesn’t exist or is invalid, then we need to inter- or extapolate it
+
+                  // Let’s take a slice of the nested set, corresponding to the current key nested[key]
+                  // As you remember it has the data nested further by frames.
+                  // At every frame the data in the current column might or might not exist.
+                  // Thus, let’s filter out all the frames which don’t have the data for the current column.
+                  // Let’s cache it because we will most likely encounter another gap in the same column for the same key
+                  items = filtered[key][column];
+                  if (items === null) {
+                    var givenFrames = Object.keys(nested[nestedKey]);
+                    items = new Array(givenFrames.length);
+                    itemsIndex = 0;
+
+                    for (var z = 0, length = givenFrames.length; z < length; z++) {
+                      oneFrame = nested[nestedKey][givenFrames[z]];
+                      if (oneFrame[0][column] || oneFrame[0][column] === 0) items[itemsIndex++] = oneFrame[0];
+                    }
+
+                    //trim the length of the array
+                    items.length = itemsIndex;
+
+                    if (itemsIndex === 0) {
+                      filtered[key][column] = [];
+                    } else {
+                      filtered[key][column] = items;
+                    }
+
+                    if (items.length == 0) _this._collection[dataId].haveNoDataPointsPerKey[column][nestedKey] = items.length;
+                  }
+
+                  // Now we are left with a fewer frames in the filtered array. Let's check its length.
+                  //If the array is empty, then the entire column is missing for the key
+                  //So we let the key have missing values in this column for all frames
+                  if (items && items.length > 0) {
+                    next = null;
+                    frame[column][key] = utils.interpolatePoint(items, use, column, next, TIME, frameName, method);
+                  }
+                }
+              } //loop across columns
+            } //loop across keys
           }
 
           // save the calcualted frame to global datamanager cache
@@ -26590,7 +26626,7 @@ var Storage = exports.Storage = function () {
           _this._collectionPromises[dataId][whatId]["queue"].getNext().then(function (nextFrame) {
             if (nextFrame) {
               utils.defer(function () {
-                buildFrame(nextFrame, entitiesByKey, KEY, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
+                buildFrame(nextFrame, keys, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
               });
             } else {
               //this goes to marker.js as a "response"
@@ -26600,7 +26636,7 @@ var Storage = exports.Storage = function () {
         };
         _this._collectionPromises[dataId][whatId]["queue"].getNext().then(function (nextFrame) {
           if (nextFrame) {
-            buildFrame(nextFrame, entitiesByKey, KEY, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
+            buildFrame(nextFrame, keys, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
           }
         });
       });
@@ -26608,11 +26644,7 @@ var Storage = exports.Storage = function () {
   }, {
     key: "_getCacheKey",
     value: function _getCacheKey(dataId, frames, keys) {
-      var result = frames[0] + " - " + frames[frames.length - 1];
-      var grouping = this._collection[dataId]["grouping"];
-      if (grouping) {
-        result = result + "_grouping(" + grouping.key + ":" + grouping.grouping + ")";
-      }
+      var result = frames[0] + " - " + frames[frames.length - 1] + " (" + frames.length + ")";
       if (keys) {
         result = result + "_" + keys.join();
       }
@@ -27028,7 +27060,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.27.0", build: 1512982321837 }
+  versionInfo: { version: "0.28.0", build: 1513413552525 }
 
 });
 
@@ -27152,7 +27184,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.27.0", build: 1512982321837 }
+  versionInfo: { version: "0.28.0", build: 1513413552525 }
 
 });
 
@@ -27846,7 +27878,7 @@ var profiles = {
   },
   medium: {
     margin: {
-      top: 10,
+      top: 0,
       right: 15,
       bottom: 10,
       left: 50
@@ -27856,7 +27888,7 @@ var profiles = {
   },
   large: {
     margin: {
-      top: 5,
+      top: -5,
       right: 15,
       bottom: 10,
       left: 75
@@ -27893,9 +27925,6 @@ var TimeSlider = _component2.default.extend({
     this.model_expects = [{
       name: "time",
       type: "time"
-    }, {
-      name: "entities",
-      type: "entities"
     }, {
       name: "marker",
       type: "marker"
@@ -27958,11 +27987,14 @@ var TimeSlider = _component2.default.extend({
     // Same constructor as the superclass
     this._super(model, context);
 
+    this.profiles = utils.deepClone(profiles);
+    this.presentationProfileChanges = utils.deepClone(presentationProfileChanges);
+
     if ((this.model.ui.chart || {}).margin) {
       this.model.on("change:ui.chart.margin", function (evt, path) {
         var layoutProfile = _this.getLayoutProfile();
         if (layoutProfile !== "small") {
-          var profile = profiles[layoutProfile];
+          var profile = _this.profiles[layoutProfile];
           profile.margin.left = _this.model.ui.chart.margin.left;
         }
         if (_this.slide) {
@@ -28090,7 +28122,7 @@ var TimeSlider = _component2.default.extend({
     // special for linechart: resize timeslider to match time x-axis length
     this.parent.on("myEvent", function (evt, params) {
       var layoutProfile = _this.getLayoutProfile();
-      var profile = profiles[layoutProfile];
+      var profile = _this.profiles[layoutProfile];
 
       if (params.profile && params.profile.margin) {
         profile.margin = params.profile.margin;
@@ -28151,7 +28183,7 @@ var TimeSlider = _component2.default.extend({
 
     this.model.time.pause();
 
-    this.profile = this.getActiveProfile(profiles, presentationProfileChanges);
+    this.profile = this.getActiveProfile(this.profiles, this.presentationProfileChanges);
 
     var slider_w = parseInt(this.slider_outer.style("width"), 10) || 0;
     var slider_h = parseInt(this.slider_outer.style("height"), 10) || 0;
@@ -28205,10 +28237,10 @@ var TimeSlider = _component2.default.extend({
       }, null, false /*make change non-persistent for URL and history*/);
       return;
     }
-    var KEY = _this.model.entities.getDimension();
+    var KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     var proms = [];
     utils.forEach(select, function (entity) {
-      proms.push(_this.model.marker.getEntityLimits(entity[KEY]));
+      proms.push(_this.model.marker.getEntityLimits(utils.getKey(entity, KEYS)));
     });
     Promise.all(proms).then(function (limits) {
       if (_setSelectedLimitsId != _this._setSelectedLimitsId) return;
@@ -32812,7 +32844,7 @@ var label = function label(context) {
         container.call(labelDragger).on("mouseover", function (d) {
           if (utils.isTouchDevice()) return;
           _this.model.marker.highlightMarker(d);
-          var KEY = _this.KEY || _this.model.entities.getDimension();
+          var KEY = _this.KEY || _this.context.KEY;
           // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
           _this.entityLabels.sort(function (a, b) {
             return a[KEY] != d[KEY] ? -1 : 1;
@@ -32825,7 +32857,7 @@ var label = function label(context) {
         }).on("click", function (d) {
           if (!utils.isTouchDevice()) return;
           var cross = d3.select(this).selectAll("." + _cssPrefix + "-label-x");
-          var KEY = _this.KEY || _this.model.entities.getDimension();
+          var KEY = _this.KEY || _this.context.KEY;
           var hidden = cross.classed("vzb-transparent");
           if (hidden) {
             // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
@@ -33044,7 +33076,8 @@ var Labels = _class2.default.extend({
     this.labelSizeTextScale = null;
   },
   ready: function ready() {
-    this.KEY = this.context.model.entities.getDimension();
+    this.KEYS = this.context.KEYS;
+    this.KEY = this.context.KEY;
     this.updateIndicators();
     this.updateLabelSizeLimits();
     //this.updateLabelsOnlyTextSize();
@@ -33074,7 +33107,8 @@ var Labels = _class2.default.extend({
       _this.updateLabelsOnlyTextSize();
     });
 
-    this.KEY = this.context.model.entities.getDimension();
+    this.KEYS = this.context.KEYS;
+    this.KEY = this.context.KEY;
 
     this.cached = {};
 
@@ -33144,13 +33178,19 @@ var Labels = _class2.default.extend({
   },
   selectDataPoints: function selectDataPoints() {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     var _cssPrefix = this.options.CSS_PREFIX;
 
-    this.entityLabels = this.labelsContainer.selectAll("." + _cssPrefix + "-entity").data(_this.model.marker.select, function (d) {
+    var select = _this.model.marker.select.map(function (d) {
+      var p = utils.clone(d, KEYS);
+      p[KEY] = utils.getKey(d, KEYS);
+      return p;
+    });
+    this.entityLabels = this.labelsContainer.selectAll("." + _cssPrefix + "-entity").data(select, function (d) {
       return d[KEY];
     });
-    this.entityLines = this.linesContainer.selectAll("g.entity-line." + _cssPrefix + "-entity").data(_this.model.marker.select, function (d) {
+    this.entityLines = this.linesContainer.selectAll("g.entity-line." + _cssPrefix + "-entity").data(select, function (d) {
       return d[KEY];
     });
 
@@ -33195,6 +33235,7 @@ var Labels = _class2.default.extend({
   },
   updateLabel: function updateLabel(d, index, cache, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide) {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     if (d[KEY] == _this.druging) return;
 
@@ -33214,7 +33255,7 @@ var Labels = _class2.default.extend({
 
       if (cached.labelX_ == null || cached.labelY_ == null) {
         var select = utils.find(_this.model.marker.select, function (f) {
-          return f[KEY] == d[KEY];
+          return utils.getKey(f, KEYS) == d[KEY];
         });
         cached.labelOffset = select.labelOffset || [0, 0];
       }
@@ -33334,11 +33375,12 @@ var Labels = _class2.default.extend({
   },
   updateLabelsOnlyTextSize: function updateLabelsOnlyTextSize() {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     this.entityLabels.each(function (d, index) {
       var cached = _this.cached[d[KEY]];
-      _this._updateLabelSize(d, index, null, d3.select(this), _this.context.frame.size_label[d[KEY]]);
+      _this._updateLabelSize(d, index, null, d3.select(this), _this.context.frame.size_label[utils.getKey(d, KEYS)]);
       var lineGroup = _this.entityLines.filter(function (f) {
         return f[KEY] == d[KEY];
       });

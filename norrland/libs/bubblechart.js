@@ -85,7 +85,7 @@ var _component2 = _interopRequireDefault(_component);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "1.0.25", build: 1511785908529 };
+var VERSION_INFO = { version: "1.0.25", build: 1513414820356 };
 
 exports.default = Vizabi.Tool.extend("BubbleChart", {
 
@@ -103,11 +103,11 @@ exports.default = Vizabi.Tool.extend("BubbleChart", {
     this.components = [{
       component: _component2.default,
       placeholder: ".vzb-tool-viz",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui"] //pass models to component
+      model: ["state.time", "state.marker", "locale", "ui"] //pass models to component
     }, {
       component: Vizabi.Component.get("timeslider"),
       placeholder: ".vzb-tool-timeslider",
-      model: ["state.time", "state.entities", "state.marker", "ui"]
+      model: ["state.time", "state.marker", "ui"]
     }, {
       component: Vizabi.Component.get("dialogs"),
       placeholder: ".vzb-tool-dialogs",
@@ -342,9 +342,6 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       name: "time",
       type: "time"
     }, {
-      name: "entities",
-      type: "entities"
-    }, {
       name: "marker",
       type: "marker"
     }, {
@@ -363,12 +360,24 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       },
       "change:time.start": function changeTimeStart(evt, original) {
         if (!_this._readyOnce || _this.model.time.splash) return;
+        if (["color", "axis_x", "axis_y"].filter(function (hook) {
+          return _this.model.marker[hook].which == _this.model.time.dim;
+        }).length) {
+          _this.ready();
+          return;
+        };
         _this._trails.create().then(function () {
           _this._trails.run(["findVisible", "reveal", "opacityHandler"]);
         });
       },
       "change:time.end": function changeTimeEnd(evt, original) {
         if (!_this._readyOnce || _this.model.time.splash) return;
+        if (["color", "axis_x", "axis_y"].filter(function (hook) {
+          return _this.model.marker[hook].which == _this.model.time.dim;
+        }).length) {
+          _this.ready();
+          return;
+        };
         _this._trails.create().then(function () {
           _this._trails.run(["findVisible", "reveal", "opacityHandler"]);
         });
@@ -433,7 +442,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       },
       "change:marker.select": function changeMarkerSelect(evt, path) {
         if (!_this._readyOnce || !_this.entityBubbles) return;
-        //console.log("EVENT change:entities:select");
+        //console.log("EVENT change:marker:select");
 
         //disable trails if too many items get selected at once
         //otherwise it's too much waiting time
@@ -464,7 +473,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
           }
           return;
         }
-        //console.log("EVENT change:entities:highlight");
+        //console.log("EVENT change:marker:highlight");
         _this.highlightDataPoints();
       },
       "change:time.value": function changeTimeValue() {
@@ -544,7 +553,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
           svg.classed("vzb-panhand", false);
         }
       },
-      "change:entities.dim": function changeEntitiesDim() {
+      "change:marker.space": function changeMarkerSpace() {
         if (_this.someHighlighted) {
           _this.model.marker.clearHighlighted();
         }
@@ -712,8 +721,11 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       }
     });
 
-    this.KEY = this.model.entities.getDimension();
     this.TIMEDIM = this.model.time.getDimension();
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
+    this.KEY = this.KEYS.join(",");
+    this.dataKeys = this.model.marker.getDataKeysPerHook();
+    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.updateUIStrings();
 
@@ -728,7 +740,11 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
   },
   ready: function ready() {
     var _this = this;
-    this.KEY = this.model.entities.getDimension();
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
+    this.KEY = this.KEYS.join(",");
+    this.dataKeys = this.model.marker.getDataKeysPerHook();
+    this.labelNames = this.model.marker.getLabelHookNames();
+
     this.updateUIStrings();
     var endTime = this.model.time.end;
     this.updateIndicators();
@@ -949,17 +965,19 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
    */
   updateEntities: function updateEntities() {
     var _this = this;
+    var dataKeys = this.dataKeys;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     var TIMEDIM = this.TIMEDIM;
 
     var getKeys = function getKeys(prefix) {
       prefix = prefix || "";
       return _this.model.marker.getKeys().map(function (d) {
-        var pointer = {};
-        pointer[KEY] = d[KEY];
+        var pointer = Object.assign({}, d);
+        //pointer[KEY] = d[KEY];
         pointer[TIMEDIM] = endTime;
-        pointer.sortValue = _this.frame.size[d[KEY]] || 0;
-        pointer[KEY] = prefix + d[KEY];
+        pointer.sortValue = _this.frame.size[utils.getKey(d, dataKeys.size)] || 0;
+        pointer[KEY] = prefix + utils.getKey(d, KEYS);
         return pointer;
       }).sort(function (a, b) {
         return b.sortValue - a.sortValue;
@@ -1008,6 +1026,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
   },
   unselectBubblesWithNoData: function unselectBubblesWithNoData(entities) {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     if (!this.model.marker.select.length) return;
 
@@ -1017,17 +1036,18 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     });
 
     this.model.marker.select.forEach(function (d) {
-      if (keys.indexOf(d[KEY]) !== -1) _select.push(d);
+      if (keys.indexOf(utils.getKey(d, KEYS)) !== -1) _select.push(d);
     });
 
     if (_select.length !== _this.model.marker.select.length) _this.model.marker.select = _select;
   },
   _reorderEntities: function _reorderEntities() {
     var _this = this;
+    var dataKeys = this.dataKeys;
     var KEY = this.KEY;
     this.bubbleContainer.selectAll(".vzb-bc-entity").sort(function (a, b) {
-      var sizeA = _this.frame.size[a[KEY]];
-      var sizeB = _this.frame.size[b[KEY]];
+      var sizeA = _this.frame.size[utils.getKey(a, dataKeys.size)];
+      var sizeB = _this.frame.size[utils.getKey(b, dataKeys.size)];
 
       if (typeof sizeA === "undefined" && typeof sizeB !== "undefined") return -1;
       if (typeof sizeA !== "undefined" && typeof sizeB === "undefined") return 1;
@@ -1122,14 +1142,14 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         xAxisTitleBottomMargin: 4
       },
       large: {
-        margin: { top: 15, bottom: marginScaleH(20, 0.03), left: marginScaleW(31, 0.015), right: 20 },
+        margin: { top: 15, bottom: marginScaleH(30, 0.03), left: marginScaleW(31, 0.015), right: 20 },
         leftMarginRatio: 1.8,
         padding: 2,
         minRadiusPx: 1,
         maxRadiusEm: this.model.ui.chart.maxRadiusEm || 0.05,
         infoElHeight: 22,
         yAxisTitleBottomMargin: 3, //marginScaleH(4, 0.01),
-        xAxisTitleBottomMargin: marginScaleH(-10, 0.01),
+        xAxisTitleBottomMargin: marginScaleH(0, 0.01),
         hideSTitle: true
       }
     };
@@ -1259,9 +1279,10 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       var titleBBox = this.yTitleEl.node().getBBox();
       var t = utils.transform(this.yTitleEl.node());
       var hTranslate = isRTL ? titleBBox.x + t.translateX - infoElHeight * 1.4 : titleBBox.x + t.translateX + titleBBox.width + infoElHeight * 0.4;
+      var vTranslate = isRTL ? t.translateY + infoElHeight * 1.4 + titleBBox.width * 0.5 : t.translateY - infoElHeight * 0.4 - titleBBox.width * 0.5;
 
       this.yInfoEl.select("svg").attr("width", infoElHeight + "px").attr("height", infoElHeight + "px");
-      this.yInfoEl.attr("transform", layoutProfile !== "small" ? "translate(" + (t.translateX - infoElHeight * 0.8) + "," + (t.translateY - infoElHeight * 0.4 - titleBBox.width * 0.5) + ") rotate(-90)" : "translate(" + hTranslate + "," + (t.translateY - infoElHeight * 0.8) + ")");
+      this.yInfoEl.attr("transform", layoutProfile !== "small" ? "translate(" + (t.translateX - infoElHeight * 0.8) + "," + vTranslate + ") rotate(-90)" : "translate(" + hTranslate + "," + (t.translateY - infoElHeight * 0.8) + ")");
     }
 
     if (this.xInfoEl.select("svg").node()) {
@@ -1324,6 +1345,8 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     if (!this.entityBubbles) return utils.warn("redrawDataPointsOnlyColors(): no entityBubbles defined. likely a premature call, fix it!");
 
     var valuesNow = void 0;
+    var dataKeys = this.dataKeys;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     var time = this.model.time.value;
@@ -1339,7 +1362,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
         var selected = _this.model.marker.isSelected(d);
 
-        var valueC = selected ? valuesNow.color[d[KEY]] : valuesLocked.color[d[KEY]];
+        var valueC = selected ? valuesNow.color[utils.getKey(d, dataKeys.color)] : valuesLocked.color[utils.getKey(d, dataKeys.color)];
 
         var scaledC = valueC != null ? _this.cScale(valueC) : _this.COLOR_WHITEISH;
 
@@ -1349,7 +1372,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         if (selected) {
 
           var select = utils.find(_this.model.marker.select, function (f) {
-            return f[KEY] == d[KEY];
+            return utils.getKey(f, KEYS) == d[KEY];
           });
 
           var trailStartTime = _this.model.time.parse("" + select.trailStartTime);
@@ -1361,7 +1384,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
             if (!_this.model.ui.chart.trails || trailStartTime - _this.time == 0) {
               cache.scaledC0 = scaledC;
             } else {
-              var _valueC = valuesTrailStart.color[d[KEY]];
+              var _valueC = valuesTrailStart.color[utils.getKey(d, dataKeys.color)];
               cache.scaledC0 = _valueC != null ? _this.cScale(_valueC) : _this.COLOR_WHITEISH;
             }
 
@@ -1375,6 +1398,8 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     var _this = this;
 
     var valuesNow = void 0;
+    var dataKeys = this.dataKeys;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     var time = this.model.time.value;
@@ -1390,7 +1415,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
         var selected = _this.model.marker.isSelected(d);
 
-        var valueS = selected ? valuesNow.size[d[KEY]] : valuesLocked.size[d[KEY]];
+        var valueS = selected ? valuesNow.size[utils.getKey(d, dataKeys.size)] : valuesLocked.size[utils.getKey(d, dataKeys.size)];
         if (valueS == null) return;
 
         var scaledS = utils.areaToRadius(_this.sScale(valueS));
@@ -1400,7 +1425,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         if (selected) {
 
           var select = utils.find(_this.model.marker.select, function (f) {
-            return f[KEY] == d[KEY];
+            return utils.getKey(f, KEYS) == d[KEY];
           });
 
           var trailStartTime = _this.model.time.parse("" + select.trailStartTime);
@@ -1412,7 +1437,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
             if (!_this.model.ui.chart.trails || trailStartTime - _this.time == 0) {
               cache.scaledS0 = scaledS;
             } else {
-              cache.scaledS0 = utils.areaToRadius(_this.sScale(valuesTrailStart.size[d[KEY]]));
+              cache.scaledS0 = utils.areaToRadius(_this.sScale(valuesTrailStart.size[utils.getKey(d, dataKeys.size)]));
             }
 
             _this._labels.updateLabelOnlyPosition(d, index, cache);
@@ -1460,16 +1485,16 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
   //redraw Data Points
   _updateBubble: function _updateBubble(d, values, index, view, duration) {
     var _this = this;
-    var KEY = this.KEY;
+    var dataKeys = this.dataKeys;
 
     var showhide = false;
 
-    var valueY = values.axis_y[d[KEY]];
-    var valueX = values.axis_x[d[KEY]];
-    var valueS = values.size[d[KEY]];
-    var valueL = values.label[d[KEY]];
-    var valueC = values.color[d[KEY]];
-    var valueLST = values.size_label[d[KEY]];
+    var valueY = values.axis_y[utils.getKey(d, dataKeys.axis_y)];
+    var valueX = values.axis_x[utils.getKey(d, dataKeys.axis_x)];
+    var valueS = values.size[utils.getKey(d, dataKeys.size)];
+    var valueL = values.label[utils.getKey(d, dataKeys.label)];
+    var valueC = values.color[utils.getKey(d, dataKeys.color)];
+    var valueLST = values.size_label[utils.getKey(d, dataKeys.size_label)];
 
     // check if fetching data succeeded
     if (!valueL && valueL !== 0 || !valueY && valueY !== 0 || !valueX && valueX !== 0 || !valueS && valueS !== 0) {
@@ -1530,10 +1555,11 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         r: scaledS
       });
     } // data exists
-    _this._updateLabel(d, index, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide);
+    _this._updateLabel(d, index, values, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide);
   },
-  _updateLabel: function _updateLabel(d, index, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide) {
+  _updateLabel: function _updateLabel(d, index, values, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide) {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     // only for selected markers
@@ -1542,7 +1568,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       var cache = {};
 
       var select = utils.find(_this.model.marker.select, function (f) {
-        return f[KEY] == d[KEY];
+        return utils.getKey(f, KEYS) == d[KEY];
       });
 
       var time = _this.model.time.formatDate(_this.time);
@@ -1556,7 +1582,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
       var trailStartTime = _this.model.time.parse("" + select.trailStartTime);
 
-      var labelText = _this._getLabelText(valueL, select.trailStartTime);
+      var labelText = _this._getLabelText(values, this.labelNames, d, select.trailStartTime);
 
       if (showhide && d.hidden && _this.model.ui.chart.trails && trailStartTime && trailStartTime < _this.time) showhide = false;
       if (d.hidden && !_this.model.ui.chart.trails) showhide = true;
@@ -1564,22 +1590,24 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       this._labels.updateLabel(d, index, cache, valueX, valueY, valueS, valueC, labelText, valueLST, duration, showhide);
     }
   },
-  _getLabelText: function _getLabelText(value, time) {
-    return value + (this.model.ui.chart.trails ? " " + time : "");
+  _getLabelText: function _getLabelText(values, labelNames, d, time) {
+    var value = this.KEYS.map(function (key) {
+      return values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key];
+    }).join(", ");
+    return value + (time || time === 0 ? " " + time : "");
   },
   _setTooltip: function _setTooltip(tooltipText, x, y, s, c, d) {
     if (tooltipText) {
       var labelValues = {};
       if (d) {
-        var KEY = this.KEY;
+        var dataKeys = this.dataKeys;
         var values = this.frame;
-        labelValues.valueY = values.axis_y[d[KEY]];
-        labelValues.valueX = values.axis_x[d[KEY]];
-        labelValues.valueS = values.size[d[KEY]];
-        labelValues.valueL = values.label[d[KEY]];
-        labelValues.valueC = values.color[d[KEY]];
-        labelValues.valueLST = values.size_label[d[KEY]];
-        labelValues.labelText = this._getLabelText(labelValues.valueL, this.model.time.formatDate(this.time));
+        labelValues.valueY = values.axis_y[utils.getKey(d, dataKeys.axis_y)];
+        labelValues.valueX = values.axis_x[utils.getKey(d, dataKeys.axis_x)];
+        labelValues.valueS = values.size[utils.getKey(d, dataKeys.size)];
+        labelValues.valueC = values.color[utils.getKey(d, dataKeys.color)];
+        labelValues.valueLST = values.size_label[utils.getKey(d, dataKeys.size_label)];
+        labelValues.labelText = this._getLabelText(values, this.labelNames, d, this.model.time.formatDate(this.time));
       }
 
       var tooltipCache = {};
@@ -1661,14 +1689,14 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
   _axisProjections: function _axisProjections(d) {
     var _this = this;
     var TIMEDIM = this.TIMEDIM;
-    var KEY = this.KEY;
+    var dataKeys = this.dataKeys;
 
     if (d != null) {
 
       this.model.marker.getFrame(d[TIMEDIM], function (values) {
-        var valueY = values.axis_y[d[KEY]];
-        var valueX = values.axis_x[d[KEY]];
-        var valueS = values.size[d[KEY]];
+        var valueY = values.axis_y[utils.getKey(d, dataKeys.axis_y)];
+        var valueX = values.axis_x[utils.getKey(d, dataKeys.axis_x)];
+        var valueS = values.size[utils.getKey(d, dataKeys.size)];
         var radius = utils.areaToRadius(_this.sScale(valueS));
 
         if (!valueY && valueY !== 0 || !valueX && valueX !== 0 || !valueS && valueS !== 0) return;
@@ -1701,6 +1729,8 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
   highlightDataPoints: function highlightDataPoints() {
     var _this = this;
     var TIMEDIM = this.TIMEDIM;
+    var dataKeys = this.dataKeys;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     this.someHighlighted = this.model.marker.highlight.length > 0;
@@ -1709,6 +1739,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
     if (this.model.marker.highlight.length === 1) {
       var d = utils.clone(this.model.marker.highlight[0]);
+      d[KEY] = utils.getKey(d, KEYS);
 
       if (_this.model.ui.chart.lockNonSelected && _this.someSelected && !_this.model.marker.isSelected(d)) {
         d[TIMEDIM] = _this.model.time.parse("" + _this.model.ui.chart.lockNonSelected);
@@ -1718,13 +1749,13 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
       _this.model.marker.getFrame(d[TIMEDIM], function (values) {
         if (!values) return;
-        var x = _this.xScale(values.axis_x[d[KEY]]);
-        var y = _this.yScale(values.axis_y[d[KEY]]);
-        var s = utils.areaToRadius(_this.sScale(values.size[d[KEY]]));
-        var c = values.color[d[KEY]] != null ? _this.cScale(values.color[d[KEY]]) : _this.COLOR_WHITEISH;
+        var x = _this.xScale(values.axis_x[utils.getKey(d, dataKeys.axis_x)]);
+        var y = _this.yScale(values.axis_y[utils.getKey(d, dataKeys.axis_y)]);
+        var s = utils.areaToRadius(_this.sScale(values.size[utils.getKey(d, dataKeys.size)]));
+        var c = values.color[utils.getKey(d, dataKeys.color)] != null ? _this.cScale(values.color[utils.getKey(d, dataKeys.color)]) : _this.COLOR_WHITEISH;
         var entityOutOfView = false;
 
-        var titles = _this._formatSTitleValues(values.size[d[KEY]], values.color[d[KEY]]);
+        var titles = _this._formatSTitleValues(values.size[utils.getKey(d, dataKeys.size)], values.color[utils.getKey(d, dataKeys.color)]);
         _this._updateSTitle(titles[0], titles[1]);
         if (x + s < 0 || x - s > _this.width || y + s < 0 || y - s > _this.height) {
           entityOutOfView = true;
@@ -1736,12 +1767,12 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         if (_this.model.marker.isSelected(d) && _this.model.ui.chart.trails) {
           text = _this.model.time.formatDate(_this.time);
           var _selectedData = utils.find(_this.model.marker.select, function (f) {
-            return f[KEY] == d[KEY];
+            return utils.getKey(f, KEYS) == d[KEY];
           });
           hoverTrail = text !== _selectedData.trailStartTime && !d3.select(d3.event.target).classed("bubble-" + d[KEY]);
           text = text !== _selectedData.trailStartTime && _this.time === d[TIMEDIM] ? text : "";
         } else {
-          text = _this.model.marker.isSelected(d) ? "" : values.label[d[KEY]];
+          text = _this.model.marker.isSelected(d) ? "" : _this._getLabelText(values, _this.labelNames, d);
         }
 
         _this._labels.highlight(null, false);
@@ -1761,7 +1792,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         }
 
         var selectedData = utils.find(_this.model.marker.select, function (f) {
-          return f[KEY] == d[KEY];
+          return utils.getKey(f, KEYS) == d[KEY];
         });
         if (selectedData) {
           var clonedSelectedData = utils.clone(selectedData);
@@ -2607,7 +2638,9 @@ var Trail = Vizabi.Class.extend({
   create: function create(selection) {
     var _context = this.context;
     var _this = this;
+    var KEYS = _context.KEYS;
     var KEY = _context.KEY;
+    var dataKeys = _context.dataKeys;
     var TIMEDIM = _context.TIMEDIM;
     this._isCreated = new Promise(function (resolve, reject) {
       //quit if the function is called accidentally
@@ -2624,7 +2657,10 @@ var Trail = Vizabi.Class.extend({
           status: "created",
           selectedEntityData: d
         };
-        r[KEY] = d[KEY];
+        KEYS.forEach(function (key) {
+          return r[key] = d[key];
+        });
+        r[KEY] = utils.getKey(d, KEYS);
         return r;
       });
       _this.trailTransitions = {};
@@ -2662,20 +2698,20 @@ var Trail = Vizabi.Class.extend({
             _context._labels.highlight(d, true);
             var text = _context.model.time.formatDate(segment.t);
             var selectedData = utils.find(_context.model.marker.select, function (f) {
-              return f[KEY] == d[KEY];
+              return utils.getKey(f, KEYS) == d[KEY];
             });
             _context.model.marker.getFrame(pointer[TIMEDIM], function (values) {
-              var x = _context.xScale(values.axis_x[pointer[KEY]]);
-              var y = _context.yScale(values.axis_y[pointer[KEY]]);
-              var s = utils.areaToRadius(_context.sScale(values.size[pointer[KEY]]));
-              var c = values.color[pointer[KEY]] != null ? _context.cScale(values.color[pointer[KEY]]) : _context.COLOR_WHITEISH;
+              var x = _context.xScale(values.axis_x[utils.getKey(d, dataKeys.axis_x)]);
+              var y = _context.yScale(values.axis_y[utils.getKey(d, dataKeys.axis_y)]);
+              var s = utils.areaToRadius(_context.sScale(values.size[utils.getKey(d, dataKeys.size)]));
+              var c = values.color[utils.getKey(d, dataKeys.color)] != null ? _context.cScale(values.color[utils.getKey(d, dataKeys.color)]) : _context.COLOR_WHITEISH;
               if (text !== selectedData.trailStartTime) {
                 _context._setTooltip(text, x, y, s + 3, c);
               }
               _context._setBubbleCrown(x, y, s, c);
               _context.model.marker.getModelObject("highlight").trigger("change", {
-                "size": values.size[pointer[KEY]],
-                "color": values.color[pointer[KEY]]
+                "size": values.size[utils.getKey(d, dataKeys.size)],
+                "color": values.color[utils.getKey(d, dataKeys.color)]
               });
             });
             //change opacity to OPACITY_HIGHLT = 1.0;
@@ -2717,11 +2753,12 @@ var Trail = Vizabi.Class.extend({
   _addActions: function _addActions(selections, actions) {
     var _context = this.context;
     var _this = this;
-    var KEY = _context.KEY;
+    var KEYS = _context.KEYS;
 
     selections.forEach(function (d) {
-      if (!_this.actionsQueue[d[KEY]]) _this.actionsQueue[d[KEY]] = [];
-      _this.actionsQueue[d[KEY]] = [].concat(_this.actionsQueue[d[KEY]].filter(function (value) {
+      var key = utils.getKey(d, KEYS);
+      if (!_this.actionsQueue[key]) _this.actionsQueue[key] = [];
+      _this.actionsQueue[key] = [].concat(_this.actionsQueue[key].filter(function (value) {
         return actions.indexOf(value) == -1;
       }), actions);
     });
@@ -2729,19 +2766,20 @@ var Trail = Vizabi.Class.extend({
   _clearActions: function _clearActions(selections) {
     var _context = this.context;
     var _this = this;
-    var KEY = _context.KEY;
+    var KEYS = _context.KEYS;
 
     selections.forEach(function (d) {
-      if (!_this.actionsQueue[d[KEY]]) _this.actionsQueue[d[KEY]] = [];
-      _this.actionsQueue[d[KEY]] = [];
-      _this.drawingQueue[d[KEY]] = {};
-      _this.delayedIterations[d[KEY]] = {};
-      if (!_this.activePromises[d[KEY]]) _this.activePromises[d[KEY]] = [];
-      utils.forEach(_this.activePromises[d[KEY]], function (promise, key) {
+      var key = utils.getKey(d, KEYS);
+      if (!_this.actionsQueue[key]) _this.actionsQueue[key] = [];
+      _this.actionsQueue[key] = [];
+      _this.drawingQueue[key] = {};
+      _this.delayedIterations[key] = {};
+      if (!_this.activePromises[key]) _this.activePromises[key] = [];
+      utils.forEach(_this.activePromises[key], function (promise, key) {
         if (promise.status === "pending") promise.reject();
       });
-      _this.trailsInProgress[d[KEY]] = null;
-      _this.activePromises[d[KEY]] = [];
+      _this.trailsInProgress[key] = null;
+      _this.activePromises[key] = [];
     });
   },
   _getNextAction: function _getNextAction(key) {
@@ -2895,6 +2933,7 @@ var Trail = Vizabi.Class.extend({
     var _context = this.context;
     var _this = this;
     var KEY = _context.KEY;
+    var dataKeys = _context.dataKeys;
     return new Promise(function (resolve, reject) {
       new Promise(function (resolve1, reject1) {
         if (!d.limits) {
@@ -2921,13 +2960,13 @@ var Trail = Vizabi.Class.extend({
             trailStartTime = _context.model.time.parse("" + d.selectedEntityData.trailStartTime);
           }
           var cache = _context._labels.cached[d[KEY]];
-          var valueS = _context.frame.size[d[KEY]];
-          var valueC = _context.frame.color[d[KEY]];
-          cache.labelX0 = _context.frame.axis_x[d[KEY]];
-          cache.labelY0 = _context.frame.axis_y[d[KEY]];
+          var valueS = _context.frame.size[utils.getKey(d, dataKeys.size)];
+          var valueC = _context.frame.color[utils.getKey(d, dataKeys.color)];
+          cache.labelX0 = _context.frame.axis_x[utils.getKey(d, dataKeys.axis_x)];
+          cache.labelY0 = _context.frame.axis_y[utils.getKey(d, dataKeys.axis_y)];
           cache.scaledS0 = valueS || valueS === 0 ? utils.areaToRadius(_context.sScale(valueS)) : null;
           cache.scaledC0 = valueC != null ? _context.cScale(valueC) : _context.COLOR_WHITEISH;
-          _context._updateLabel(d, 0, _context.frame.axis_x[d[KEY]], _context.frame.axis_y[d[KEY]], _context.frame.size[d[KEY]], _context.frame.color[d[KEY]], _context.frame.label[d[KEY]], _context.frame.size_label[d[KEY]], 0, true);
+          _context._updateLabel(d, 0, _context.frame, cache.labelX0, cache.labelY0, valueS, valueC, _context.frame.label[utils.getKey(d, dataKeys.label)], _context.frame.size_label[utils.getKey(d, dataKeys.size_label)], 0, true);
         }
         trail.each(function (segment, index) {
           // segment is transparent if it is after current time or before trail StartTime
@@ -2961,7 +3000,9 @@ var Trail = Vizabi.Class.extend({
     var _context = this.context;
     if (_context.model.time.playing) duration = _context.model.time.delay;
     var _this = this;
+    var KEYS = _context.KEYS;
     var KEY = _context.KEY;
+    var dataKeys = _context.dataKeys;
     d.status = "reveal";
     var trailStartTime = _context.model.time.parse("" + d.selectedEntityData.trailStartTime);
     var generateTrailSegment = function generateTrailSegment(trail, index, nextIndex, level) {
@@ -2983,10 +3024,10 @@ var Trail = Vizabi.Class.extend({
         _context.model.marker.getFrame(segment.t, function (frame) {
           if (d.status != "reveal") return resolve();
           if (!frame) return resolve();
-          segment.valueY = frame.axis_y[d[KEY]];
-          segment.valueX = frame.axis_x[d[KEY]];
-          segment.valueS = frame.size[d[KEY]];
-          segment.valueC = frame.color[d[KEY]];
+          segment.valueY = frame.axis_y[utils.getKey(d, dataKeys.axis_y)];
+          segment.valueX = frame.axis_x[utils.getKey(d, dataKeys.axis_x)];
+          segment.valueS = frame.size[utils.getKey(d, dataKeys.size)];
+          segment.valueC = frame.color[utils.getKey(d, dataKeys.color)];
 
           if (segment.valueY == null || segment.valueX == null || segment.valueS == null) {
             return resolve();
@@ -3000,7 +3041,7 @@ var Trail = Vizabi.Class.extend({
             var valueS = segment.valueS;
             cache.scaledS0 = valueS || valueS === 0 ? utils.areaToRadius(_context.sScale(valueS)) : null;
             cache.scaledC0 = segment.valueC != null ? _context.cScale(segment.valueC) : _context.COLOR_WHITEISH;
-            _context._updateLabel(d, index, segment.valueX, segment.valueY, segment.valueS, segment.valueC, frame.label[d[KEY]], frame.size_label[d[KEY]], 0, true);
+            _context._updateLabel(d, index, frame, segment.valueX, segment.valueY, segment.valueS, segment.valueC, frame.label[utils.getKey(d, dataKeys.label)], frame.size_label[utils.getKey(d, dataKeys.size_label)], 0, true);
           }
           view.select("circle")
           //.transition().duration(duration).ease(d3.easeLinear)
@@ -3036,14 +3077,14 @@ var Trail = Vizabi.Class.extend({
               return resolve();
             }
 
-            if (nextFrame.axis_x[d[KEY]] == null || nextFrame.axis_y[d[KEY]] == null) {
+            if (nextFrame.axis_x[utils.getKey(d, dataKeys.axis_x)] == null || nextFrame.axis_y[utils.getKey(d, dataKeys.axis_y)] == null) {
               return resolve();
             }
 
-            nextSegment.valueY = nextFrame.axis_y[d[KEY]];
-            nextSegment.valueX = nextFrame.axis_x[d[KEY]];
-            nextSegment.valueS = nextFrame.size[d[KEY]];
-            nextSegment.valueC = nextFrame.color[d[KEY]];
+            nextSegment.valueY = nextFrame.axis_y[utils.getKey(d, dataKeys.axis_y)];
+            nextSegment.valueX = nextFrame.axis_x[utils.getKey(d, dataKeys.axis_x)];
+            nextSegment.valueS = nextFrame.size[utils.getKey(d, dataKeys.size)];
+            nextSegment.valueC = nextFrame.color[utils.getKey(d, dataKeys.color)];
 
             _this.trailTransitions[d[KEY]] = view;
             var strokeColor = _context.model.marker.color.which == "geo.world_4region" ?
@@ -3055,7 +3096,7 @@ var Trail = Vizabi.Class.extend({
             //otherwise use color of the bubble with a fallback to bubble stroke color (blackish)
             segment.valueC != null ? _context.cScale(segment.valueC) : _context.COLOR_BLACKISH;
 
-            var lineLength = Math.sqrt(Math.pow(_context.xScale(segment.valueX) - _context.xScale(nextFrame.axis_x[d[KEY]]), 2) + Math.pow(_context.yScale(segment.valueY) - _context.yScale(nextFrame.axis_y[d[KEY]]), 2));
+            var lineLength = Math.sqrt(Math.pow(_context.xScale(segment.valueX) - _context.xScale(nextSegment.valueX), 2) + Math.pow(_context.yScale(segment.valueY) - _context.yScale(nextSegment.valueY), 2));
             view.select("line").attr("stroke-dasharray", lineLength).attr("stroke-dashoffset", utils.areaToRadius(_context.sScale(segment.valueS))).style("stroke", strokeColor).transition().duration(duration).ease(d3.easeLinear).attr("x1", _context.xScale(nextSegment.valueX)).attr("y1", _context.yScale(nextSegment.valueY)).attr("x2", _context.xScale(segment.valueX)).attr("y2", _context.yScale(segment.valueY));
             if (nextIndex - index > 1) {
               addNewIntervals(index, nextIndex);
@@ -3082,14 +3123,14 @@ var Trail = Vizabi.Class.extend({
 
         _context.model.marker.getFrame(segment.t, function (frame) {
           if (d.status != "reveal") return resolve();
-          if (!frame || typeof frame.axis_x === "undefined" || frame.axis_x[d[KEY]] == null || typeof frame.axis_y === "undefined" || frame.axis_y[d[KEY]] == null) {
+          if (!frame || typeof frame.axis_x === "undefined" || frame.axis_x[utils.getKey(d, dataKeys.axis_x)] == null || typeof frame.axis_y === "undefined" || frame.axis_y[utils.getKey(d, dataKeys.axis_y)] == null) {
             utils.warn("Frame for trail missed: " + segment.t);
             return resolve();
           }
-          segment.valueY = frame.axis_y[d[KEY]];
-          segment.valueX = frame.axis_x[d[KEY]];
-          segment.valueS = frame.size[d[KEY]];
-          segment.valueC = frame.color[d[KEY]];
+          segment.valueY = frame.axis_y[utils.getKey(d, dataKeys.axis_y)];
+          segment.valueX = frame.axis_x[utils.getKey(d, dataKeys.axis_x)];
+          segment.valueS = frame.size[utils.getKey(d, dataKeys.size)];
+          segment.valueC = frame.color[utils.getKey(d, dataKeys.color)];
 
           segment.previous = previousSegment;
           segment.next = nextSegment;
