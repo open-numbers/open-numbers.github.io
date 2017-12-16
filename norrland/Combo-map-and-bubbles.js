@@ -87,6 +87,7 @@ VIZABI_MODEL = {
       doubtRange: [0, 0]
     },
     "map": {
+      "overflowBottom": 50,
       "scale": 1,
       "preserveAspectRatio": true,
       "mapEngine": "mapbox",
