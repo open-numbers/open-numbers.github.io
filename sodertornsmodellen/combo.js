@@ -5,7 +5,7 @@ Vizabi.Tool.extend('combo', {
     this.name = "combo";
 
     this.template =
-      '<div class="vzb-tool vzb-tool-' + this.name + '">' +
+      '<div class="vzb-tool vzb-tool-' + this.name + ' vzb-split-vertical">' +
       '<div class="vzb-tool-stage">' +
       '<div class="vzb-tool-viz vzb-tool-viz-bubble"></div>' +
       '<div class="vzb-tool-viz vzb-tool-viz-map"></div>' +
@@ -25,15 +25,15 @@ Vizabi.Tool.extend('combo', {
     this.components = this.components = [{
       component: Vizabi.Component.get("bubblechart"),
       placeholder: ".vzb-tool-viz-bubble",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui"]
+      model: ["state.time", "state.marker", "locale", "ui"]
     }, {
       component: Vizabi.Component.get("extapimap"),
       placeholder: ".vzb-tool-viz-map",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui", "data"]
+      model: ["state.time", "state.marker", "locale", "ui", "data"]
     }, {
       component: Vizabi.Component.get("timeslider"),
       placeholder: ".vzb-tool-timeslider",
-      model: ["state.time", "state.entities", "state.marker", "ui"]
+      model: ["state.time", "state.marker", "ui"]
     }, {
       component: Vizabi.Component.get("dialogs"),
       placeholder: ".vzb-tool-dialogs",
@@ -100,6 +100,7 @@ Vizabi.Tool.extend('combo', {
     locale: {},
     ui: {
       chart: {
+        superhighlightOnMinimapHover: true,
         whenHovering: {
           showProjectionLineX: true,
           showProjectionLineY: true,
@@ -110,8 +111,12 @@ Vizabi.Tool.extend('combo', {
           dragging: true,
           removeLabelBox: false
         },
+        margin: {
+          left: 0,
+          top: 0
+        },
         trails: false,
-        lockNonSelected: 0,
+        lockNonSelected: 0
       },
       presentation: false,
       panWithArrow: true,
