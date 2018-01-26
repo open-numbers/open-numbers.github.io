@@ -5,7 +5,7 @@ Vizabi.Tool.extend('combo', {
     this.name = "combo";
 
     this.template =
-      '<div class="vzb-tool vzb-tool-' + this.name + '">' +
+      '<div class="vzb-tool vzb-tool-' + this.name + ' vzb-split-vertical">' +
       '<div class="vzb-tool-stage">' +
       '<div class="vzb-tool-viz vzb-tool-viz-bubble"></div>' +
       '<div class="vzb-tool-viz vzb-tool-viz-map"></div>' +

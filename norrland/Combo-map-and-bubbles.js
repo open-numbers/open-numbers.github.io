@@ -76,12 +76,6 @@ VIZABI_MODEL = {
     }
   },
   "ui": {
-    chart: {
-        margin: {
-          left: 0,
-          top:0
-        }
-    },
     datawarning: {
       doubtDomain: [2000, 2014],
       doubtRange: [0, 0]

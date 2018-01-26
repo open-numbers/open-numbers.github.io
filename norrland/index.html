@@ -5,27 +5,23 @@
     <title>PCBS Census 2017</title>
     <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
     
-    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
 
     <link rel="stylesheet" type="text/css" href="libs/vizabi.css">
-    <link rel="stylesheet" type="text/css" href="libs/barrankchart.css">
     <link rel="stylesheet" type="text/css" href="libs/bubblechart.css">
     <link rel="stylesheet" type="text/css" href="libs/extapimap.css">
-    <link rel="stylesheet" type="text/css" href="libs/linechart.css">
-    <link rel="stylesheet" type="text/css" href="assets/combo.css">
+    <link rel="stylesheet" type="text/css" href="combo.css">
         
     <script src="libs/vizabi.min.js"></script>
 
-    <script src="libs/extapimap.js"></script>
-    <script src="libs/bubblechart.js"></script>
-    <script src="libs/barrankchart.js"></script>
-    <script src="libs/linechart.js"></script>
+    <script src="libs/extapimap.min.js"></script>
+    <script src="libs/bubblechart.min.js"></script>
     <script src="combo.js"></script>
     <script src="libs/urlon.js"></script>
     <script src="libs/url.js"></script>
 
-    <script src="libs/vizabi-ddfcsv-reader.js"></script>
-    <script src="libs/vizabi-ws-reader.js"></script>
+    <!--script src="libs/vizabi-ddfcsv-reader.js"></script-->
+    <!--script src="libs/vizabi-ws-reader.js"></script-->
     
     <style>
       .header {
@@ -94,12 +90,12 @@
       var poppedState = null;
 
       //WS reader integration
-      var wsReader = WsReader.WsReader.getReader();
-      Vizabi.Reader.extend("waffle", wsReader);
+      //var wsReader = WsReader.WsReader.getReader();
+      //Vizabi.Reader.extend("waffle", wsReader);
 
       //DDFCSV reader integration
-      var ddfReader = new DDFCsvReader.getDDFCsvReaderObject()
-      Vizabi.Reader.extend("ddf", ddfReader);
+      //var ddfReader = new DDFCsvReader.getDDFCsvReaderObject()
+      //Vizabi.Reader.extend("ddf", ddfReader);
 
       var viz = null;
       var VIZABI_MODEL = {};
