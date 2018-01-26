@@ -1,4 +1,4 @@
-(function webpackUniversalModuleDefinition(root, factory) {
+((function(){})({version: '"0.28.1"'}));(function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
@@ -132,20 +132,22 @@ module.exports = $export;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.approxEqual = undefined;
+exports.getSubtitle = exports.replaceNumberSpacesToNonBreak = exports.px2num = exports.getProp = exports.isFunction = exports.isMobileOrTablet = exports.capitalize = exports.setIcon = exports.pruneTree = exports.isTouchDevice = exports.debounce = exports.memoize = exports.post = exports.get = exports.ajax = exports.interpolatePoint = exports.interpolateVector = exports.nestArrayToValues = exports.nestArrayToObjWithFlatKeys = exports.nestArrayToObj = exports.hashCode = exports.clearDelay = exports.delay = exports.defer = exports.diffObject = exports.arrayLast = exports.arrayMedian = exports.arraySum = exports.arrayMean = exports.arrayMax = exports.arrayMin = exports.values = exports.keys = exports.throttle = exports.hasClass = exports.classed = exports.removeClass = exports.addClass = exports.countDecimals = exports.error = exports.groupEnd = exports.groupCollapsed = exports.warn = exports.timeStamp = exports.areaToRadius = exports.cathetus = exports.hypotenuse = exports.radiusToArea = exports.preventAncestorScrolling = exports.matchAny = exports.filterAny = exports.filter = exports.find = exports.uniqueLast = exports.unique = exports.without = exports.deepClone = exports.clone = exports.merge = exports.deepExtend = exports.extend = exports.forEach = exports.strToFloat = exports.roundStep = exports.findScrollableAncestor = exports.getViewportPosition = exports.comparePlainObjects = exports.arrayEquals = exports.isPlainObject = exports.isNumber = exports.isEmpty = exports.isNaN = exports.isString = exports.isDate = exports.isObject = exports.isArray = exports.isElement = exports.uniqueId = exports.printAutoconfigResult = exports.approxEqual = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 exports.makeAbsoluteContext = makeAbsoluteContext;
 exports.firstBy = firstBy;
 exports.transform = transform;
-exports.getValueMD = getValueMD;
+exports.getKey = getKey;
 
 var _interpolators = __webpack_require__(389);
 
 var _interpolators2 = _interopRequireDefault(_interpolators);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 /*
  * Check if value A is in +- proximity of value B
@@ -162,6 +164,13 @@ var approxEqual = exports.approxEqual = function approxEqual(a, b, tolerance) {
     return (1 + tolerance) * b <= a && a <= b * (1 - tolerance);
   }
   return Math.abs(a) <= tolerance;
+};
+
+/*
+ * prints out a string like this "AUTOCONFIG: axis_x choses armed_conflicts_internal from data to be WHICH"
+ */
+var printAutoconfigResult = exports.printAutoconfigResult = function printAutoconfigResult(mdl) {
+  console.info("AUTOCONFIG: " + mdl._name + (mdl.isHook() ? " of " + mdl._parent._name : "") + " choses " + (mdl.dim || mdl.which) + " from " + (mdl.dataSource ? mdl.dataSource._name : "<DATA SOURCE MISSING!>") + " to be " + (mdl._type === "entities" || mdl._type === "time" ? "DIM" : "WHICH"));
 };
 
 /*
@@ -926,13 +935,23 @@ var radiusToArea = exports.radiusToArea = function radiusToArea(r) {
 };
 
 /*
- * Computes hypotenuse of a right triangle, given the catets
+ * Computes hypotenuse of a right triangle, given the catheti
  * @param {Number} x
  * @param {Number} y
  * @returns {Number} square root of sum of the squares of x and y
  */
 var hypotenuse = exports.hypotenuse = function hypotenuse(x, y) {
   return Math.sqrt(x * x + y * y);
+};
+
+/*
+ * Computes cathetus of a right triangle, given the hypotenuse and cathetus
+ * @param {Number} h
+ * @param {Number} c
+ * @returns {Number} square root of difference of the squares of h and c
+ */
+var cathetus = exports.cathetus = function cathetus(h, c) {
+  return Math.sqrt(h * h - c * c);
 };
 
 /*
@@ -1304,6 +1323,41 @@ var nestArrayToObj = exports.nestArrayToObj = function nestArrayToObj(arr) {
   return res;
 };
 
+var nestArrayToObjWithFlatKeys = exports.nestArrayToObjWithFlatKeys = function nestArrayToObjWithFlatKeys(arr) {
+  var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var keys = arguments[2];
+  var key = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+
+  if (!arr || !arr.length || !arr[0].key) {
+    if (keys) {
+      keys += "]";
+      !res[keys] && (res[keys] = {});
+      res[keys][key] = arr;
+    } else {
+      res[key] = arr;
+    }
+    return arr;
+  }
+  if (key) keys = keys ? keys + "," + JSON.stringify(key) : "[" + JSON.stringify(key);
+  for (var i = 0; i < arr.length; i++) {
+    nestArrayToObjWithFlatKeys(arr[i].values || arr[i].value, res, keys, arr[i].key);
+  }
+  return res;
+};
+
+var nestArrayToValues = exports.nestArrayToValues = function nestArrayToValues(arr) {
+  var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+  if (!arr || !arr.length || !arr[0].key) {
+    res.push.apply(res, _toConsumableArray(arr));
+    return;
+  }
+  for (var i = 0; i < arr.length; i++) {
+    nestArrayToValues(arr[i].values || arr[i].value, res);
+  }
+  return res;
+};
+
 var interpolateVector = exports.interpolateVector = function interpolateVector() {};
 
 /**
@@ -1628,13 +1682,12 @@ var isMobileOrTablet = exports.isMobileOrTablet = function isMobileOrTablet() {
   );
 };
 
-function getValueMD(d, values, keysArray) {
-  var value = values;
-  for (var i = 0, j = keysArray.length; i < j; i++) {
-    value = value[d[keysArray[i]]];
-    if (!value) break;
+function getKey(d, keysArray) {
+  var key = d[keysArray[0]];
+  for (var i = 1, j = keysArray.length; i < j; i++) {
+    key = key + "," + d[keysArray[i]];
   }
-  return value;
+  return key;
 }
 
 var isFunction = exports.isFunction = function isFunction(value) {
@@ -1671,6 +1724,22 @@ var getProp = exports.getProp = function getProp(object, props, defaultValue) {
 
 var px2num = exports.px2num = function px2num(pixels) {
   return isString(pixels) && pixels.endsWith("px") ? parseFloat(pixels) : console.warn("Strange pixels value: " + pixels) || pixels;
+};
+
+var replaceNumberSpacesToNonBreak = exports.replaceNumberSpacesToNonBreak = function replaceNumberSpacesToNonBreak(numString) {
+  return numString ? numString.replace(/\d{1,3}(?: \d{3})+(?=\W)/g, function (match) {
+    return match.replace(/ /g, "\xa0");
+  }) : numString;
+};
+
+var getSubtitle = exports.getSubtitle = function getSubtitle() {
+  var title = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+  var shortTitle = arguments[1];
+
+  var subtitle = title.replace(shortTitle, "");
+  if (subtitle[0] === ",") subtitle = subtitle.slice(1);
+  var regexpResult = /^\((.*)\)$|.*/.exec(subtitle.trim());
+  return regexpResult[1] || regexpResult[0] || "";
 };
 
 /***/ }),
@@ -1732,7 +1801,7 @@ var _model = __webpack_require__(49);
 
 var _model2 = _interopRequireDefault(_model);
 
-var _globals = __webpack_require__(107);
+var _globals = __webpack_require__(109);
 
 var _globals2 = _interopRequireDefault(_globals);
 
@@ -2300,7 +2369,7 @@ module.exports = !__webpack_require__(4)(function () {
 /***/ (function(module, exports, __webpack_require__) {
 
 var anObject = __webpack_require__(2);
-var IE8_DOM_DEFINE = __webpack_require__(108);
+var IE8_DOM_DEFINE = __webpack_require__(111);
 var toPrimitive = __webpack_require__(26);
 var dP = Object.defineProperty;
 
@@ -2350,7 +2419,7 @@ var _component2 = _interopRequireDefault(_component);
 
 var _iconset = __webpack_require__(21);
 
-var _requireAll = __webpack_require__(104);
+var _requireAll = __webpack_require__(105);
 
 var _requireAll2 = _interopRequireDefault(_requireAll);
 
@@ -2358,7 +2427,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var dialogTemplates = (0, _requireAll2.default)(__webpack_require__(401));
+var dialogTemplates = (0, _requireAll2.default)(__webpack_require__(403));
 
 /*!
  * VIZABI DIALOG
@@ -2809,7 +2878,7 @@ var createDesc = __webpack_require__(38);
 var toIObject = __webpack_require__(18);
 var toPrimitive = __webpack_require__(26);
 var has = __webpack_require__(14);
-var IE8_DOM_DEFINE = __webpack_require__(108);
+var IE8_DOM_DEFINE = __webpack_require__(111);
 var gOPD = Object.getOwnPropertyDescriptor;
 
 exports.f = __webpack_require__(8) ? gOPD : function getOwnPropertyDescriptor(O, P) {
@@ -2829,7 +2898,7 @@ exports.f = __webpack_require__(8) ? gOPD : function getOwnPropertyDescriptor(O,
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(14);
 var toObject = __webpack_require__(12);
-var IE_PROTO = __webpack_require__(80)('IE_PROTO');
+var IE_PROTO = __webpack_require__(81)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function (O) {
@@ -3013,7 +3082,7 @@ var ctx = __webpack_require__(22);
 var IObject = __webpack_require__(56);
 var toObject = __webpack_require__(12);
 var toLength = __webpack_require__(10);
-var asc = __webpack_require__(97);
+var asc = __webpack_require__(98);
 module.exports = function (TYPE, $create) {
   var IS_MAP = TYPE == 1;
   var IS_FILTER = TYPE == 2;
@@ -3153,13 +3222,704 @@ exports.default = Class;
 
 "use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _dataconnected = __webpack_require__(55);
+
+var _dataconnected2 = _interopRequireDefault(_dataconnected);
+
+var _events = __webpack_require__(50);
+
+var _events2 = _interopRequireDefault(_events);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * HOOK MODEL
+ */
+
+var Hook = _dataconnected2.default.extend({
+
+  //some hooks can be important. like axis x and y
+  //that means, if X or Y doesn't have data at some point, we can't show markers
+  _important: false,
+
+  objectLeafs: ["autoconfig"],
+  dataConnectedChildren: ["use", "which"],
+
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      data: "data",
+      which: null
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+  buildScale: function buildScale() {
+    //overloaded by specific hook models, like axis and color
+  },
+
+
+  /**
+   * After complete model tree is created, this allows models to listen to eachother.
+   */
+  setInterModelListeners: function setInterModelListeners() {
+    var _this2 = this;
+
+    var spaceRefs = this._parent.getSpace(this);
+
+    //check what we want to hook this model to
+    utils.forEach(spaceRefs, function (name) {
+      //hook with the closest prefix to this model
+      _this2._space[name] = _this2.getClosestModel(name);
+      //if hooks change, this should load again
+      _this2._space[name].on("dataConnectedChange", _this2.handleDataConnectedChange.bind(_this2));
+    });
+    this.getClosestModel("locale").on("dataConnectedChange", this.handleDataConnectedChange.bind(this));
+  },
+  onSuccessfullLoad: function onSuccessfullLoad() {
+    this.validate();
+    this.buildScale();
+    this._super();
+  },
+  setWhich: function setWhich(newValue) {
+
+    var obj = { which: newValue.concept };
+
+    if (newValue.dataSource) obj.data = newValue.dataSource;
+    var newDataSource = this.getClosestModel(obj.data || this.data);
+    var conceptProps = newDataSource.getConceptprops(newValue.concept);
+
+    if (newValue.use) obj.use = newValue.use;
+    if (conceptProps && conceptProps.scales) obj.scaleType = conceptProps.scales[0];
+
+    if (this.getType() === "axis" || this.getType() === "size") {
+      obj.domainMin = null;
+      obj.domainMax = null;
+      obj.zoomedMin = null;
+      obj.zoomedMax = null;
+    }
+
+    this.set(obj);
+  },
+  setScaleType: function setScaleType(newValue) {
+    this.buildScale(newValue);
+  },
+  preloadData: function preloadData() {
+    this.dataSource = this.getClosestModel(this.data);
+    //TODO
+    if (!this.spaceRef) this.spaceRef = this.updateSpaceReference();
+    return this._super();
+  },
+  afterPreload: function afterPreload() {
+    this.autoconfigureModel();
+  },
+  autoconfigureModel: function autoconfigureModel(autoconfigResult) {
+
+    if (!this.which && this.autoconfig) {
+      if (!autoconfigResult) autoconfigResult = this._parent.getAvailableConcept(this.autoconfig);
+
+      if (autoconfigResult) {
+        var concept = autoconfigResult.value;
+        var obj = {
+          //dataSource: autoconfigResult.dataSource,
+          which: concept.concept,
+          use: (autoconfigResult.key.size || autoconfigResult.key.length) > 1 ? "indicator" : "property",
+          scaleType: concept.scales[0] || "linear"
+        };
+        this.set(obj);
+      } else {
+        var _obj = {
+          which: "_default",
+          use: "constant",
+          scaleType: "ordinal"
+        };
+        this.set(_obj);
+      }
+
+      utils.printAutoconfigResult(this);
+    }
+  },
+  updateSpaceReference: function updateSpaceReference() {
+    if (this.use !== "property") return null;
+    var newSpaceRef = "entities" + this._name.replace(this._type, "");
+
+    return this._space[newSpaceRef] ? newSpaceRef : this._parent.getSpace()[0]._name;
+  },
+
+
+  /**
+   * Hooks loads data, models ask children to load data
+   * Basically, this method:
+   * loads is theres something to be loaded:
+   * does not load if there's nothing to be loaded
+   * @param {Object} options (includes splashScreen)
+   * @returns defer
+   */
+  loadData: function loadData() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+
+    // then start loading data
+
+    if (!this.which) return Promise.resolve();
+
+    this.trigger("hook_change");
+
+    // TODO: should be set on data source switch, but load happens before change events
+    this.dataSource = this.getClosestModel(this.data);
+
+    var query = this.getQuery(opts.splashScreen);
+
+    if (query === true) return Promise.resolve();
+
+    //useful to check if in the middle of a load call
+    this._loadCall = true;
+
+    this.setReady(false);
+
+    utils.timeStamp("Vizabi Model: Loading Data: " + this._id);
+
+    var parsers = this._getAllParsers();
+
+    var dataPromise = this.dataSource.load(query, parsers);
+
+    dataPromise.then(this.afterLoad.bind(this), function (err) {
+      return utils.warn("Problem with query: ", err, JSON.stringify(query));
+    });
+
+    return dataPromise;
+  },
+  handleDataConnectedChange: function handleDataConnectedChange(evt) {
+    var _this3 = this;
+
+    //defer is necessary because other events might be queued.
+    //load right after such events
+    utils.defer(function () {
+      _this3.startLoading().catch(utils.warn);
+    });
+  },
+  _isLoading: function _isLoading() {
+    return !this._loadedOnce || this._loadCall;
+  },
+
+
+  /**
+   * executes after data has actually been loaded
+   */
+  afterLoad: function afterLoad(dataId) {
+    this._dataId = dataId;
+
+    utils.timeStamp("Vizabi Model: Data loaded: " + this._id);
+  },
+
+
+  /**
+   * gets query that this model/hook needs to get data
+   * @returns {Array} query
+   */
+  getQuery: function getQuery(splashScreen) {
+    var filters = void 0;
+
+    //error if there's nothing to hook to
+    if (Object.keys(this._space).length < 1) {
+      utils.error("Error:", this._id, "can't find the space");
+      return true;
+    }
+
+    var prop = this.use === "property" || this.use === "constant";
+    var exceptions = prop ? { exceptType: "time" } : {};
+
+    // select
+    // we remove this.which from values if it duplicates a dimension
+    var allDimensions = utils.unique(this._getAllDimensions(exceptions));
+    var dimensions = this.use === "property" && allDimensions.length > 1 ? [this.spaceRef ? this._space[this.spaceRef].dim : this.which] : allDimensions;
+
+    if (!dimensions || !dimensions.length) {
+      utils.warn("getQuery() produced no query because no keys are available");
+      return true;
+    }
+
+    var select = {
+      key: dimensions,
+      value: dimensions.indexOf(this.which) != -1 || this.use === "constant" ? [] : [this.which]
+    };
+
+    // animatable
+    var animatable = this._getFirstDimension({ type: "time" });
+    // from
+    var from = prop ? "entities" : "datapoints";
+
+    // where
+    filters = this._getAllFilters(exceptions, splashScreen);
+    if (prop && allDimensions.length > 1) {
+      var f = {};
+      if (filters[dimensions]) f[dimensions] = filters[dimensions];
+      filters = f;
+    }
+
+    // make root $and explicit
+    var explicitAndFilters = {};
+    if (Object.keys(filters).length > 0) {
+      explicitAndFilters["$and"] = [];
+      for (var filterKey in filters) {
+        var filter = {};
+        filter[filterKey] = filters[filterKey];
+        explicitAndFilters["$and"].push(filter);
+      }
+    }
+
+    // join
+    var join = this._getAllJoins(exceptions, splashScreen);
+    if (prop && allDimensions.length > 1) {
+      var j = {};
+      if (join["$" + dimensions]) j["$" + dimensions] = join["$" + dimensions];
+      join = j;
+    }
+
+    // grouping
+    var grouping = this._parent._getGrouping();
+    if (grouping) {
+      grouping = utils.clone(grouping, dimensions);
+      if (utils.isEmpty(grouping)) grouping = false;
+    }
+
+    //return query
+    var query = {
+      "language": this.getClosestModel("locale").id,
+      "from": from,
+      "animatable": animatable,
+      "select": select,
+      "where": explicitAndFilters,
+      "join": join,
+      "order_by": prop ? ["rank"] : [this._space.time.dim]
+    };
+    if (grouping) query["grouping"] = grouping;
+    return query;
+  },
+
+
+  /**
+   * gets all hook dimensions
+   * @param {Object} opts options with exceptType or onlyType
+   * @returns {Array} all unique dimensions
+   */
+  _getAllDimensions: function _getAllDimensions(opts) {
+
+    // hook dimensions = marker dimensions. Later, hooks might have extra dimensions : )
+    return this._parent._getAllDimensions(opts);
+  },
+
+
+  /**
+   * gets first dimension that matches type
+   * @param {Object} options
+   * @returns {Array} all unique dimensions
+   */
+  _getFirstDimension: function _getFirstDimension(opts) {
+
+    // hook dimensions = marker dimensions. Later, hooks might have extra dimensions : )
+    return this._parent._getFirstDimension(opts);
+  },
+
+
+  /**
+   * gets all hook filters
+   * @param {Boolean} splashScreen get filters for first screen only
+   * @returns {Object} filters
+   */
+  _getAllFilters: function _getAllFilters(opts, splashScreen) {
+    opts = opts || {};
+    var filters = {};
+    var _this = this;
+    utils.forEach(this._space, function (h) {
+      if (opts.exceptType && h.getType() === opts.exceptType) {
+        return true;
+      }
+      if (opts.onlyType && h.getType() !== opts.onlyType) {
+        return true;
+      }
+      if (h.skipFilter || _this._parent.skipFilter) return;
+      // if query's dimensions are the same as the hook's, no join
+      if (utils.arrayEquals(_this._getAllDimensions(opts), [h.getDimension()])) {
+        filters = utils.extend(filters, h.getFilter(splashScreen));
+      } else {
+        var joinFilter = h.getFilter(splashScreen);
+        if (joinFilter != null && !utils.isEmpty(joinFilter)) {
+          var filter = {};
+          filter[h.getDimension()] = "$" + h.getDimension();
+          filters = utils.extend(filters, filter);
+        }
+      }
+    });
+    return filters;
+  },
+  _getAllJoins: function _getAllJoins(opts, splashScreen) {
+    var joins = {};
+    var _this = this;
+    utils.forEach(this._space, function (h) {
+      if (opts.exceptType && h.getType() === opts.exceptType) {
+        return true;
+      }
+      if (opts.onlyType && h.getType() !== opts.onlyType) {
+        return true;
+      }
+      if (utils.arrayEquals(_this._getAllDimensions(opts), [h.getDimension()])) {
+        return true;
+      }
+      if (h.skipFilter || _this._parent.skipFilter) return;
+
+      var filter = h.getFilter(splashScreen);
+      if (filter != null && !utils.isEmpty(filter)) {
+        joins["$" + h.getDimension()] = {
+          key: h.getDimension(),
+          where: h.getFilter(splashScreen)
+        };
+      }
+    });
+    return joins;
+  },
+
+
+  /**
+   * gets all hook filters
+   * @returns {Object} filters
+   */
+  _getAllParsers: function _getAllParsers() {
+    return Object.values(this._space).concat(this).reduce(function (result, model) {
+      var parser = model.getParser();
+      var column = model.getDimensionOrWhich();
+
+      parser && column && !(column in result) && (result[column] = parser);
+
+      return result;
+    }, {});
+  },
+
+
+  /**
+   * Gets tick values for this hook
+   * @returns {Function} That returns the value for this tick
+   */
+  getTickFormatter: function getTickFormatter() {
+
+    var _this = this;
+    var SHARE = "share";
+    var PERCENT = "percent";
+
+    // percentageMode works like rounded if set to SHARE, but multiplies by 100 and suffixes with "%"
+    // percentageMode works like rounded if set to PERCENT, but suffixes with "%"
+
+    return function (x, index, group, removePrefix, percentageMode) {
+
+      percentageMode = _this.getConceptprops().format;
+      if (percentageMode === SHARE) x *= 100;
+
+      // Format time values
+      // Assumption: a hook has always time in its space
+      if (utils.isDate(x)) return _this._space.time.formatDate(x);
+
+      // Dealing with values that are supposed to be time
+      if (_this.scaleType === "time" && !utils.isDate(x)) {
+        return _this._space.time.formatDate(new Date(x));
+      }
+
+      // Strings, null, NaN and undefined are bypassing any formatter
+      if (utils.isString(x) || !x && x !== 0) return x;
+
+      if (Math.abs(x) < 0.00000000000001) return "0";
+
+      var format = "r"; //rounded format. use "f" for fixed
+      var prec = 3; //round to so many significant digits
+
+      var prefix = "";
+      if (removePrefix) return d3.format("." + prec + format)(x);
+
+      //---------------------
+      // BEAUTIFIERS GO HOME!
+      // don't break formatting please
+      //---------------------
+      // the tiny constant compensates epsilon-error when doing logsrithms
+      /* eslint-disable */
+      switch (Math.floor(Math.log(Math.abs(x)) / Math.LN10 + 0.00000000000001)) {
+        case -13:
+          x *= 1000000000000;prefix = "p";break; //0.1p
+        case -10:
+          x *= 1000000000;prefix = "n";break; //0.1n
+        case -7:
+          x *= 1000000;prefix = "µ";break; //0.1µ
+        case -6:
+          x *= 1000000;prefix = "µ";break; //1µ
+        case -5:
+          x *= 1000000;prefix = "µ";break; //10µ
+        case -4:
+          break; //0.0001
+        case -3:
+          break; //0.001
+        case -2:
+          break; //0.01
+        case -1:
+          break; //0.1
+        case 0:
+          break; //1
+        case 1:
+          break; //10
+        case 2:
+          break; //100
+        case 3:
+          break; //1000
+        case 4:
+          x /= 1000;prefix = "k";break; //10k
+        case 5:
+          x /= 1000;prefix = "k";break; //100k
+        case 6:
+          x /= 1000000;prefix = "M";break; //1M
+        case 7:
+          x /= 1000000;prefix = "M";break; //10M
+        case 8:
+          x /= 1000000;prefix = "M";break; //100M
+        case 9:
+          x /= 1000000000;prefix = "B";break; //1B
+        case 10:
+          x /= 1000000000;prefix = "B";break; //10B
+        case 11:
+          x /= 1000000000;prefix = "B";break; //100B
+        case 12:
+          x /= 1000000000000;prefix = "TR";break; //1TR
+        case 13:
+          x /= 1000000000000;prefix = "TR";break; //10TR
+        case 14:
+          x /= 1000000000000;prefix = "TR";break; //100TR
+        //use the D3 SI formatting for the extreme cases
+        default:
+          return d3.format("." + prec + "s")(x).replace("G", "B");
+      }
+      /* eslint-enable */
+
+      var formatted = d3.format("." + prec + format)(x);
+      //remove trailing zeros if dot exists to avoid numbers like 1.0M, 3.0B, 1.500, 0.9700, 0.0
+      if (formatted.indexOf(".") > -1) formatted = formatted.replace(/0+$/, "").replace(/\.$/, "");
+
+      // use manual formatting for the cases above
+      return formatted + prefix + (percentageMode === PERCENT || percentageMode === SHARE ? "%" : "");
+    };
+  },
+
+
+  /**
+   * Gets the d3 scale for this hook. if no scale then builds it
+   * @returns {Array} domain
+   */
+  getScale: function getScale() {
+    if (this.scale == null) console.warn("scale is null");
+    return this.scale;
+  },
+
+
+  /**
+   * Gets unique values in a column
+   * @param {String|Array} attr parameter
+   * @returns {Array} unique values
+   */
+  getUnique: function getUnique(attr) {
+    if (!this.isHook()) return;
+    if (!attr) attr = this._getFirstDimension({ type: "time" });
+    return this.dataSource.getData(this._dataId, "unique", attr);
+  },
+  getData: function getData() {
+    return this.dataSource.getData(this._dataId);
+  },
+
+
+  /**
+   * gets dataset without null or nan values with respect to this hook's which
+   * @returns {Object} filtered items object
+   */
+  getValidItems: function getValidItems() {
+    return this.dataSource.getData(this._dataId, "valid", this.which);
+  },
+
+
+  /**
+   * gets nested dataset
+   * @param {Array} keys define how to nest the set
+   * @returns {Object} hash-map of key-value pairs
+   */
+  getNestedItems: function getNestedItems(keys) {
+    if (!keys) return utils.warn("No keys provided to getNestedItems(<keys>)");
+    return this.dataSource.getData(this._dataId, "nested", keys);
+  },
+  getHaveNoDataPointsPerKey: function getHaveNoDataPointsPerKey() {
+    return this.dataSource.getData(this._dataId, "haveNoDataPointsPerKey", this.which);
+  },
+
+
+  /**
+   * Gets limits
+   * @param {String} attr parameter
+   * @returns {Object} limits (min and max)
+   */
+  getLimits: function getLimits(attr) {
+    return this.dataSource.getData(this._dataId, "limits", attr);
+  },
+  getFrame: function getFrame(steps, forceFrame, selected) {
+    return this.dataSource.getFrame(this._dataId, steps, forceFrame, selected);
+  },
+  getFrames: function getFrames(steps, selected) {
+    return this.dataSource.getFrames(this._dataId, steps, selected);
+  },
+
+
+  /**
+   * gets hook values according dimension values
+   */
+  getItems: function getItems() {
+    var _this = this;
+    var dim = this.spaceRef && this._space[this.spaceRef] ? this._space[this.spaceRef].dim : _this._getFirstDimension({ exceptType: "time" });
+    var items = {};
+    var validItems = this.getValidItems();
+
+    if (utils.isArray(validItems)) {
+      validItems.forEach(function (d) {
+        items[d[dim]] = d[_this.which];
+      });
+    }
+
+    return items;
+  },
+  getLimitsByDimensions: function getLimitsByDimensions(dims) {
+    var filtered = this.dataSource.getData(this._dataId, "nested", dims);
+    var values = {};
+    var limitsDim = {};
+    var attr = this.which;
+
+    var countLimits = function countLimits(items, limitsDim, id) {
+
+      var filtered = items.reduce(function (filtered, d) {
+
+        // check for dates
+        var f = utils.isDate(d[attr]) ? d[attr] : parseFloat(d[attr]);
+
+        // if it is a number
+        if (!isNaN(f)) {
+          filtered.push(f);
+        }
+
+        //filter
+        return filtered;
+      }, []);
+
+      // get min/max for the filtered rows
+      var min = void 0;
+      var max = void 0;
+      var limits = {};
+      for (var i = 0; i < filtered.length; i += 1) {
+        var c = filtered[i];
+        if (typeof min === "undefined" || c < min) {
+          min = c;
+        }
+        if (typeof max === "undefined" || c > max) {
+          max = c;
+        }
+      }
+      limits.min = min || 0;
+      limits.max = max || 100;
+      limitsDim[id] = limits;
+    };
+
+    utils.forEach(filtered, function (times, key) {
+      var limit = limitsDim[JSON.parse(key).join(",")] = {};
+      utils.forEach(times, function (item, time) {
+        countLimits(item, limit, time);
+      });
+    });
+
+    return limitsDim;
+  },
+
+
+  /**
+   * Gets the concept properties of the hook's "which"
+   * @returns {Object} concept properties
+   */
+  getConceptprops: function getConceptprops() {
+    return this.use !== "constant" && this.dataSource ? this.dataSource.getConceptprops(this.which) : {};
+  },
+
+
+  /**
+   * Find if a current model is discrete
+   * @returns {boolean} true if it's a discrete model, false if continious
+   */
+  isDiscrete: function isDiscrete() {
+    return this.scaleType === "ordinal";
+  },
+  validate: function validate() {
+    var _this4 = this;
+
+    this._super();
+
+    // validate scale type: only makes sense if which is defined
+    if (this.which) {
+      var scaleType = this.scaleType;
+
+      var _ref = this.getConceptprops() || {},
+          _ref$scales = _ref.scales,
+          scales = _ref$scales === undefined ? [] : _ref$scales;
+
+      if (this.allow && this.allow.scales && this.allow.scales.length > 0) {
+        scales = scales.filter(function (val) {
+          return _this4.allow.scales.indexOf(val) != -1;
+        });
+      }
+
+      var scaleTypeIsAllowed = scales.includes(scaleType);
+      var genericLogIsAllowed = scales.includes("log") && scaleType === "genericLog";
+      if (!(scaleTypeIsAllowed || genericLogIsAllowed) && scales.length > 0) {
+        var _scales = scales,
+            _scales2 = _slicedToArray(_scales, 1),
+            firstAllowedScaleType = _scales2[0];
+
+        this.set({ scaleType: firstAllowedScaleType }, null, false);
+      }
+    }
+  },
+  getEntity: function getEntity() {
+    return this._space[this.spaceRef || this._parent.getSpace()[0]];
+  },
+  getDataKeys: function getDataKeys() {
+    var query = this.dataSource.getData(this._dataId, "query");
+    return query.select.key.filter(function (key) {
+      return key !== query.animatable;
+    });
+  }
+});
+
+exports.default = Hook;
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 if (__webpack_require__(8)) {
   var LIBRARY = __webpack_require__(40);
   var global = __webpack_require__(3);
   var fails = __webpack_require__(4);
   var $export = __webpack_require__(0);
   var $typed = __webpack_require__(71);
-  var $buffer = __webpack_require__(103);
+  var $buffer = __webpack_require__(104);
   var ctx = __webpack_require__(22);
   var anInstance = __webpack_require__(46);
   var propertyDesc = __webpack_require__(38);
@@ -3167,29 +3927,29 @@ if (__webpack_require__(8)) {
   var redefineAll = __webpack_require__(48);
   var toInteger = __webpack_require__(28);
   var toLength = __webpack_require__(10);
-  var toIndex = __webpack_require__(134);
+  var toIndex = __webpack_require__(137);
   var toAbsoluteIndex = __webpack_require__(42);
   var toPrimitive = __webpack_require__(26);
   var has = __webpack_require__(14);
   var classof = __webpack_require__(58);
   var isObject = __webpack_require__(6);
   var toObject = __webpack_require__(12);
-  var isArrayIter = __webpack_require__(94);
+  var isArrayIter = __webpack_require__(95);
   var create = __webpack_require__(43);
   var getPrototypeOf = __webpack_require__(20);
   var gOPN = __webpack_require__(44).f;
-  var getIterFn = __webpack_require__(96);
+  var getIterFn = __webpack_require__(97);
   var uid = __webpack_require__(39);
   var wks = __webpack_require__(7);
   var createArrayMethod = __webpack_require__(30);
   var createArrayIncludes = __webpack_require__(62);
   var speciesConstructor = __webpack_require__(69);
-  var ArrayIterators = __webpack_require__(99);
+  var ArrayIterators = __webpack_require__(100);
   var Iterators = __webpack_require__(53);
   var $iterDetect = __webpack_require__(66);
   var setSpecies = __webpack_require__(45);
-  var arrayFill = __webpack_require__(98);
-  var arrayCopyWithin = __webpack_require__(124);
+  var arrayFill = __webpack_require__(99);
+  var arrayCopyWithin = __webpack_require__(127);
   var $DP = __webpack_require__(9);
   var $GOPD = __webpack_require__(19);
   var dP = $DP.f;
@@ -3635,13 +4395,13 @@ if (__webpack_require__(8)) {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Map = __webpack_require__(129);
+var Map = __webpack_require__(132);
 var $export = __webpack_require__(0);
 var shared = __webpack_require__(61)('metadata');
-var store = shared.store || (shared.store = new (__webpack_require__(132))());
+var store = shared.store || (shared.store = new (__webpack_require__(135))());
 
 var getOrCreateMetadataMap = function (target, targetKey, create) {
   var targetMetadata = store.get(target);
@@ -3692,7 +4452,7 @@ module.exports = {
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var META = __webpack_require__(39)('meta');
@@ -3751,7 +4511,7 @@ var meta = module.exports = {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 22.1.3.31 Array.prototype[@@unscopables]
@@ -3762,675 +4522,6 @@ module.exports = function (key) {
   ArrayProto[UNSCOPABLES][key] = true;
 };
 
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _dataconnected = __webpack_require__(55);
-
-var _dataconnected2 = _interopRequireDefault(_dataconnected);
-
-var _events = __webpack_require__(50);
-
-var _events2 = _interopRequireDefault(_events);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * HOOK MODEL
- */
-
-var Hook = _dataconnected2.default.extend({
-
-  //some hooks can be important. like axis x and y
-  //that means, if X or Y doesn't have data at some point, we can't show markers
-  _important: false,
-
-  objectLeafs: ["autogenerate"],
-  dataConnectedChildren: ["use", "which"],
-
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      data: "data",
-      which: null
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-  buildScale: function buildScale() {
-    //overloaded by specific hook models, like axis and color
-  },
-
-
-  /**
-   * After complete model tree is created, this allows models to listen to eachother.
-   */
-  setInterModelListeners: function setInterModelListeners() {
-    var _this2 = this;
-
-    var spaceRefs = this._parent.getSpace(this);
-
-    //check what we want to hook this model to
-    utils.forEach(spaceRefs, function (name) {
-      //hook with the closest prefix to this model
-      _this2._space[name] = _this2.getClosestModel(name);
-      //if hooks change, this should load again
-      _this2._space[name].on("dataConnectedChange", _this2.handleDataConnectedChange.bind(_this2));
-    });
-    this.getClosestModel("locale").on("dataConnectedChange", this.handleDataConnectedChange.bind(this));
-  },
-  onSuccessfullLoad: function onSuccessfullLoad() {
-    this.validate();
-    this.buildScale();
-    this._super();
-  },
-  setWhich: function setWhich(newValue) {
-
-    var obj = { which: newValue.concept };
-
-    if (newValue.dataSource) obj.data = newValue.dataSource;
-    var newDataSource = this.getClosestModel(obj.data || this.data);
-    var conceptProps = newDataSource.getConceptprops(newValue.concept);
-
-    if (newValue.which === "_default") {
-      obj.use = "constant";
-    } else {
-      if (conceptProps.use) obj.use = conceptProps.use;
-    }
-
-    if (conceptProps.scales) {
-      obj.scaleType = conceptProps.scales[0];
-    }
-
-    if (this.getType() === "axis" || this.getType() === "size") {
-      obj.domainMin = null;
-      obj.domainMax = null;
-      obj.zoomedMin = null;
-      obj.zoomedMax = null;
-    }
-
-    this.set(obj);
-  },
-  setScaleType: function setScaleType(newValue) {
-    this.buildScale(newValue);
-  },
-  preloadData: function preloadData() {
-    this.dataSource = this.getClosestModel(this.data);
-    return this._super();
-  },
-  afterPreload: function afterPreload() {
-    this.autoGenerateModel();
-  },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null && this.autogenerate) {
-      this.which = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType).concept;
-    }
-  },
-
-
-  /**
-   * Hooks loads data, models ask children to load data
-   * Basically, this method:
-   * loads is theres something to be loaded:
-   * does not load if there's nothing to be loaded
-   * @param {Object} options (includes splashScreen)
-   * @returns defer
-   */
-  loadData: function loadData() {
-    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-
-    // then start loading data
-
-    if (!this.which) return Promise.resolve();
-
-    this.trigger("hook_change");
-
-    // TODO: should be set on data source switch, but load happens before change events
-    this.dataSource = this.getClosestModel(this.data);
-
-    var query = this.getQuery(opts.splashScreen);
-
-    if (query === true) return Promise.resolve();
-
-    //useful to check if in the middle of a load call
-    this._loadCall = true;
-
-    this.setReady(false);
-
-    utils.timeStamp("Vizabi Model: Loading Data: " + this._id);
-
-    var parsers = this._getAllParsers();
-
-    var dataPromise = this.dataSource.load(query, parsers);
-
-    dataPromise.then(this.afterLoad.bind(this), function (err) {
-      return utils.warn("Problem with query: ", err, JSON.stringify(query));
-    });
-
-    return dataPromise;
-  },
-  handleDataConnectedChange: function handleDataConnectedChange(evt) {
-    var _this3 = this;
-
-    //defer is necessary because other events might be queued.
-    //load right after such events
-    utils.defer(function () {
-      _this3.startLoading().catch(utils.warn);
-    });
-  },
-  _isLoading: function _isLoading() {
-    return !this._loadedOnce || this._loadCall;
-  },
-
-
-  /**
-   * executes after data has actually been loaded
-   */
-  afterLoad: function afterLoad(dataId) {
-    this._dataId = dataId;
-
-    var grouping = this._parent._getGrouping();
-    if (grouping) {
-      this.dataSource.setGrouping(dataId, grouping);
-    }
-
-    utils.timeStamp("Vizabi Model: Data loaded: " + this._id);
-  },
-
-
-  /**
-   * gets query that this model/hook needs to get data
-   * @returns {Array} query
-   */
-  getQuery: function getQuery(splashScreen) {
-    var filters = void 0;
-
-    //error if there's nothing to hook to
-    if (Object.keys(this._space).length < 1) {
-      utils.error("Error:", this._id, "can't find the space");
-      return true;
-    }
-
-    var prop = this.use === "property" || this.use === "constant";
-    var exceptions = prop ? { exceptType: "time" } : {};
-
-    // select
-    // we remove this.which from values if it duplicates a dimension
-    var allDimensions = utils.unique(this._getAllDimensions(exceptions));
-    var dimensions = prop && allDimensions.length > 1 ? [this.spaceRef ? this._space[this.spaceRef].dim : this.which] : allDimensions;
-
-    dimensions = dimensions.filter(function (f) {
-      return f !== "_default";
-    }); // && f!==null);
-    if (!dimensions || !dimensions.length) {
-      utils.warn("getQuery() produced no query because no keys are available");
-      return true;
-    }
-
-    var select = {
-      key: dimensions,
-      value: dimensions.indexOf(this.which) != -1 || this.use === "constant" ? [] : [this.which]
-    };
-
-    // animatable
-    var animatable = this._getFirstDimension({ type: "time" });
-    // from
-    var from = prop ? "entities" : "datapoints";
-
-    // where
-    filters = this._getAllFilters(exceptions, splashScreen);
-    if (prop && allDimensions.length > 1) {
-      var f = {};
-      if (filters[dimensions]) f[dimensions] = filters[dimensions];
-      filters = f;
-    }
-
-    // make root $and explicit
-    var explicitAndFilters = {};
-    if (Object.keys(filters).length > 0) {
-      explicitAndFilters["$and"] = [];
-      for (var filterKey in filters) {
-        var filter = {};
-        filter[filterKey] = filters[filterKey];
-        explicitAndFilters["$and"].push(filter);
-      }
-    }
-
-    // join
-    var join = this._getAllJoins(exceptions, splashScreen);
-    if (prop && allDimensions.length > 1) {
-      var j = {};
-      if (join["$" + dimensions]) j["$" + dimensions] = join["$" + dimensions];
-      join = j;
-    }
-
-    //return query
-    return {
-      "language": this.getClosestModel("locale").id,
-      "from": from,
-      "animatable": animatable,
-      "select": select,
-      "where": explicitAndFilters,
-      "join": join,
-      "order_by": prop ? ["rank"] : [this._space.time.dim]
-    };
-  },
-
-
-  /**
-   * gets all hook dimensions
-   * @param {Object} opts options with exceptType or onlyType
-   * @returns {Array} all unique dimensions
-   */
-  _getAllDimensions: function _getAllDimensions(opts) {
-
-    // hook dimensions = marker dimensions. Later, hooks might have extra dimensions : )
-    return this._parent._getAllDimensions(opts);
-  },
-
-
-  /**
-   * gets first dimension that matches type
-   * @param {Object} options
-   * @returns {Array} all unique dimensions
-   */
-  _getFirstDimension: function _getFirstDimension(opts) {
-
-    // hook dimensions = marker dimensions. Later, hooks might have extra dimensions : )
-    return this._parent._getFirstDimension(opts);
-  },
-
-
-  /**
-   * gets all hook filters
-   * @param {Boolean} splashScreen get filters for first screen only
-   * @returns {Object} filters
-   */
-  _getAllFilters: function _getAllFilters(opts, splashScreen) {
-    opts = opts || {};
-    var filters = {};
-    var _this = this;
-    utils.forEach(this._space, function (h) {
-      if (opts.exceptType && h.getType() === opts.exceptType) {
-        return true;
-      }
-      if (opts.onlyType && h.getType() !== opts.onlyType) {
-        return true;
-      }
-      if (h.skipFilter || _this._parent.skipFilter) return;
-      // if query's dimensions are the same as the hook's, no join
-      if (utils.arrayEquals(_this._getAllDimensions(opts), [h.getDimension()])) {
-        filters = utils.extend(filters, h.getFilter(splashScreen));
-      } else {
-        var joinFilter = h.getFilter(splashScreen);
-        if (joinFilter != null && !utils.isEmpty(joinFilter)) {
-          var filter = {};
-          filter[h.getDimension()] = "$" + h.getDimension();
-          filters = utils.extend(filters, filter);
-        }
-      }
-    });
-    return filters;
-  },
-  _getAllJoins: function _getAllJoins(opts, splashScreen) {
-    var joins = {};
-    var _this = this;
-    utils.forEach(this._space, function (h) {
-      if (opts.exceptType && h.getType() === opts.exceptType) {
-        return true;
-      }
-      if (opts.onlyType && h.getType() !== opts.onlyType) {
-        return true;
-      }
-      if (utils.arrayEquals(_this._getAllDimensions(opts), [h.getDimension()])) {
-        return true;
-      }
-      if (h.skipFilter || _this._parent.skipFilter) return;
-
-      var filter = h.getFilter(splashScreen);
-      if (filter != null && !utils.isEmpty(filter)) {
-        joins["$" + h.getDimension()] = {
-          key: h.getDimension(),
-          where: h.getFilter(splashScreen)
-        };
-      }
-    });
-    return joins;
-  },
-
-
-  /**
-   * gets all hook filters
-   * @returns {Object} filters
-   */
-  _getAllParsers: function _getAllParsers() {
-    return Object.values(this._space).concat(this).reduce(function (result, model) {
-      var parser = model.getParser();
-      var column = model.getDimensionOrWhich();
-
-      parser && column && !(column in result) && (result[column] = parser);
-
-      return result;
-    }, {});
-  },
-
-
-  /**
-   * Gets tick values for this hook
-   * @returns {Function} That returns the value for this tick
-   */
-  getTickFormatter: function getTickFormatter() {
-
-    var _this = this;
-    var SHARE = "share";
-    var PERCENT = "percent";
-
-    // percentageMode works like rounded if set to SHARE, but multiplies by 100 and suffixes with "%"
-    // percentageMode works like rounded if set to PERCENT, but suffixes with "%"
-
-    return function (x, index, group, removePrefix, percentageMode) {
-
-      percentageMode = _this.getConceptprops().format;
-      if (percentageMode === SHARE) x *= 100;
-
-      // Format time values
-      // Assumption: a hook has always time in its space
-      if (utils.isDate(x)) return _this._space.time.formatDate(x);
-
-      // Dealing with values that are supposed to be time
-      if (_this.scaleType === "time" && !utils.isDate(x)) {
-        return _this._space.time.formatDate(new Date(x));
-      }
-
-      // Strings, null, NaN and undefined are bypassing any formatter
-      if (utils.isString(x) || !x && x !== 0) return x;
-
-      if (Math.abs(x) < 0.00000000000001) return "0";
-
-      var format = "r"; //rounded format. use "f" for fixed
-      var prec = 3; //round to so many significant digits
-
-      var prefix = "";
-      if (removePrefix) return d3.format("." + prec + format)(x);
-
-      //---------------------
-      // BEAUTIFIERS GO HOME!
-      // don't break formatting please
-      //---------------------
-      // the tiny constant compensates epsilon-error when doing logsrithms
-      /* eslint-disable */
-      switch (Math.floor(Math.log(Math.abs(x)) / Math.LN10 + 0.00000000000001)) {
-        case -13:
-          x *= 1000000000000;prefix = "p";break; //0.1p
-        case -10:
-          x *= 1000000000;prefix = "n";break; //0.1n
-        case -7:
-          x *= 1000000;prefix = "µ";break; //0.1µ
-        case -6:
-          x *= 1000000;prefix = "µ";break; //1µ
-        case -5:
-          x *= 1000000;prefix = "µ";break; //10µ
-        case -4:
-          break; //0.0001
-        case -3:
-          break; //0.001
-        case -2:
-          break; //0.01
-        case -1:
-          break; //0.1
-        case 0:
-          break; //1
-        case 1:
-          break; //10
-        case 2:
-          break; //100
-        case 3:
-          break; //1000
-        case 4:
-          x /= 1000;prefix = "k";break; //10k
-        case 5:
-          x /= 1000;prefix = "k";break; //100k
-        case 6:
-          x /= 1000000;prefix = "M";break; //1M
-        case 7:
-          x /= 1000000;prefix = "M";break; //10M
-        case 8:
-          x /= 1000000;prefix = "M";break; //100M
-        case 9:
-          x /= 1000000000;prefix = "B";break; //1B
-        case 10:
-          x /= 1000000000;prefix = "B";break; //10B
-        case 11:
-          x /= 1000000000;prefix = "B";break; //100B
-        case 12:
-          x /= 1000000000000;prefix = "TR";break; //1TR
-        case 13:
-          x /= 1000000000000;prefix = "TR";break; //10TR
-        case 14:
-          x /= 1000000000000;prefix = "TR";break; //100TR
-        //use the D3 SI formatting for the extreme cases
-        default:
-          return d3.format("." + prec + "s")(x).replace("G", "B");
-      }
-      /* eslint-enable */
-
-      var formatted = d3.format("." + prec + format)(x);
-      //remove trailing zeros if dot exists to avoid numbers like 1.0M, 3.0B, 1.500, 0.9700, 0.0
-      if (formatted.indexOf(".") > -1) formatted = formatted.replace(/0+$/, "").replace(/\.$/, "");
-
-      // use manual formatting for the cases above
-      return formatted + prefix + (percentageMode === PERCENT || percentageMode === SHARE ? "%" : "");
-    };
-  },
-
-
-  /**
-   * Gets the d3 scale for this hook. if no scale then builds it
-   * @returns {Array} domain
-   */
-  getScale: function getScale() {
-    if (this.scale == null) console.warn("scale is null");
-    return this.scale;
-  },
-
-
-  /**
-   * Gets unique values in a column
-   * @param {String|Array} attr parameter
-   * @returns {Array} unique values
-   */
-  getUnique: function getUnique(attr) {
-    if (!this.isHook()) return;
-    if (!attr) attr = this._getFirstDimension({ type: "time" });
-    return this.dataSource.getData(this._dataId, "unique", attr);
-  },
-  getData: function getData() {
-    return this.dataSource.getData(this._dataId);
-  },
-
-
-  /**
-   * gets dataset without null or nan values with respect to this hook's which
-   * @returns {Object} filtered items object
-   */
-  getValidItems: function getValidItems() {
-    return this.dataSource.getData(this._dataId, "valid", this.which);
-  },
-
-
-  /**
-   * gets nested dataset
-   * @param {Array} keys define how to nest the set
-   * @returns {Object} hash-map of key-value pairs
-   */
-  getNestedItems: function getNestedItems(keys) {
-    if (!keys) return utils.warn("No keys provided to getNestedItems(<keys>)");
-    return this.dataSource.getData(this._dataId, "nested", keys);
-  },
-  getHaveNoDataPointsPerKey: function getHaveNoDataPointsPerKey() {
-    return this.dataSource.getData(this._dataId, "haveNoDataPointsPerKey", this.which);
-  },
-
-
-  /**
-   * Gets limits
-   * @param {String} attr parameter
-   * @returns {Object} limits (min and max)
-   */
-  getLimits: function getLimits(attr) {
-    return this.dataSource.getData(this._dataId, "limits", attr);
-  },
-  getFrame: function getFrame(steps, forceFrame, selected) {
-    return this.dataSource.getFrame(this._dataId, steps, forceFrame, selected);
-  },
-  getFrames: function getFrames(steps, selected) {
-    return this.dataSource.getFrames(this._dataId, steps, selected);
-  },
-
-
-  /**
-   * gets hook values according dimension values
-   */
-  getItems: function getItems() {
-    var _this = this;
-    var dim = this.spaceRef && this._space[this.spaceRef] ? this._space[this.spaceRef].dim : _this._getFirstDimension({ exceptType: "time" });
-    var items = {};
-    var validItems = this.getValidItems();
-
-    if (utils.isArray(validItems)) {
-      validItems.forEach(function (d) {
-        items[d[dim]] = d[_this.which];
-      });
-    }
-
-    return items;
-  },
-  getLimitsByDimensions: function getLimitsByDimensions(dims) {
-    var filtered = this.dataSource.getData(this._dataId, "nested", dims);
-    var values = {};
-    var limitsDim = {};
-    var attr = this.which;
-
-    var countLimits = function countLimits(items, limitsDim, id) {
-
-      var filtered = items.reduce(function (filtered, d) {
-
-        // check for dates
-        var f = utils.isDate(d[attr]) ? d[attr] : parseFloat(d[attr]);
-
-        // if it is a number
-        if (!isNaN(f)) {
-          filtered.push(f);
-        }
-
-        //filter
-        return filtered;
-      }, []);
-
-      // get min/max for the filtered rows
-      var min = void 0;
-      var max = void 0;
-      var limits = {};
-      for (var i = 0; i < filtered.length; i += 1) {
-        var c = filtered[i];
-        if (typeof min === "undefined" || c < min) {
-          min = c;
-        }
-        if (typeof max === "undefined" || c > max) {
-          max = c;
-        }
-      }
-      limits.min = min || 0;
-      limits.max = max || 100;
-      limitsDim[id] = limits;
-    };
-
-    var iterateGroupKeys = function iterateGroupKeys(data, deep, result, cb) {
-      deep--;
-      utils.forEach(data, function (d, id) {
-        if (deep) {
-          result[id] = {};
-          iterateGroupKeys(d, deep, result[id], cb);
-        } else {
-          cb(d, result, id);
-        }
-      });
-    };
-
-    iterateGroupKeys(filtered, dims.length, limitsDim, countLimits);
-
-    return limitsDim;
-  },
-
-
-  /**
-   * Gets the concept properties of the hook's "which"
-   * @returns {Object} concept properties
-   */
-  getConceptprops: function getConceptprops() {
-    return this.use !== "constant" && this.dataSource ? this.dataSource.getConceptprops(this.which) : {};
-  },
-
-
-  /**
-   * Find if a current model is discrete
-   * @returns {boolean} true if it's a discrete model, false if continious
-   */
-  isDiscrete: function isDiscrete() {
-    return this.scaleType === "ordinal";
-  },
-  validate: function validate() {
-    var _this4 = this;
-
-    this._super();
-
-    // validate scale type: only makes sense if which is defined
-    if (this.which) {
-      var scaleType = this.scaleType;
-
-      var _getConceptprops = this.getConceptprops(),
-          _getConceptprops$scal = _getConceptprops.scales,
-          scales = _getConceptprops$scal === undefined ? [] : _getConceptprops$scal;
-
-      if (this.allow && this.allow.scales && this.allow.scales.length > 0) {
-        scales = scales.filter(function (val) {
-          return _this4.allow.scales.indexOf(val) != -1;
-        });
-      }
-
-      var scaleTypeIsAllowed = scales.includes(scaleType);
-      var genericLogIsAllowed = scales.includes("log") && scaleType === "genericLog";
-      if (!(scaleTypeIsAllowed || genericLogIsAllowed) && scales.length > 0) {
-        var _scales = scales,
-            _scales2 = _slicedToArray(_scales, 1),
-            firstAllowedScaleType = _scales2[0];
-
-        this.set({ scaleType: firstAllowedScaleType === "nominal" ? "ordinal" : firstAllowedScaleType }, null, false);
-      }
-    }
-  },
-  getEntity: function getEntity() {
-    return this._space[this.spaceRef || this._parent.getSpace()[0]];
-  }
-});
-
-exports.default = Hook;
 
 /***/ }),
 /* 37 */
@@ -4450,6 +4541,18 @@ var utils = _interopRequireWildcard(_utils);
 var _component = __webpack_require__(5);
 
 var _component2 = _interopRequireDefault(_component);
+
+var _entities = __webpack_require__(108);
+
+var _entities2 = _interopRequireDefault(_entities);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+var _marker = __webpack_require__(76);
+
+var _marker2 = _interopRequireDefault(_marker);
 
 var _iconset = __webpack_require__(21);
 
@@ -4521,13 +4624,10 @@ var IndPicker = _component2.default.extend({
           marker.getFrame(_this.model.time.value, function (frame) {
             if (_this._highlighted || !frame) return;
 
-            var isHookFrameValuesMD = _this.multiDim && !mdl.isDiscrete() && mdl.which !== marker._getFirstDimension({ type: "time" });
-            // should be replaced by dimension of entity set for this hook (if use == property)
-            var dimension = isHookFrameValuesMD ? null : mdl.getEntity().getDimension();
-            var _highlightedEntity = marker.getHighlighted(dimension);
+            var _highlightedEntity = marker.getHighlighted();
             if (_highlightedEntity.length) {
-
-              var value = isHookFrameValuesMD ? utils.getValueMD(_highlightedEntity[0], frame[mdl._name], _this.KEYS) : frame[mdl._name][_highlightedEntity[0]];
+              var KEYS = mdl.getDataKeys();
+              var value = frame[mdl._name][utils.getKey(_highlightedEntity[0], KEYS)];
 
               // resolve strings via the color legend model
               if (value && mdl._type === "color" && mdl.isDiscrete()) {
@@ -4555,11 +4655,9 @@ var IndPicker = _component2.default.extend({
       });
     }
 
-    this.targetProp = config.targetProp || this.model.targetModel.isHook() ? "which" : this.model.targetModel.isEntities() ? "dim" : null;
+    this.targetProp = config.targetProp || this.model.targetModel instanceof _hook2.default ? "which" : this.model.targetModel instanceof _entities2.default ? "dim" : this.model.targetModel instanceof _marker2.default ? "space" : null;
   },
   ready: function ready() {
-    this.KEYS = this.model.targetModel.isHook() ? utils.unique(this.model.targetModel._parent._getAllDimensions({ exceptType: "time" })) : [];
-    this.multiDim = this.KEYS.length > 1;
     this.updateView();
   },
   readyOnce: function readyOnce() {
@@ -4607,30 +4705,31 @@ var IndPicker = _component2.default.extend({
     var _this = this;
     var translator = this.model.locale.getTFunction();
 
-    var mdl = _this.model.targetModel;
-    var which = mdl[_this.targetProp];
-    var type = mdl._type;
+    var targetModel = _this.model.targetModel;
+    var which = targetModel[_this.targetProp];
+    var type = targetModel._type;
 
     var concept = void 0;
-
-    if (mdl.isHook()) {
-      concept = mdl.getConceptprops();
-    } else {
-      utils.forEach(mdl._root._data, function (m) {
-        if (m._type === "data") concept = m.getConceptprops(mdl[_this.targetProp]);
-      });
-    }
-
     var selectText = void 0;
 
-    if (this.showHoverValues && mdl.isHook() && this._highlighted) {
-      var unit = !concept.unit ? "" : " " + concept.unit;
-      var formatter = mdl.getTickFormatter();
+    if (targetModel instanceof _hook2.default) {
+      concept = targetModel.getConceptprops();
 
-      selectText = this._highlightedValue || this._highlightedValue === 0 ? formatter(this._highlightedValue) + unit : translator("hints/nodata");
+      if (this.showHoverValues && this._highlighted) {
+        var formatter = targetModel.getTickFormatter();
+
+        selectText = this._highlightedValue || this._highlightedValue === 0 ? formatter(this._highlightedValue) : translator("hints/nodata");
+      } else {
+        //Let the indicator "_default" in tree menu be translated differnetly for every hook type
+        selectText = which === "_default" ? translator("indicator/_default/" + type) : concept.name_short;
+      }
     } else {
-      //Let the indicator "_default" in tree menu be translated differnetly for every hook type
-      selectText = which === "_default" ? translator("indicator/_default/" + type) : concept.name;
+
+      // targetModel is marker
+      var dataManager = targetModel._root.dataManager;
+      selectText = targetModel.space.map(function (dim) {
+        return dataManager.getConceptProperty(targetModel._space[dim].dim, "name");
+      }).join(", ");
     }
 
     this.el_select.text(selectText).attr("title", function (d) {
@@ -4638,7 +4737,7 @@ var IndPicker = _component2.default.extend({
     });
 
     // hide info el if no data is available for it to make sense
-    var hideInfoEl = !concept.description && !concept.sourceName && !concept.sourceLink;
+    var hideInfoEl = concept && !concept.description && !concept.sourceName && !concept.sourceLink;
     this.infoEl.classed("vzb-invisible", hideInfoEl);
   }
 });
@@ -4682,8 +4781,8 @@ module.exports = false;
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = __webpack_require__(110);
-var enumBugKeys = __webpack_require__(81);
+var $keys = __webpack_require__(113);
+var enumBugKeys = __webpack_require__(82);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -4709,22 +4808,22 @@ module.exports = function (index, length) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject = __webpack_require__(2);
-var dPs = __webpack_require__(111);
-var enumBugKeys = __webpack_require__(81);
-var IE_PROTO = __webpack_require__(80)('IE_PROTO');
+var dPs = __webpack_require__(114);
+var enumBugKeys = __webpack_require__(82);
+var IE_PROTO = __webpack_require__(81)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
 
 // Create object with fake `null` prototype: use iframe Object with cleared prototype
 var createDict = function () {
   // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(78)('iframe');
+  var iframe = __webpack_require__(79)('iframe');
   var i = enumBugKeys.length;
   var lt = '<';
   var gt = '>';
   var iframeDocument;
   iframe.style.display = 'none';
-  __webpack_require__(82).appendChild(iframe);
+  __webpack_require__(83).appendChild(iframe);
   iframe.src = 'javascript:'; // eslint-disable-line no-script-url
   // createDict = iframe.contentWindow.Object;
   // html.removeChild(iframe);
@@ -4755,8 +4854,8 @@ module.exports = Object.create || function create(O, Properties) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys = __webpack_require__(110);
-var hiddenKeys = __webpack_require__(81).concat('length', 'prototype');
+var $keys = __webpack_require__(113);
+var hiddenKeys = __webpack_require__(82).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
@@ -4799,11 +4898,11 @@ module.exports = function (it, Constructor, name, forbiddenField) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var ctx = __webpack_require__(22);
-var call = __webpack_require__(122);
-var isArrayIter = __webpack_require__(94);
+var call = __webpack_require__(125);
+var isArrayIter = __webpack_require__(95);
 var anObject = __webpack_require__(2);
 var toLength = __webpack_require__(10);
-var getIterFn = __webpack_require__(96);
+var getIterFn = __webpack_require__(97);
 var BREAK = {};
 var RETURN = {};
 var exports = module.exports = function (iterable, entries, fn, that, ITERATOR) {
@@ -5058,7 +5157,7 @@ var Model = _events2.default.extend({
 
         var fn = "set" + utils.capitalize(attribute);
         if (this.isHook() && utils.isFunction(this[fn]) && val !== prevValue) {
-          this[fn](attribute === "which" ? { concept: val, dataSource: this.data } : val);
+          this[fn](attribute === "which" ? { concept: val } : val);
         }
       } else {
         // data type has changed or is new, so initializing the model/leaf
@@ -5301,7 +5400,12 @@ var Model = _events2.default.extend({
 
     return Promise.all(promises).then(this.onSuccessfullLoad.bind(this)).catch(function (error) {
       var translator = _this2.getClosestModel("locale").getTFunction();
-      _this2.triggerLoadError([translator("crash/error"), window.navigator.userAgent, error].join("<br>"));
+      _this2.triggerLoadError({
+        message: translator("crash/error"),
+        userAgent: window.navigator.userAgent,
+        stack: error.stack,
+        additionalInfo: error
+      });
     });
   },
   loadData: function loadData(opts) {
@@ -5342,8 +5446,9 @@ var Model = _events2.default.extend({
     return this.getClosestModel("locale").getTFunction()("connection/error");
   },
   triggerLoadError: function triggerLoadError(error) {
+    _events2.default.unfreezeAll();
+    this._root.trigger("load_error", error);
     utils.error(error);
-    this.trigger("load_error", error);
   },
 
 
@@ -6061,7 +6166,7 @@ module.exports = function (it, tag, stat) {
 var $export = __webpack_require__(0);
 var defined = __webpack_require__(27);
 var fails = __webpack_require__(4);
-var spaces = __webpack_require__(84);
+var spaces = __webpack_require__(85);
 var space = '[' + spaces + ']';
 var non = '\u200b\u0085';
 var ltrim = RegExp('^' + space + space + '*');
@@ -6230,7 +6335,7 @@ var _utils = __webpack_require__(1);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _brushslider = __webpack_require__(76);
+var _brushslider = __webpack_require__(77);
 
 var _brushslider2 = _interopRequireDefault(_brushslider);
 
@@ -6267,8 +6372,10 @@ var SingleHandleSlider = _brushslider2.default.extend({
 
     this.name = "singlehandleslider";
 
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
 
     //this.template = this.template || require("./brushslider.html");
 
@@ -6637,14 +6744,14 @@ var global = __webpack_require__(3);
 var $export = __webpack_require__(0);
 var redefine = __webpack_require__(16);
 var redefineAll = __webpack_require__(48);
-var meta = __webpack_require__(34);
+var meta = __webpack_require__(35);
 var forOf = __webpack_require__(47);
 var anInstance = __webpack_require__(46);
 var isObject = __webpack_require__(6);
 var fails = __webpack_require__(4);
 var $iterDetect = __webpack_require__(66);
 var setToStringTag = __webpack_require__(51);
-var inheritIfRequired = __webpack_require__(85);
+var inheritIfRequired = __webpack_require__(86);
 
 module.exports = function (NAME, wrapper, methods, common, IS_MAP, IS_WEAK) {
   var Base = global[NAME];
@@ -6859,6 +6966,9 @@ var Reader = _class2.default.extend({
   QUERY_FROM_CONCEPTS: "concepts",
   QUERY_FROM_DATAPOINTS: "datapoints",
   QUERY_FROM_ENTITIES: "entities",
+  SCHEMA_QUERY_FROM_CONCEPTS: "concepts.schema",
+  SCHEMA_QUERY_FROM_DATAPOINTS: "datapoints.schema",
+  SCHEMA_QUERY_FROM_ENTITIES: "entities.schema",
 
   CONDITION_CALLBACKS: {
     $gt: function $gt(configValue, rowValue) {
@@ -6902,13 +7012,29 @@ var Reader = _class2.default.extend({
         from = _query2.from;
 
 
-    return this.load().then(function (result) {
+    return this.load(parsers).then(function (result) {
       var rows = result.rows,
           columns = result.columns;
 
+      _this._checkTimeParser(columns, parsers);
       _this.ensureDataIsCorrect(result, parsers);
 
       switch (true) {
+        case from === _this.SCHEMA_QUERY_FROM_CONCEPTS:
+          return [{ key: ["concept"], value: "concept_type" }];
+
+        case from === _this.SCHEMA_QUERY_FROM_ENTITIES:
+          return columns.slice(0, _this.keySize).map(function (key) {
+            return { key: [key], value: key };
+          });
+
+        case from === _this.SCHEMA_QUERY_FROM_DATAPOINTS:
+          {
+            var key = columns.slice(0, _this.keySize + 1);
+            return columns.slice(_this.keySize + 1).map(function (value) {
+              return { key: key, value: value };
+            });
+          }
         case from === _this.QUERY_FROM_CONCEPTS:
           return _this._getConcepts(columns, _this._mapRows(rows, query, parsers));
 
@@ -6923,10 +7049,18 @@ var Reader = _class2.default.extend({
     });
   },
   ensureDataIsCorrect: function ensureDataIsCorrect() {},
+  _checkTimeParser: function _checkTimeParser(columns, parsers) {
+    var timeKey = columns[this.keySize];
+    if (!parsers[timeKey]) parsers[timeKey] = function (t) {
+      return t;
+    };
+  },
   _normalizeQuery: function _normalizeQuery(_query, parsers) {
     var query = Object.assign({}, _query);
-    var where = query.where,
-        join = query.join;
+    var _query$where = query.where,
+        where = _query$where === undefined ? {} : _query$where,
+        _query$join = query.join,
+        join = _query$join === undefined ? {} : _query$join;
 
 
     if (where.$and) {
@@ -6974,7 +7108,7 @@ var Reader = _class2.default.extend({
 
         for (var i = rows.length - 1; i > -1; --i) {
           if (utils.isString(rows[i][concept]) && rows[i][concept] !== "") {
-            result.concept_type = "entity_set";
+            result.concept_type = "string";
 
             var _columns = _slicedToArray(columns, 1);
 
@@ -7119,6 +7253,1034 @@ var _utils = __webpack_require__(1);
 
 var utils = _interopRequireWildcard(_utils);
 
+var _model = __webpack_require__(49);
+
+var _model2 = _interopRequireDefault(_model);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * HOOK MODEL
+ */
+
+var Marker = _model2.default.extend({
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      select: [],
+      highlight: [],
+      superHighlight: [],
+      opacityHighlightDim: 0.1,
+      opacitySelectDim: 0.3,
+      opacityRegular: 1,
+      allowSelectMultiple: true,
+      skipFilter: false
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+  init: function init(name, value, parent, binds, persistent) {
+    var _this = this;
+
+    this._type = "marker";
+    this._visible = [];
+
+    this._super(name, value, parent, binds, persistent);
+
+    this.on("change", "space", this.updateSpaceReferences.bind(this));
+  },
+  setInterModelListeners: function setInterModelListeners() {
+    this._super();
+    this.updateSpaceReferences();
+  },
+  updateSpaceReferences: function updateSpaceReferences() {
+    var _this2 = this;
+
+    utils.forEach(this.getSpace(), function (dimensionModel) {
+      // make reference to dimension
+      _this2._space[dimensionModel] = _this2.getClosestModel(dimensionModel);
+    });
+  },
+  setSpace: function setSpace(newSpace) {
+    this.space = this._root.dimensionManager.getDimensionModelsForSpace(this._space, newSpace);
+  },
+  getAvailableSpaces: function getAvailableSpaces() {
+    var _this3 = this;
+
+    var spaces = new Map();
+    utils.forEach(this._root._data, function (dataSource) {
+      if (dataSource._type !== "data") return;
+
+      var indicatorsDB = dataSource.getConceptprops();
+
+      dataSource.keyAvailability.forEach(function (space, str) {
+        if (space.length == _this3.space.length) {
+          // only same dimension as marker already has for now. Supported dimensions might later depend on tool.
+          spaces.set(str, space.map(function (dimension) {
+            return indicatorsDB[dimension];
+          }));
+        }
+      });
+    });
+    return spaces;
+  },
+  getAvailableData: function getAvailableData() {
+    var _this4 = this;
+
+    var data = [];
+
+    if (d3.keys(this._space).length === 0) return utils.warn("getAvailableData() is trying to access missing _space items of marker '" + this._name + "' which likely haven't been resoled in time");
+    var dimensions = utils.unique(this.space.map(function (dim) {
+      return _this4._space[dim].dim;
+    }));
+
+    utils.forEach(this._root._data, function (dataSource) {
+      if (dataSource._type !== "data") return;
+
+      var indicatorsDB = dataSource.getConceptprops();
+
+      dataSource.dataAvailability.datapoints.forEach(function (kvPair) {
+        if (dimensions.length == kvPair.key.size && dimensions.every(function (dim) {
+          return kvPair.key.has(dim);
+        })) {
+          data.push({
+            key: kvPair.key,
+            value: indicatorsDB[kvPair.value],
+            dataSource: dataSource
+          });
+        }
+      });
+
+      // get all available entity properties for current marker space
+      var entitiesAvailability = [];
+      dataSource.dataAvailability.entities.forEach(function (kvPair) {
+        if (kvPair.value == null) return;
+        dimensions.forEach(function (dim) {
+          if (kvPair.key.has(dim) && kvPair.value.indexOf("is--") === -1) {
+            data.push({
+              key: Array.from(kvPair.key).map(function (concept) {
+                return indicatorsDB[concept];
+              }),
+              value: indicatorsDB[kvPair.value],
+              dataSource: dataSource
+            });
+          }
+        });
+      });
+    });
+
+    // just first dataModel, can lead to problems if first data source doesn't contain dim-concept
+    var firstDataModel = this._root.dataManager.getDataModels().values().next().value;
+    dimensions.filter(function (dim) {
+      return dim != null;
+    }).forEach(function (dim) {
+      return data.push({
+        key: [firstDataModel.getConceptprops(dim)],
+        value: firstDataModel.getConceptprops(dim),
+        dataSource: firstDataModel
+      });
+    });
+    data.push({
+      key: [firstDataModel.getConceptprops("_default")],
+      value: firstDataModel.getConceptprops("_default"),
+      dataSource: firstDataModel
+    });
+
+    return data;
+  },
+  getAvailableConcept: function getAvailableConcept() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$index = _ref.index,
+        index = _ref$index === undefined ? 0 : _ref$index,
+        _ref$type = _ref.type,
+        type = _ref$type === undefined ? null : _ref$type,
+        _ref$includeOnlyIDs = _ref.includeOnlyIDs,
+        includeOnlyIDs = _ref$includeOnlyIDs === undefined ? [] : _ref$includeOnlyIDs,
+        _ref$excludeIDs = _ref.excludeIDs,
+        excludeIDs = _ref$excludeIDs === undefined ? [] : _ref$excludeIDs;
+
+    if (!type && includeOnlyIDs.length == 0 && excludeIDs.length == 0) {
+      return null;
+    }
+
+    var filtered = this.getAvailableData().filter(function (f) {
+      return (!type || !f.value.concept_type || f.value.concept_type === type) && (includeOnlyIDs.length == 0 || includeOnlyIDs.indexOf(f.value.concept) !== -1) && (excludeIDs.length == 0 || excludeIDs.indexOf(f.value.concept) == -1);
+    });
+    return filtered[index] || filtered[filtered.length - 1];
+  },
+  setDataSourceForAllSubhooks: function setDataSourceForAllSubhooks(data) {
+    var obj = {};
+    this.getSubhooks().forEach(function (hook) {
+      obj[hook._name] = { data: data };
+    });
+    this.set(obj, null, false);
+  },
+
+
+  /**
+   * Validates the model
+   */
+  validate: function validate() {
+    var _this = this;
+    var dimension = this.getDimension();
+    var visible_array = this._visible.map(function (d) {
+      return d[dimension];
+    });
+
+    if (visible_array.length) {
+      this.select = this.select.filter(function (f) {
+        return visible_array.indexOf(f[dimension]) !== -1;
+      });
+      this.setHighlight(this.highlight.filter(function (f) {
+        return visible_array.indexOf(f[dimension]) !== -1;
+      }));
+    }
+  },
+
+
+  /**
+   * Sets the visible entities
+   * @param {Array} arr
+   */
+  setVisible: function setVisible(arr) {
+    this._visible = arr;
+  },
+
+
+  /**
+   * Gets the visible entities
+   * @returns {Array} visible
+   */
+  getVisible: function getVisible(arr) {
+    return this._visible;
+  },
+
+
+  /**
+   * Gets the selected items
+   * @returns {Array} Array of unique selected values
+   */
+  getSelected: function getSelected(dim) {
+    return dim ? this.select.map(function (d) {
+      return d[dim];
+    }) : this.select;
+  },
+  selectMarker: function selectMarker(d) {
+    var _this = this;
+    var value = this._createValue(d);
+    if (this.isSelected(d)) {
+      this.select = this.select.filter(function (d) {
+        return JSON.stringify(_this._createValue(d)) !== JSON.stringify(value);
+      });
+    } else {
+      this.select = this.allowSelectMultiple ? this.select.concat(value) : [value];
+    }
+  },
+
+
+  /**
+   * Select all entities
+   */
+  selectAll: function selectAll(timeDim, timeFormatter) {
+    if (!this.allowSelectMultiple) return;
+
+    var added = void 0;
+    var dimensions = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+
+    this.select = this._visible.map(function (d) {
+      added = {};
+      dimensions.forEach(function (dimension) {
+        return added[dimension] = d[dimension];
+      });
+      return added;
+    });
+  },
+  isSelected: function isSelected(d) {
+    var _this = this;
+    var value = JSON.stringify(this._createValue(d));
+
+    return this.select.map(function (d) {
+      return JSON.stringify(_this._createValue(d)) === value;
+    }).indexOf(true) !== -1;
+  },
+  _createValue: function _createValue(d) {
+    var dims = this._getAllDimensions({ exceptType: "time" });
+    return dims.reduce(function (value, key) {
+      value[key] = d[key];
+      return value;
+    }, {});
+  },
+
+
+  /**
+   * Gets the highlighted items
+   * @returns {Array} Array of unique highlighted values
+   */
+  getHighlighted: function getHighlighted(dim) {
+    return dim ? this.highlight.map(function (d) {
+      return d[dim];
+    }) : this.highlight;
+  },
+  setHighlight: function setHighlight(arg) {
+    if (!utils.isArray(arg)) {
+      this.setHighlight([].concat(arg));
+      return;
+    }
+    this.getModelObject("highlight").set(arg, false, false); // highlights are always non persistent changes
+  },
+  setSuperHighlight: function setSuperHighlight(value) {
+    this.getModelObject("superHighlight").set(utils.isArray(value) ? value : [value], false, false);
+  },
+  clearSuperHighlighted: function clearSuperHighlighted() {
+    this.setSuperHighlight([]);
+  },
+  isSuperHighlighted: function isSuperHighlighted(d) {
+    var value = JSON.stringify(this._createValue(d));
+
+    return ~this.superHighlight.findIndex(function (d) {
+      return JSON.stringify(d) === value;
+    });
+  },
+  setSelect: function setSelect(arg) {
+    if (!utils.isArray(arg)) {
+      this.setSelect([].concat(arg));
+      return;
+    }
+    this.getModelObject("select").set(arg);
+  },
+
+
+  //TODO: join the following 3 methods with the previous 3
+
+  /**
+   * Highlights an entity from the set
+   */
+  highlightMarker: function highlightMarker(d) {
+    var value = this._createValue(d);
+    if (!this.isHighlighted(d)) {
+      this.setHighlight(this.highlight.concat(value));
+    }
+  },
+
+
+  /**
+   * Unhighlights an entity from the set
+   */
+  unhighlightEntity: function unhighlightEntity(d) {
+    var value = this._createValue(d);
+    if (this.isHighlighted(d)) {
+      this.setHighlight(this.highlight.filter(function (d) {
+        return d[dimension] !== value;
+      }));
+    }
+  },
+
+
+  /**
+   * Checks whether an entity is highlighted from the set
+   * @returns {Boolean} whether the item is highlighted or not
+   */
+  isHighlighted: function isHighlighted(d) {
+    var _this = this;
+    var value = JSON.stringify(this._createValue(d));
+    return this.highlight.map(function (d) {
+      return JSON.stringify(_this._createValue(d)) === value;
+    }).indexOf(true) !== -1;
+  },
+
+
+  /**
+   * Clears selection of items
+   */
+  clearHighlighted: function clearHighlighted() {
+    this.setHighlight([]);
+  },
+  clearSelected: function clearSelected() {
+    this.select = [];
+  },
+  setLabelOffset: function setLabelOffset(d, xy) {
+    if (xy[0] === 0 && xy[1] === 1) return;
+
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    var KEY = KEYS.join(",");
+
+    this.select.find(function (selectedMarker) {
+      return utils.getKey(selectedMarker, KEYS) == d[KEY];
+    }).labelOffset = [Math.round(xy[0] * 1000) / 1000, Math.round(xy[1] * 1000) / 1000];
+
+    //force the model to trigger events even if value is the same
+    this.set("select", this.select, true);
+  },
+
+
+  /**
+   * Gets the narrowest limits of the subhooks with respect to the provided data column
+   * @param {String} attr parameter (data column)
+   * @returns {Object} limits (min and max)
+   * this function is only needed to route the "time" to some indicator,
+   * to adjust time start and end to the max and min time available in data
+   */
+  getTimeLimits: function getTimeLimits() {
+    var _this = this;
+    var time = this._parent.time;
+    var minArray = [],
+        maxArray = [];
+    var min = void 0,
+        max = void 0,
+        items = {};
+    if (!this.cachedTimeLimits) this.cachedTimeLimits = {};
+    utils.forEach(this.getSubhooks(), function (hook) {
+
+      //only indicators depend on time and therefore influence the limits
+      if (hook.use !== "indicator" || hook.which == time.dim || !hook._important || !hook._dataId) return;
+
+      var cachedLimits = _this.cachedTimeLimits[hook._dataId + hook.which];
+
+      if (cachedLimits) {
+        //if already calculated the limits then no ned to do it again
+        min = cachedLimits.min;
+        max = cachedLimits.max;
+      } else {
+        //otherwise calculate own date limits (a costly operation)
+        items = hook.getValidItems().map(function (m) {
+          return m[time.getDimension()];
+        });
+        if (items.length == 0) utils.warn("getTimeLimits() was unable to work with an empty array of valid datapoints");
+        min = d3.min(items);
+        max = d3.max(items);
+      }
+      _this.cachedTimeLimits[hook._dataId + hook.which] = { min: min, max: max };
+      minArray.push(min);
+      maxArray.push(max);
+    });
+
+    var resultMin = d3.max(minArray);
+    var resultMax = d3.min(maxArray);
+    if (resultMin > resultMax) {
+      utils.warn("getTimeLimits(): Availability of the indicator's data has no intersection. I give up and just return some valid time range where you'll find no data points. Enjoy!");
+      resultMin = d3.min(minArray);
+      resultMax = d3.max(maxArray);
+    }
+
+    //return false for the case when neither of hooks was an "indicator" or "important"
+    return !min && !max ? false : { min: resultMin, max: resultMax };
+  },
+  getImportantHooks: function getImportantHooks() {
+    var importantHooks = [];
+    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
+      if (hook._important) {
+        importantHooks.push(name);
+      }
+    });
+    return importantHooks;
+  },
+  getLabelHookNames: function getLabelHookNames() {
+    var _this = this;
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+
+    return KEYS.reduce(function (result, key) {
+      var names = {};
+      utils.forEach(_this._dataCube || _this.getSubhooks(true), function (hook, name) {
+        if (hook._type === "label" && hook.getEntity().dim === key) {
+          names.label = name;
+        }
+        if (hook._type !== "label" && hook.getEntity().dim === key) {
+          names.key = name;
+        }
+        return !names.label || !names.key;
+      });
+      result[key] = names.label || names.key;
+      return result;
+    }, {});
+  },
+  getDataKeysPerHook: function getDataKeysPerHook() {
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    var result = {};
+    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
+      result[name] = hook._dataId ? hook.getDataKeys() : KEYS;
+    });
+    return result;
+  },
+
+
+  /**
+   * Computes the intersection of keys in all hooks: a set of keys that have data in each hook
+   * @returns array of keys that have data in all hooks of this._datacube
+   */
+  getKeys: function getKeys(KEYS) {
+    var _this = this;
+    var resultKeys = void 0;
+
+    KEYS = KEYS || utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    KEYS = Array.isArray(KEYS) ? KEYS : [KEYS];
+    var TIME = this._getFirstDimension({ type: "time" });
+
+    var subHooks = this._dataCube || this.getSubhooks(true);
+
+    var hooksPerKey = KEYS.map(function (_) {
+      return [];
+    });
+    var dataSourcePerKey = KEYS.map(function (_) {
+      return [];
+    });
+    //try to find hooks with entity queries for each subkey of KEYS
+    utils.forEach(subHooks, function (hook, name) {
+      if (hook.use === "property") {
+        var keyIndex = KEYS.indexOf(hook.getEntity().dim);
+        if (keyIndex !== -1 && !dataSourcePerKey[keyIndex].includes(hook.dataSource)) {
+          hooksPerKey[keyIndex].push(hook);
+          dataSourcePerKey[keyIndex].push(hook.dataSource);
+        }
+      }
+    });
+
+    //try to get keys from indicators if marker does not have hooks with entity queries
+    //in each dataSource for some subkey of KEYS
+    utils.forEach(subHooks, function (hook, name) {
+      if (hook.use === "indicator") {
+        hook.getDataKeys().forEach(function (key) {
+          var keyIndex = KEYS.indexOf(key);
+          if (keyIndex !== -1 && !dataSourcePerKey[keyIndex].includes(hook.dataSource)) {
+            hooksPerKey[keyIndex].push(hook);
+          }
+        });
+      }
+    });
+
+    hooksPerKey.forEach(function (hooks, keyIndex) {
+      var keys = [];
+      hooks.forEach(function (hook) {
+        var hookKeys = hook.getDataKeys();
+        var hookKeyIndex = hookKeys.indexOf(KEYS[keyIndex]);
+        keys = keys.concat(Object.keys(hook.getNestedItems(hookKeys.concat(TIME))).map(function (key) {
+          return [JSON.parse(key)[hookKeyIndex]];
+        }));
+      });
+      keys = utils.unique(keys);
+      resultKeys = resultKeys ? d3.cross(resultKeys, keys, function (a, b) {
+        return a.concat(b);
+      }) : keys;
+    });
+
+    utils.forEach(subHooks, function (hook, name) {
+      // If hook use is constant, then we can provide no additional info about keys
+      // We can just hope that we have something else than constants =)
+      if (!hook._important || hook.use === "constant") return;
+
+      var hookKEYS = hook.getDataKeys();
+      var hookKEYSIndexes = hookKEYS.map(function (key) {
+        return KEYS.indexOf(key);
+      }).reduce(function (indexes, index, i) {
+        if (index !== -1) indexes[i] = index;
+        return indexes;
+      }, []);
+
+      if (!hookKEYSIndexes.length) return;
+
+      // Get keys in data of this hook
+      var nested = hook.getNestedItems(hookKEYS.concat(TIME));
+      var noDataPoints = hook.getHaveNoDataPointsPerKey();
+
+      var keys = Object.keys(nested);
+      var keysNoDP = Object.keys(noDataPoints || []);
+
+      // Remove the keys with no timepoints
+      var keysSizeEqual = KEYS.every(function (key, i) {
+        return key === hookKEYS[i];
+      });
+      var filteredKeys = keys.reduce(function (keys, key) {
+        if (keysNoDP.indexOf(key) == -1) keys[JSON.stringify(hookKEYSIndexes.map(function (_, i) {
+          return JSON.parse(key)[i];
+        }))] = true;
+        return keys;
+      }, {});
+
+      var resultKeysMapped = resultKeys.map(function (key) {
+        return JSON.stringify(hookKEYSIndexes.map(function (index) {
+          return key[index];
+        }));
+      });
+
+      resultKeys = resultKeys.filter(function (_, i) {
+        return filteredKeys[resultKeysMapped[i]];
+      });
+    });
+
+    return resultKeys.map(function (key) {
+      var r = {};KEYS.map(function (KEY, i) {
+        return r[KEY] = key[i];
+      });return r;
+    });
+  },
+
+
+  /**
+   * @param {Array} entities array of entities
+   * @return String
+   */
+  _getCachePath: function _getCachePath(keys) {
+    //array of steps -- names of all frames
+    var steps = this._parent.time.getAllSteps();
+    var cachePath = this.getClosestModel("locale").id + " - " + steps[0] + " - " + steps[steps.length - 1] + " - step:" + this._parent.time.step;
+    this._dataCube = this._dataCube || this.getSubhooks(true);
+    var dataLoading = false;
+    utils.forEach(this._dataCube, function (hook, name) {
+      if (hook._loadCall) dataLoading = true;
+      cachePath = cachePath + "_" + hook._dataId + hook.which;
+    });
+    if (dataLoading) {
+      return null;
+    }
+    if (keys) {
+      cachePath = cachePath + "_" + keys.join(",");
+    }
+    return cachePath;
+  },
+  _getGrouping: function _getGrouping() {
+    var subHooks = this._dataCube || this.getSubhooks(true);
+    var space = subHooks[Object.keys(subHooks)[0]]._space;
+    var result = {};
+    utils.forEach(space, function (entities) {
+      if (entities.grouping) {
+        result[entities.dim] = { grouping: entities.grouping };
+      }
+    });
+    return utils.isEmpty(result) ? false : result;
+  },
+  _getAllDimensions: function _getAllDimensions(opts) {
+
+    var models = [];
+    var _this = this;
+    utils.forEach(this.space, function (name) {
+      models.push(_this.getClosestModel(name));
+    });
+
+    opts = opts || {};
+    var dims = [];
+    var dim = void 0;
+
+    utils.forEach(models, function (m) {
+      if (opts.exceptType && m.getType() === opts.exceptType) {
+        return true;
+      }
+      if (opts.onlyType && m.getType() !== opts.onlyType) {
+        return true;
+      }
+      if (dim = m.getDimension()) {
+        dims.push(dim);
+      }
+    });
+
+    return dims;
+  },
+
+
+  /**
+   * gets first dimension that matches type
+   * @param {Object} options
+   * @returns {Array} all unique dimensions
+   */
+  _getFirstDimension: function _getFirstDimension(opts) {
+    var models = [];
+    var _this = this;
+    utils.forEach(this.space, function (name) {
+      models.push(_this.getClosestModel(name));
+    });
+
+    opts = opts || {};
+
+    var dim = false;
+    utils.forEach(models, function (m) {
+      if (opts.exceptType && m.getType() !== opts.exceptType) {
+        dim = m.getDimension();
+        return false;
+      } else if (opts.type && m.getType() === opts.type) {
+        dim = m.getDimension();
+        return false;
+      } else if (!opts.exceptType && !opts.type) {
+        dim = m.getDimension();
+        return false;
+      }
+    });
+    return dim;
+  },
+  framesAreReady: function framesAreReady() {
+    var cachePath = this._getCachePath();
+    if (!this.cachedFrames) return false;
+    return Object.keys(this.cachedFrames[cachePath]).length == this._parent.time.getAllSteps().length;
+  },
+
+
+  /**
+   *
+   * @param {String|null} time of a particularly requested data frame. Null if all frames are requested
+   * @param {function} cb
+   * @param {Array} keys array of entities
+   * @return null
+   */
+  getFrame: function getFrame(time, cb, keys) {
+    //keys = null;
+    var _this = this;
+    if (!this.cachedFrames) this.cachedFrames = {};
+
+    var steps = this._parent.time.getAllSteps();
+    // try to get frame from cache without keys
+    var cachePath = this._getCachePath();
+    if (!cachePath) return cb(null, time);
+    if (time && _this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
+      // if it does, then return that frame directly and stop here
+      //QUESTION: can we call the callback and return the frame? this will allow callbackless API too
+      return cb(_this.cachedFrames[cachePath][time], time);
+    }
+    cachePath = this._getCachePath(keys);
+    if (!cachePath) return cb(null, time);
+
+    // check if the requested time point has a cached animation frame
+    if (time && _this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
+      // if it does, then return that frame directly and stop here
+      //QUESTION: can we call the callback and return the frame? this will allow callbackless API too
+      return cb(_this.cachedFrames[cachePath][time], time);
+    }
+
+    // if it doesn't (the requested time point falls between animation frames or frame is not cached yet)
+    // check if interpolation makes sense: we've requested a particular time and we have more than one frame
+    if (time && steps.length > 1) {
+
+      //find the next frame after the requested time point
+      var nextFrameIndex = d3.bisectLeft(steps, time);
+
+      if (!steps[nextFrameIndex]) {
+        utils.warn("The requested frame is out of range: " + time);
+        cb(null, time);
+        return null;
+      }
+
+      //if "time" doesn't hit the frame precisely
+      if (steps[nextFrameIndex].toString() != time.toString()) {
+
+        //interpolate between frames and fire the callback
+        this._interpolateBetweenFrames(time, nextFrameIndex, steps, function (response) {
+          cb(response, time);
+        }, keys);
+        return null;
+      }
+    }
+
+    //QUESTION: we don't need any further execution after we called for interpolation, right?
+    //request preparing the data, wait until it's done
+    _this.getFrames(time, keys).then(function () {
+      if (!time && _this.cachedFrames[cachePath]) {
+        //time can be null: then return all frames
+        return cb(_this.cachedFrames[cachePath], time);
+      } else if (_this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
+        //time can be !null: then a particular frame calculation was forced and now it's done
+        return cb(_this.cachedFrames[cachePath][time], time);
+      }
+      utils.warn("marker.js getFrame: Data is not available for frame: " + time);
+      return cb(null, time);
+    });
+  },
+  _interpolateBetweenFrames: function _interpolateBetweenFrames(time, nextFrameIndex, steps, cb, keys) {
+    var _this = this;
+
+    if (nextFrameIndex == 0) {
+      //getFrame makes sure the frane is ready because a frame with non-existing data might be adressed
+      this.getFrame(steps[nextFrameIndex], function (values) {
+        return cb(values);
+      }, keys);
+    } else {
+      var prevFrameTime = steps[nextFrameIndex - 1];
+      var nextFrameTime = steps[nextFrameIndex];
+
+      //getFrame makes sure the frane is ready because a frame with non-existing data might be adressed
+      this.getFrame(prevFrameTime, function (pValues) {
+        _this.getFrame(nextFrameTime, function (nValues) {
+          var fraction = (time - prevFrameTime) / (nextFrameTime - prevFrameTime);
+          var dataBetweenFrames = {};
+
+          //loop across the hooks
+          utils.forEach(pValues, function (values, hook) {
+            dataBetweenFrames[hook] = {};
+
+            //loop across the entities
+            utils.forEach(values, function (val1, key) {
+              var val2 = nValues[hook][key];
+              if (utils.isDate(val1)) {
+                dataBetweenFrames[hook][key] = time;
+              } else if (!utils.isNumber(val1)) {
+                //we can be interpolating string values
+                dataBetweenFrames[hook][key] = val1;
+              } else {
+                //interpolation between number and null should rerurn null, not a value in between (#1350)
+                dataBetweenFrames[hook][key] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
+              }
+            });
+          });
+          cb(dataBetweenFrames);
+        }, keys);
+      }, keys);
+    }
+  },
+  getFrames: function getFrames(forceFrame, selected) {
+    var _this = this;
+    if (!this.cachedFrames) this.cachedFrames = {};
+
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    var TIME = this._getFirstDimension({ type: "time" });
+
+    if (!this.frameQueues) this.frameQueues = {}; //static queue of frames
+    if (!this.partialResult) this.partialResult = {};
+
+    //array of steps -- names of all frames
+    var steps = this._parent.time.getAllSteps();
+
+    var cachePath = this._getCachePath(selected);
+    if (!cachePath) return new Promise(function (resolve, reject) {
+      resolve();
+    });
+    //if the collection of frames for this data cube is not scheduled yet (otherwise no need to repeat calculation)
+    if (!this.frameQueues[cachePath] || !(this.frameQueues[cachePath] instanceof Promise)) {
+
+      //this is a promise nobody listens to - it prepares all the frames we need without forcing any
+      this.frameQueues[cachePath] = new Promise(function (resolve, reject) {
+
+        _this.partialResult[cachePath] = {};
+        steps.forEach(function (t) {
+          _this.partialResult[cachePath][t] = {};
+        });
+
+        // Assemble the list of keys as an intersection of keys in all queries of all hooks
+        var keys = _this.getKeys();
+
+        var deferredHooks = [];
+        // Assemble data from each hook. Each frame becomes a vector containing the current configuration of hooks.
+        // frame -> hooks -> entities: values
+        utils.forEach(_this._dataCube, function (hook, name) {
+          if (hook.use === "constant") {
+            //special case: fill data with constant values
+            steps.forEach(function (t) {
+              _this.partialResult[cachePath][t][name] = {};
+              keys.forEach(function (key) {
+                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = hook.which;
+              });
+            });
+          } else if (KEYS.includes(hook.which)) {
+            //special case: fill data with keys to data itself
+            steps.forEach(function (t) {
+              _this.partialResult[cachePath][t][name] = {};
+              keys.forEach(function (key) {
+                _this.partialResult[cachePath][t][name][key[hook.which]] = key[hook.which];
+              });
+            });
+          } else if (hook.which === TIME) {
+            //special case: fill data with time points
+            steps.forEach(function (t) {
+              _this.partialResult[cachePath][t][name] = {};
+              keys.forEach(function (key) {
+                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = new Date(t);
+              });
+            });
+          } else {
+            //calculation of async frames is taken outside the loop
+            //hooks with real data that needs to be fetched from datamanager
+            deferredHooks.push(hook);
+          }
+        });
+
+        //check if we have any data to get from datamanager
+        if (deferredHooks.length > 0) {
+          var promises = [];
+          utils.forEach(deferredHooks, function (hook) {
+            promises.push(new Promise(function (res, rej) {
+              // need to save the hook state before calling getFrames.
+              // `hook` state might change between calling and resolving the call.
+              // The result needs to be saved to the correct cache, so we need to save current hook state
+              var currentHookState = {
+                name: hook._name,
+                which: hook.which
+              };
+              hook.getFrames(steps, selected).then(function (response) {
+                utils.forEach(response, function (frame, t) {
+                  _this.partialResult[cachePath][t][currentHookState.name] = frame[currentHookState.which];
+                });
+                res();
+              });
+            }));
+          });
+          Promise.all(promises).then(function () {
+            _this.cachedFrames[cachePath] = _this.partialResult[cachePath];
+            resolve();
+          });
+        } else {
+          _this.cachedFrames[cachePath] = _this.partialResult[cachePath];
+          resolve();
+        }
+      });
+    }
+    return new Promise(function (resolve, reject) {
+      if (steps.length < 2 || !forceFrame) {
+        //wait until the above promise is resolved, then resolve the current promise
+        _this.frameQueues[cachePath].then(function () {
+          resolve(); //going back to getFrame(), to ".then"
+        });
+      } else {
+        var promises = [];
+        utils.forEach(_this._dataCube, function (hook, name) {
+          //exception: we know that these are knonwn, no need to calculate these
+          if (hook.use !== "constant" && !KEYS.includes(hook.which) && hook.which !== TIME) {
+            (function (_hook, _name) {
+              promises.push(new Promise(function (res, rej) {
+                _hook.getFrame(steps, forceFrame, selected).then(function (response) {
+                  _this.partialResult[cachePath][forceFrame][_name] = response[forceFrame][_hook.which];
+                  res();
+                });
+              }));
+            })(hook, name); //isolate this () code with its own hook and name
+          }
+        });
+        if (promises.length > 0) {
+          Promise.all(promises).then(function () {
+            if (!_this.cachedFrames[cachePath]) {
+              _this.cachedFrames[cachePath] = {};
+            }
+            _this.cachedFrames[cachePath][forceFrame] = _this.partialResult[cachePath][forceFrame];
+            resolve();
+          });
+        } else {
+          resolve();
+        }
+      }
+    });
+  },
+  listenFramesQueue: function listenFramesQueue(keys, cb) {
+    var _this = this;
+    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
+    var TIME = this._getFirstDimension({ type: "time" });
+    var steps = this._parent.time.getAllSteps();
+    var preparedFrames = {};
+    this.getFrames();
+    var dataIds = [];
+
+    var stepsCount = steps.length;
+    var isDataLoaded = false;
+
+    utils.forEach(_this._dataCube, function (hook, name) {
+      if (!(hook.use === "constant" || KEYS.includes(hook.which) || hook.which === TIME)) {
+        if (!dataIds.includes(hook._dataId)) {
+          dataIds.push(hook._dataId);
+
+          hook.dataSource.listenFrame(hook._dataId, steps, keys, function (dataId, time) {
+            var keyName = time.toString();
+            if (typeof preparedFrames[keyName] === "undefined") preparedFrames[keyName] = [];
+            if (!preparedFrames[keyName].includes(dataId)) preparedFrames[keyName].push(dataId);
+            if (preparedFrames[keyName].length === dataIds.length) {
+              if (!isDataLoaded && stepsCount === Object.keys(preparedFrames).length) {
+                isDataLoaded = true;
+                _this.trigger("dataLoaded");
+              }
+
+              cb(time);
+            }
+          });
+        }
+      }
+    });
+  },
+  getEntityLimits: function getEntityLimits(entity) {
+    var _this = this;
+    var timePoints = this._parent.time.getAllSteps();
+    var selectedEdgeTimes = [];
+    var hooks = [];
+    utils.forEach(_this.getSubhooks(), function (hook) {
+      if (hook.use == "constant") return;
+      if (hook._important) hooks.push(hook._name);
+    });
+
+    var findEntityWithCompleteHooks = function findEntityWithCompleteHooks(values) {
+      if (!values) return false;
+      for (var i = 0, j = hooks.length; i < j; i++) {
+        if (!(values[hooks[i]][entity] || values[hooks[i]][entity] === 0)) return false;
+      }
+      return true;
+    };
+
+    var findSelectedTime = function findSelectedTime(iterator, findCB) {
+      var point = iterator();
+      if (point == null) return;
+      _this.getFrame(timePoints[point], function (values) {
+        if (findEntityWithCompleteHooks(values)) {
+          findCB(point);
+        } else {
+          findSelectedTime(iterator, findCB);
+        }
+      });
+    };
+    var promises = [];
+    promises.push(new Promise(function (resolve, reject) {
+
+      //find startSelected time
+      findSelectedTime(function () {
+        var max = timePoints.length;
+        var i = 0;
+        return function () {
+          return i < max ? i++ : null;
+        };
+      }(), function (point) {
+        selectedEdgeTimes[0] = timePoints[point];
+        resolve();
+      });
+    }));
+
+    promises.push(new Promise(function (resolve, reject) {
+
+      //find endSelected time
+      findSelectedTime(function () {
+        var i = timePoints.length - 1;
+        return function () {
+          return i >= 0 ? i-- : null;
+        };
+      }(), function (point) {
+        selectedEdgeTimes[1] = timePoints[point];
+        resolve();
+      });
+    }));
+
+    return Promise.all(promises).then(function () {
+      return { "min": selectedEdgeTimes[0], "max": selectedEdgeTimes[1] };
+    });
+  },
+
+
+  /**
+   * Learn what this model should hook to
+   * @returns {Array} space array
+   */
+  getSpace: function getSpace() {
+    if (utils.isArray(this.space)) {
+      return this.space;
+    }
+
+    utils.error('ERROR: space not found.\n You must specify the objects this hook will use under the "space" attribute in the state.\n Example:\n space: ["entities", "time"]');
+  }
+});
+
+exports.default = Marker;
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
 var _component = __webpack_require__(5);
 
 var _component2 = _interopRequireDefault(_component);
@@ -7166,7 +8328,7 @@ var BrushSlider = _component2.default.extend({
     var profiles = utils.extend({}, PROFILES);
     this.profiles = utils.extend(profiles, this.profiles || {});
 
-    this.template = this.template || __webpack_require__(398);
+    this.template = this.template || __webpack_require__(400);
 
     this.arg = config.arg || "extent";
 
@@ -7360,7 +8522,7 @@ var BrushSlider = _component2.default.extend({
 exports.default = BrushSlider;
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports) {
 
 var g;
@@ -7387,7 +8549,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(6);
@@ -7400,13 +8562,13 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(3);
 var core = __webpack_require__(25);
 var LIBRARY = __webpack_require__(40);
-var wksExt = __webpack_require__(109);
+var wksExt = __webpack_require__(112);
 var defineProperty = __webpack_require__(9).f;
 module.exports = function (name) {
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -7415,7 +8577,7 @@ module.exports = function (name) {
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var shared = __webpack_require__(61)('keys');
@@ -7426,7 +8588,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -7436,7 +8598,7 @@ module.exports = (
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var document = __webpack_require__(3).document;
@@ -7444,7 +8606,7 @@ module.exports = document && document.documentElement;
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Works with __proto__ only. Old v8 can't work with null proto objects.
@@ -7475,7 +8637,7 @@ module.exports = {
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports) {
 
 module.exports = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
@@ -7483,11 +8645,11 @@ module.exports = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u20
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(6);
-var setPrototypeOf = __webpack_require__(83).set;
+var setPrototypeOf = __webpack_require__(84).set;
 module.exports = function (that, target, C) {
   var S = target.constructor;
   var P;
@@ -7498,7 +8660,7 @@ module.exports = function (that, target, C) {
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7517,7 +8679,7 @@ module.exports = function repeat(count) {
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports) {
 
 // 20.2.2.28 Math.sign(x)
@@ -7528,7 +8690,7 @@ module.exports = Math.sign || function sign(x) {
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports) {
 
 // 20.2.2.14 Math.expm1(x)
@@ -7544,7 +8706,7 @@ module.exports = (!$expm1
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var toInteger = __webpack_require__(28);
@@ -7567,7 +8729,7 @@ module.exports = function (TO_STRING) {
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7578,7 +8740,7 @@ var redefine = __webpack_require__(16);
 var hide = __webpack_require__(15);
 var has = __webpack_require__(14);
 var Iterators = __webpack_require__(53);
-var $iterCreate = __webpack_require__(91);
+var $iterCreate = __webpack_require__(92);
 var setToStringTag = __webpack_require__(51);
 var getPrototypeOf = __webpack_require__(20);
 var ITERATOR = __webpack_require__(7)('iterator');
@@ -7644,7 +8806,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7664,7 +8826,7 @@ module.exports = function (Constructor, NAME, next) {
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // helper for String#{startsWith, endsWith, includes}
@@ -7678,7 +8840,7 @@ module.exports = function (that, searchString, NAME) {
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var MATCH = __webpack_require__(7)('match');
@@ -7696,7 +8858,7 @@ module.exports = function (KEY) {
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // check on default Array iterator
@@ -7710,7 +8872,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7725,7 +8887,7 @@ module.exports = function (object, index, value) {
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var classof = __webpack_require__(58);
@@ -7739,7 +8901,7 @@ module.exports = __webpack_require__(25).getIteratorMethod = function (it) {
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
@@ -7751,7 +8913,7 @@ module.exports = function (original, length) {
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7773,13 +8935,13 @@ module.exports = function fill(value /* , start = 0, end = @length */) {
 
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var addToUnscopables = __webpack_require__(35);
-var step = __webpack_require__(125);
+var addToUnscopables = __webpack_require__(36);
+var step = __webpack_require__(128);
 var Iterators = __webpack_require__(53);
 var toIObject = __webpack_require__(18);
 
@@ -7787,7 +8949,7 @@ var toIObject = __webpack_require__(18);
 // 22.1.3.13 Array.prototype.keys()
 // 22.1.3.29 Array.prototype.values()
 // 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(90)(Array, 'Array', function (iterated, kind) {
+module.exports = __webpack_require__(91)(Array, 'Array', function (iterated, kind) {
   this._t = toIObject(iterated); // target
   this._i = 0;                   // next index
   this._k = kind;                // kind
@@ -7814,13 +8976,13 @@ addToUnscopables('entries');
 
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ctx = __webpack_require__(22);
-var invoke = __webpack_require__(115);
-var html = __webpack_require__(82);
-var cel = __webpack_require__(78);
+var invoke = __webpack_require__(118);
+var html = __webpack_require__(83);
+var cel = __webpack_require__(79);
 var global = __webpack_require__(3);
 var process = global.process;
 var setTask = global.setImmediate;
@@ -7904,11 +9066,11 @@ module.exports = {
 
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(3);
-var macrotask = __webpack_require__(100).set;
+var macrotask = __webpack_require__(101).set;
 var Observer = global.MutationObserver || global.WebKitMutationObserver;
 var process = global.process;
 var Promise = global.Promise;
@@ -7978,7 +9140,7 @@ module.exports = function () {
 
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8003,7 +9165,7 @@ module.exports.f = function (C) {
 
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8018,10 +9180,10 @@ var fails = __webpack_require__(4);
 var anInstance = __webpack_require__(46);
 var toInteger = __webpack_require__(28);
 var toLength = __webpack_require__(10);
-var toIndex = __webpack_require__(134);
+var toIndex = __webpack_require__(137);
 var gOPN = __webpack_require__(44).f;
 var dP = __webpack_require__(9).f;
-var arrayFill = __webpack_require__(98);
+var arrayFill = __webpack_require__(99);
 var setToStringTag = __webpack_require__(51);
 var ARRAY_BUFFER = 'ArrayBuffer';
 var DATA_VIEW = 'DataView';
@@ -8286,7 +9448,7 @@ exports[DATA_VIEW] = $DataView;
 
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8327,7 +9489,7 @@ var requireAll = function requireAll(_require, depth) {
 exports.default = requireAll;
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8341,7 +9503,7 @@ var _utils = __webpack_require__(1);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _hook = __webpack_require__(36);
+var _hook = __webpack_require__(32);
 
 var _hook2 = _interopRequireDefault(_hook);
 
@@ -8377,17 +9539,11 @@ var AxisModel = _hook2.default.extend({
     };
     return utils.deepExtend(this._super(), defaults);
   },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null && this.autogenerate) {
-
-      var concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
-
-      if (!concept) {
-        concept = this.dataSource.getConceptByIndex(0, "time");
-      }
-
-      this.which = concept.concept;
+  autoconfigureModel: function autoconfigureModel(autoconfigResult) {
+    if (!this.which && this.autoconfig && this._type === "axis") {
+      autoconfigResult = this._parent.getAvailableConcept(this.autoconfig) || this._parent.getAvailableConcept({ type: "time" });
     }
+    this._super(autoconfigResult);
   },
 
 
@@ -8473,7 +9629,7 @@ var AxisModel = _hook2.default.extend({
 exports.default = AxisModel;
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8550,7 +9706,7 @@ var DataModel = _model2.default.extend({
    * @return {Promise} Promise which resolves when concepts are loaded
    */
   preloadData: function preloadData() {
-    return this.loadConceptProps();
+    return this.loadDataAvailability().then(this.loadConceptProps.bind(this));
   },
 
 
@@ -8568,18 +9724,23 @@ var DataModel = _model2.default.extend({
     // add waffle server specific query clauses if set
     if (this.dataset) query.dataset = this.dataset;
     if (this.version) query.version = this.version;
-    var dataId = _datastorage.DataStorage.getDataId(query, this.readerObject);
+    var dataId = _datastorage.DataStorage.getDataId(query, this.readerObject, parsers);
     if (dataId) {
-      return Promise.resolve(dataId);
+      if (!query.grouping) return Promise.resolve(dataId);
+      return _datastorage.DataStorage.aggregateData(dataId, query, this.readerObject, this.getConceptprops());
     }
     utils.timeStamp("Vizabi Data: Loading Data");
     _events2.default.freezeAll(["hook_change", "resize"]);
 
     return _datastorage.DataStorage.loadFromReader(query, parsers, this.readerObject).then(function (dataId) {
+      if (!query.grouping) return dataId;
+      return _datastorage.DataStorage.aggregateData(dataId, query, _this.readerObject, _this.getConceptprops());
+    }).then(function (dataId) {
       _events2.default.unfreezeAll();
       return dataId;
     }).catch(function (error) {
-      return _this.handleLoadError(error, query);
+      _events2.default.unfreezeAll();
+      _this.handleLoadError(error, query);
     });
   },
   getAsset: function getAsset(assetName, callback) {
@@ -8610,34 +9771,82 @@ var DataModel = _model2.default.extend({
     if (!dataId) return utils.warn("Data.js 'get' method doesn't like the dataId you gave it: " + dataId);
     return _datastorage.DataStorage.getData(dataId, what, whatId, args);
   },
-  loadConceptProps: function loadConceptProps() {
+  loadDataAvailability: function loadDataAvailability() {
     var _this3 = this;
 
-    var query = {
+    var conceptsQuery = {
       select: {
-        key: ["concept"],
-        value: ["concept_type", "domain", "indicator_url", "color", "scales", "interpolation", "tags", "name", "name_short", "name_catalog", "unit", "description", "format"]
+        key: ["key", "value"],
+        value: []
       },
-      from: "concepts",
-      where: {},
-      language: this.getClosestModel("locale").id
+      from: "concepts.schema"
     };
+    var entitiesQuery = utils.extend({}, conceptsQuery, { from: "entities.schema" });
+    var datapointsQuery = utils.extend({}, conceptsQuery, { from: "datapoints.schema" });
 
-    return this.load(query).then(this.handleConceptPropsResponse.bind(this)).catch(function (error) {
-      return _this3.handleLoadError(error, query);
+    return Promise.all([this.load(conceptsQuery), this.load(entitiesQuery), this.load(datapointsQuery)]).then(this.handleDataAvailabilityResponse.bind(this)).catch(function (error) {
+      return _this3.handleLoadError(error, {});
+    });
+  },
+  handleDataAvailabilityResponse: function handleDataAvailabilityResponse(dataIds) {
+    var _this4 = this;
+
+    this.keyAvailability = new Map();
+    this.dataAvailability = [];
+    dataIds.forEach(function (dataId) {
+      var collection = _this4.getData(dataId, "query").from.split(".")[0];
+      _this4.dataAvailability[collection] = [];
+      _this4.getData(dataId).forEach(function (kvPair) {
+        var key = (typeof kvPair.key === "string" ? JSON.parse(kvPair.key) : kvPair.key).sort(); // sort to get canonical form (can be removed when reader gives back canonical)
+
+        _this4.dataAvailability[collection].push({
+          key: new Set(key),
+          value: kvPair.value
+        });
+
+        _this4.keyAvailability.set(key.join(","), key);
+      });
+    });
+  },
+  loadConceptProps: function loadConceptProps() {
+    var _this5 = this;
+
+    return this.loadDataAvailability().then(function () {
+
+      // only selecting concept properties which Vizabi needs and are available in dataset
+      var vizabiConceptProps = ["concept_type", "domain", "indicator_url", "color", "scales", "interpolation", "tags", "name", "name_short", "name_catalog", "description", "format"];
+      var availableConceptProps = _this5.dataAvailability.concepts.map(function (m) {
+        return m.value;
+      });
+      var availableVizabiConceptProps = vizabiConceptProps.filter(function (n) {
+        return availableConceptProps.includes(n);
+      });
+
+      var query = {
+        select: {
+          key: ["concept"],
+          value: availableVizabiConceptProps
+        },
+        from: "concepts",
+        where: {},
+        language: _this5.getClosestModel("locale").id
+      };
+
+      return _this5.load(query).then(_this5.handleConceptPropsResponse.bind(_this5)).catch(function (error) {
+        return _this5.handleLoadError(error, query);
+      });
     });
   },
   handleConceptPropsResponse: function handleConceptPropsResponse(dataId) {
-    var _this4 = this;
+    var _this6 = this;
 
-    this.conceptDictionary = { _default: { concept_type: "string", use: "constant", scales: ["ordinal"], tags: "_root" } };
+    this.conceptDictionary = { _default: { concept: "_default", concept_type: "string", use: "constant", scales: ["ordinal"], tags: "_root" } };
     this.conceptArray = [];
 
     this.getData(dataId).forEach(function (d) {
       var concept = {};
 
-      if (d.concept_type) concept["use"] = d.concept_type == "measure" || d.concept_type == "time" ? "indicator" : "property";
-
+      concept["concept"] = d.concept;
       concept["concept_type"] = d.concept_type;
       concept["sourceLink"] = d.indicator_url;
       try {
@@ -8655,16 +9864,19 @@ var DataModel = _model2.default.extend({
           case "measure":
             concept.scales = ["linear", "log"];break;
           case "string":
-            concept.scales = ["nominal"];break;
+            concept.scales = ["ordinal"];break;
           case "entity_domain":
             concept.scales = ["ordinal"];break;
           case "entity_set":
             concept.scales = ["ordinal"];break;
+          case "boolean":
+            concept.scales = ["ordinal"];break;
           case "time":
             concept.scales = ["time"];break;
+          default:
+            concept.scales = ["linear", "log"];
         }
       }
-      if (concept["scales"] == null) concept["scales"] = ["linear", "log"];
       if (d.interpolation) {
         concept["interpolation"] = d.interpolation;
       } else if (d.concept_type == "measure") {
@@ -8674,27 +9886,46 @@ var DataModel = _model2.default.extend({
       } else {
         concept["interpolation"] = "stepMiddle";
       }
-      concept["concept"] = d.concept;
       concept["domain"] = d.domain;
       concept["tags"] = d.tags;
       concept["format"] = d.format;
       concept["name"] = d.name || d.concept || "";
       concept["name_catalog"] = d.name_catalog || "";
-      concept["name_short"] = d.name_short || "";
-      concept["unit"] = d.unit || "";
+      concept["name_short"] = d.name_short || d.name || d.concept || "";
       concept["description"] = d.description;
-      _this4.conceptDictionary[d.concept] = concept;
-      _this4.conceptArray.push(concept);
+      _this6.conceptDictionary[d.concept] = concept;
+      _this6.conceptArray.push(concept);
     });
   },
   getConceptprops: function getConceptprops(which) {
-    return which ? utils.getProp(this, ["conceptDictionary", which]) || utils.warn("The concept " + which + " is not found in the dictionary") : this.conceptDictionary;
+    if (typeof which !== "undefined") {
+      if (!this.conceptDictionary[which]) {
+        utils.warn("The concept " + which + " is not found in the dictionary");
+        return null;
+      }
+      return this.conceptDictionary[which];
+    }
+    return this.conceptDictionary;
   },
-  getConceptByIndex: function getConceptByIndex(index, type) {
-    //if(!concept && type == "measure") concept = this.conceptArray.filter(f => f.concept_type==="time")[0];
-    return this.conceptArray.filter(function (f) {
-      return !type || !f.concept_type || f.concept_type === type;
-    })[index];
+  getConcept: function getConcept() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$index = _ref.index,
+        index = _ref$index === undefined ? 0 : _ref$index,
+        _ref$type = _ref.type,
+        type = _ref$type === undefined ? null : _ref$type,
+        _ref$includeOnlyIDs = _ref.includeOnlyIDs,
+        includeOnlyIDs = _ref$includeOnlyIDs === undefined ? [] : _ref$includeOnlyIDs,
+        _ref$excludeIDs = _ref.excludeIDs,
+        excludeIDs = _ref$excludeIDs === undefined ? [] : _ref$excludeIDs;
+
+    if (!type && includeOnlyIDs.length == 0 && excludeIDs.length == 0) {
+      return null;
+    }
+
+    var filtered = this.conceptArray.filter(function (f) {
+      return (!type || !f.concept_type || f.concept_type === type) && (includeOnlyIDs.length == 0 || includeOnlyIDs.indexOf(f.concept) !== -1) && (excludeIDs.length == 0 || excludeIDs.indexOf(f.concept) == -1);
+    });
+    return filtered[index] || filtered[filtered.length - 1];
   },
   getDatasetName: function getDatasetName() {
     if (this.readerObject.getDatasetInfo) {
@@ -8731,1647 +9962,7 @@ var DataModel = _model2.default.extend({
 exports.default = DataModel;
 
 /***/ }),
-/* 107 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = {
-  build: 1504768056362,
-  version: "0.26.0-1"
-};
-
-/***/ }),
 /* 108 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = !__webpack_require__(8) && !__webpack_require__(4)(function () {
-  return Object.defineProperty(__webpack_require__(78)('div'), 'a', { get: function () { return 7; } }).a != 7;
-});
-
-
-/***/ }),
-/* 109 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports.f = __webpack_require__(7);
-
-
-/***/ }),
-/* 110 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var has = __webpack_require__(14);
-var toIObject = __webpack_require__(18);
-var arrayIndexOf = __webpack_require__(62)(false);
-var IE_PROTO = __webpack_require__(80)('IE_PROTO');
-
-module.exports = function (object, names) {
-  var O = toIObject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while (names.length > i) if (has(O, key = names[i++])) {
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-
-/***/ }),
-/* 111 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var dP = __webpack_require__(9);
-var anObject = __webpack_require__(2);
-var getKeys = __webpack_require__(41);
-
-module.exports = __webpack_require__(8) ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
-  return O;
-};
-
-
-/***/ }),
-/* 112 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
-var toIObject = __webpack_require__(18);
-var gOPN = __webpack_require__(44).f;
-var toString = {}.toString;
-
-var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
-  ? Object.getOwnPropertyNames(window) : [];
-
-var getWindowNames = function (it) {
-  try {
-    return gOPN(it);
-  } catch (e) {
-    return windowNames.slice();
-  }
-};
-
-module.exports.f = function getOwnPropertyNames(it) {
-  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
-};
-
-
-/***/ }),
-/* 113 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = __webpack_require__(41);
-var gOPS = __webpack_require__(63);
-var pIE = __webpack_require__(57);
-var toObject = __webpack_require__(12);
-var IObject = __webpack_require__(56);
-var $assign = Object.assign;
-
-// should work with symbols and should have deterministic property order (V8 bug)
-module.exports = !$assign || __webpack_require__(4)(function () {
-  var A = {};
-  var B = {};
-  // eslint-disable-next-line no-undef
-  var S = Symbol();
-  var K = 'abcdefghijklmnopqrst';
-  A[S] = 7;
-  K.split('').forEach(function (k) { B[k] = k; });
-  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
-}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
-  var T = toObject(target);
-  var aLen = arguments.length;
-  var index = 1;
-  var getSymbols = gOPS.f;
-  var isEnum = pIE.f;
-  while (aLen > index) {
-    var S = IObject(arguments[index++]);
-    var keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S);
-    var length = keys.length;
-    var j = 0;
-    var key;
-    while (length > j) if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
-  } return T;
-} : $assign;
-
-
-/***/ }),
-/* 114 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var aFunction = __webpack_require__(13);
-var isObject = __webpack_require__(6);
-var invoke = __webpack_require__(115);
-var arraySlice = [].slice;
-var factories = {};
-
-var construct = function (F, len, args) {
-  if (!(len in factories)) {
-    for (var n = [], i = 0; i < len; i++) n[i] = 'a[' + i + ']';
-    // eslint-disable-next-line no-new-func
-    factories[len] = Function('F,a', 'return new F(' + n.join(',') + ')');
-  } return factories[len](F, args);
-};
-
-module.exports = Function.bind || function bind(that /* , ...args */) {
-  var fn = aFunction(this);
-  var partArgs = arraySlice.call(arguments, 1);
-  var bound = function (/* args... */) {
-    var args = partArgs.concat(arraySlice.call(arguments));
-    return this instanceof bound ? construct(fn, args.length, args) : invoke(fn, args, that);
-  };
-  if (isObject(fn.prototype)) bound.prototype = fn.prototype;
-  return bound;
-};
-
-
-/***/ }),
-/* 115 */
-/***/ (function(module, exports) {
-
-// fast apply, http://jsperf.lnkit.com/fast-apply/5
-module.exports = function (fn, args, that) {
-  var un = that === undefined;
-  switch (args.length) {
-    case 0: return un ? fn()
-                      : fn.call(that);
-    case 1: return un ? fn(args[0])
-                      : fn.call(that, args[0]);
-    case 2: return un ? fn(args[0], args[1])
-                      : fn.call(that, args[0], args[1]);
-    case 3: return un ? fn(args[0], args[1], args[2])
-                      : fn.call(that, args[0], args[1], args[2]);
-    case 4: return un ? fn(args[0], args[1], args[2], args[3])
-                      : fn.call(that, args[0], args[1], args[2], args[3]);
-  } return fn.apply(that, args);
-};
-
-
-/***/ }),
-/* 116 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var $parseInt = __webpack_require__(3).parseInt;
-var $trim = __webpack_require__(52).trim;
-var ws = __webpack_require__(84);
-var hex = /^[-+]?0[xX]/;
-
-module.exports = $parseInt(ws + '08') !== 8 || $parseInt(ws + '0x16') !== 22 ? function parseInt(str, radix) {
-  var string = $trim(String(str), 3);
-  return $parseInt(string, (radix >>> 0) || (hex.test(string) ? 16 : 10));
-} : $parseInt;
-
-
-/***/ }),
-/* 117 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var $parseFloat = __webpack_require__(3).parseFloat;
-var $trim = __webpack_require__(52).trim;
-
-module.exports = 1 / $parseFloat(__webpack_require__(84) + '-0') !== -Infinity ? function parseFloat(str) {
-  var string = $trim(String(str), 3);
-  var result = $parseFloat(string);
-  return result === 0 && string.charAt(0) == '-' ? -0 : result;
-} : $parseFloat;
-
-
-/***/ }),
-/* 118 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var cof = __webpack_require__(23);
-module.exports = function (it, msg) {
-  if (typeof it != 'number' && cof(it) != 'Number') throw TypeError(msg);
-  return +it;
-};
-
-
-/***/ }),
-/* 119 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 20.1.2.3 Number.isInteger(number)
-var isObject = __webpack_require__(6);
-var floor = Math.floor;
-module.exports = function isInteger(it) {
-  return !isObject(it) && isFinite(it) && floor(it) === it;
-};
-
-
-/***/ }),
-/* 120 */
-/***/ (function(module, exports) {
-
-// 20.2.2.20 Math.log1p(x)
-module.exports = Math.log1p || function log1p(x) {
-  return (x = +x) > -1e-8 && x < 1e-8 ? x - x * x / 2 : Math.log(1 + x);
-};
-
-
-/***/ }),
-/* 121 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 20.2.2.16 Math.fround(x)
-var sign = __webpack_require__(87);
-var pow = Math.pow;
-var EPSILON = pow(2, -52);
-var EPSILON32 = pow(2, -23);
-var MAX32 = pow(2, 127) * (2 - EPSILON32);
-var MIN32 = pow(2, -126);
-
-var roundTiesToEven = function (n) {
-  return n + 1 / EPSILON - 1 / EPSILON;
-};
-
-module.exports = Math.fround || function fround(x) {
-  var $abs = Math.abs(x);
-  var $sign = sign(x);
-  var a, result;
-  if ($abs < MIN32) return $sign * roundTiesToEven($abs / MIN32 / EPSILON32) * MIN32 * EPSILON32;
-  a = (1 + EPSILON32 / EPSILON) * $abs;
-  result = a - (a - $abs);
-  // eslint-disable-next-line no-self-compare
-  if (result > MAX32 || result != result) return $sign * Infinity;
-  return $sign * result;
-};
-
-
-/***/ }),
-/* 122 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// call something on iterator step with safe closing on error
-var anObject = __webpack_require__(2);
-module.exports = function (iterator, fn, value, entries) {
-  try {
-    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
-  // 7.4.6 IteratorClose(iterator, completion)
-  } catch (e) {
-    var ret = iterator['return'];
-    if (ret !== undefined) anObject(ret.call(iterator));
-    throw e;
-  }
-};
-
-
-/***/ }),
-/* 123 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var aFunction = __webpack_require__(13);
-var toObject = __webpack_require__(12);
-var IObject = __webpack_require__(56);
-var toLength = __webpack_require__(10);
-
-module.exports = function (that, callbackfn, aLen, memo, isRight) {
-  aFunction(callbackfn);
-  var O = toObject(that);
-  var self = IObject(O);
-  var length = toLength(O.length);
-  var index = isRight ? length - 1 : 0;
-  var i = isRight ? -1 : 1;
-  if (aLen < 2) for (;;) {
-    if (index in self) {
-      memo = self[index];
-      index += i;
-      break;
-    }
-    index += i;
-    if (isRight ? index < 0 : length <= index) {
-      throw TypeError('Reduce of empty array with no initial value');
-    }
-  }
-  for (;isRight ? index >= 0 : length > index; index += i) if (index in self) {
-    memo = callbackfn(memo, self[index], index, O);
-  }
-  return memo;
-};
-
-
-/***/ }),
-/* 124 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
-
-var toObject = __webpack_require__(12);
-var toAbsoluteIndex = __webpack_require__(42);
-var toLength = __webpack_require__(10);
-
-module.exports = [].copyWithin || function copyWithin(target /* = 0 */, start /* = 0, end = @length */) {
-  var O = toObject(this);
-  var len = toLength(O.length);
-  var to = toAbsoluteIndex(target, len);
-  var from = toAbsoluteIndex(start, len);
-  var end = arguments.length > 2 ? arguments[2] : undefined;
-  var count = Math.min((end === undefined ? len : toAbsoluteIndex(end, len)) - from, len - to);
-  var inc = 1;
-  if (from < to && to < from + count) {
-    inc = -1;
-    from += count - 1;
-    to += count - 1;
-  }
-  while (count-- > 0) {
-    if (from in O) O[to] = O[from];
-    else delete O[to];
-    to += inc;
-    from += inc;
-  } return O;
-};
-
-
-/***/ }),
-/* 125 */
-/***/ (function(module, exports) {
-
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
-};
-
-
-/***/ }),
-/* 126 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 21.2.5.3 get RegExp.prototype.flags()
-if (__webpack_require__(8) && /./g.flags != 'g') __webpack_require__(9).f(RegExp.prototype, 'flags', {
-  configurable: true,
-  get: __webpack_require__(67)
-});
-
-
-/***/ }),
-/* 127 */
-/***/ (function(module, exports) {
-
-module.exports = function (exec) {
-  try {
-    return { e: false, v: exec() };
-  } catch (e) {
-    return { e: true, v: e };
-  }
-};
-
-
-/***/ }),
-/* 128 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var anObject = __webpack_require__(2);
-var isObject = __webpack_require__(6);
-var newPromiseCapability = __webpack_require__(102);
-
-module.exports = function (C, x) {
-  anObject(C);
-  if (isObject(x) && x.constructor === C) return x;
-  var promiseCapability = newPromiseCapability.f(C);
-  var resolve = promiseCapability.resolve;
-  resolve(x);
-  return promiseCapability.promise;
-};
-
-
-/***/ }),
-/* 129 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var strong = __webpack_require__(130);
-var validate = __webpack_require__(54);
-var MAP = 'Map';
-
-// 23.1 Map Objects
-module.exports = __webpack_require__(70)(MAP, function (get) {
-  return function Map() { return get(this, arguments.length > 0 ? arguments[0] : undefined); };
-}, {
-  // 23.1.3.6 Map.prototype.get(key)
-  get: function get(key) {
-    var entry = strong.getEntry(validate(this, MAP), key);
-    return entry && entry.v;
-  },
-  // 23.1.3.9 Map.prototype.set(key, value)
-  set: function set(key, value) {
-    return strong.def(validate(this, MAP), key === 0 ? 0 : key, value);
-  }
-}, strong, true);
-
-
-/***/ }),
-/* 130 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var dP = __webpack_require__(9).f;
-var create = __webpack_require__(43);
-var redefineAll = __webpack_require__(48);
-var ctx = __webpack_require__(22);
-var anInstance = __webpack_require__(46);
-var forOf = __webpack_require__(47);
-var $iterDefine = __webpack_require__(90);
-var step = __webpack_require__(125);
-var setSpecies = __webpack_require__(45);
-var DESCRIPTORS = __webpack_require__(8);
-var fastKey = __webpack_require__(34).fastKey;
-var validate = __webpack_require__(54);
-var SIZE = DESCRIPTORS ? '_s' : 'size';
-
-var getEntry = function (that, key) {
-  // fast case
-  var index = fastKey(key);
-  var entry;
-  if (index !== 'F') return that._i[index];
-  // frozen object case
-  for (entry = that._f; entry; entry = entry.n) {
-    if (entry.k == key) return entry;
-  }
-};
-
-module.exports = {
-  getConstructor: function (wrapper, NAME, IS_MAP, ADDER) {
-    var C = wrapper(function (that, iterable) {
-      anInstance(that, C, NAME, '_i');
-      that._t = NAME;         // collection type
-      that._i = create(null); // index
-      that._f = undefined;    // first entry
-      that._l = undefined;    // last entry
-      that[SIZE] = 0;         // size
-      if (iterable != undefined) forOf(iterable, IS_MAP, that[ADDER], that);
-    });
-    redefineAll(C.prototype, {
-      // 23.1.3.1 Map.prototype.clear()
-      // 23.2.3.2 Set.prototype.clear()
-      clear: function clear() {
-        for (var that = validate(this, NAME), data = that._i, entry = that._f; entry; entry = entry.n) {
-          entry.r = true;
-          if (entry.p) entry.p = entry.p.n = undefined;
-          delete data[entry.i];
-        }
-        that._f = that._l = undefined;
-        that[SIZE] = 0;
-      },
-      // 23.1.3.3 Map.prototype.delete(key)
-      // 23.2.3.4 Set.prototype.delete(value)
-      'delete': function (key) {
-        var that = validate(this, NAME);
-        var entry = getEntry(that, key);
-        if (entry) {
-          var next = entry.n;
-          var prev = entry.p;
-          delete that._i[entry.i];
-          entry.r = true;
-          if (prev) prev.n = next;
-          if (next) next.p = prev;
-          if (that._f == entry) that._f = next;
-          if (that._l == entry) that._l = prev;
-          that[SIZE]--;
-        } return !!entry;
-      },
-      // 23.2.3.6 Set.prototype.forEach(callbackfn, thisArg = undefined)
-      // 23.1.3.5 Map.prototype.forEach(callbackfn, thisArg = undefined)
-      forEach: function forEach(callbackfn /* , that = undefined */) {
-        validate(this, NAME);
-        var f = ctx(callbackfn, arguments.length > 1 ? arguments[1] : undefined, 3);
-        var entry;
-        while (entry = entry ? entry.n : this._f) {
-          f(entry.v, entry.k, this);
-          // revert to the last existing entry
-          while (entry && entry.r) entry = entry.p;
-        }
-      },
-      // 23.1.3.7 Map.prototype.has(key)
-      // 23.2.3.7 Set.prototype.has(value)
-      has: function has(key) {
-        return !!getEntry(validate(this, NAME), key);
-      }
-    });
-    if (DESCRIPTORS) dP(C.prototype, 'size', {
-      get: function () {
-        return validate(this, NAME)[SIZE];
-      }
-    });
-    return C;
-  },
-  def: function (that, key, value) {
-    var entry = getEntry(that, key);
-    var prev, index;
-    // change existing entry
-    if (entry) {
-      entry.v = value;
-    // create new entry
-    } else {
-      that._l = entry = {
-        i: index = fastKey(key, true), // <- index
-        k: key,                        // <- key
-        v: value,                      // <- value
-        p: prev = that._l,             // <- previous entry
-        n: undefined,                  // <- next entry
-        r: false                       // <- removed
-      };
-      if (!that._f) that._f = entry;
-      if (prev) prev.n = entry;
-      that[SIZE]++;
-      // add to index
-      if (index !== 'F') that._i[index] = entry;
-    } return that;
-  },
-  getEntry: getEntry,
-  setStrong: function (C, NAME, IS_MAP) {
-    // add .keys, .values, .entries, [@@iterator]
-    // 23.1.3.4, 23.1.3.8, 23.1.3.11, 23.1.3.12, 23.2.3.5, 23.2.3.8, 23.2.3.10, 23.2.3.11
-    $iterDefine(C, NAME, function (iterated, kind) {
-      this._t = validate(iterated, NAME); // target
-      this._k = kind;                     // kind
-      this._l = undefined;                // previous
-    }, function () {
-      var that = this;
-      var kind = that._k;
-      var entry = that._l;
-      // revert to the last existing entry
-      while (entry && entry.r) entry = entry.p;
-      // get next entry
-      if (!that._t || !(that._l = entry = entry ? entry.n : that._t._f)) {
-        // or finish the iteration
-        that._t = undefined;
-        return step(1);
-      }
-      // return step by kind
-      if (kind == 'keys') return step(0, entry.k);
-      if (kind == 'values') return step(0, entry.v);
-      return step(0, [entry.k, entry.v]);
-    }, IS_MAP ? 'entries' : 'values', !IS_MAP, true);
-
-    // add [@@species], 23.1.2.2, 23.2.2.2
-    setSpecies(NAME);
-  }
-};
-
-
-/***/ }),
-/* 131 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var strong = __webpack_require__(130);
-var validate = __webpack_require__(54);
-var SET = 'Set';
-
-// 23.2 Set Objects
-module.exports = __webpack_require__(70)(SET, function (get) {
-  return function Set() { return get(this, arguments.length > 0 ? arguments[0] : undefined); };
-}, {
-  // 23.2.3.1 Set.prototype.add(value)
-  add: function add(value) {
-    return strong.def(validate(this, SET), value = value === 0 ? 0 : value, value);
-  }
-}, strong);
-
-
-/***/ }),
-/* 132 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var each = __webpack_require__(30)(0);
-var redefine = __webpack_require__(16);
-var meta = __webpack_require__(34);
-var assign = __webpack_require__(113);
-var weak = __webpack_require__(133);
-var isObject = __webpack_require__(6);
-var fails = __webpack_require__(4);
-var validate = __webpack_require__(54);
-var WEAK_MAP = 'WeakMap';
-var getWeak = meta.getWeak;
-var isExtensible = Object.isExtensible;
-var uncaughtFrozenStore = weak.ufstore;
-var tmp = {};
-var InternalMap;
-
-var wrapper = function (get) {
-  return function WeakMap() {
-    return get(this, arguments.length > 0 ? arguments[0] : undefined);
-  };
-};
-
-var methods = {
-  // 23.3.3.3 WeakMap.prototype.get(key)
-  get: function get(key) {
-    if (isObject(key)) {
-      var data = getWeak(key);
-      if (data === true) return uncaughtFrozenStore(validate(this, WEAK_MAP)).get(key);
-      return data ? data[this._i] : undefined;
-    }
-  },
-  // 23.3.3.5 WeakMap.prototype.set(key, value)
-  set: function set(key, value) {
-    return weak.def(validate(this, WEAK_MAP), key, value);
-  }
-};
-
-// 23.3 WeakMap Objects
-var $WeakMap = module.exports = __webpack_require__(70)(WEAK_MAP, wrapper, methods, weak, true, true);
-
-// IE11 WeakMap frozen keys fix
-if (fails(function () { return new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7; })) {
-  InternalMap = weak.getConstructor(wrapper, WEAK_MAP);
-  assign(InternalMap.prototype, methods);
-  meta.NEED = true;
-  each(['delete', 'has', 'get', 'set'], function (key) {
-    var proto = $WeakMap.prototype;
-    var method = proto[key];
-    redefine(proto, key, function (a, b) {
-      // store frozen objects on internal weakmap shim
-      if (isObject(a) && !isExtensible(a)) {
-        if (!this._f) this._f = new InternalMap();
-        var result = this._f[key](a, b);
-        return key == 'set' ? this : result;
-      // store all the rest on native weakmap
-      } return method.call(this, a, b);
-    });
-  });
-}
-
-
-/***/ }),
-/* 133 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var redefineAll = __webpack_require__(48);
-var getWeak = __webpack_require__(34).getWeak;
-var anObject = __webpack_require__(2);
-var isObject = __webpack_require__(6);
-var anInstance = __webpack_require__(46);
-var forOf = __webpack_require__(47);
-var createArrayMethod = __webpack_require__(30);
-var $has = __webpack_require__(14);
-var validate = __webpack_require__(54);
-var arrayFind = createArrayMethod(5);
-var arrayFindIndex = createArrayMethod(6);
-var id = 0;
-
-// fallback for uncaught frozen keys
-var uncaughtFrozenStore = function (that) {
-  return that._l || (that._l = new UncaughtFrozenStore());
-};
-var UncaughtFrozenStore = function () {
-  this.a = [];
-};
-var findUncaughtFrozen = function (store, key) {
-  return arrayFind(store.a, function (it) {
-    return it[0] === key;
-  });
-};
-UncaughtFrozenStore.prototype = {
-  get: function (key) {
-    var entry = findUncaughtFrozen(this, key);
-    if (entry) return entry[1];
-  },
-  has: function (key) {
-    return !!findUncaughtFrozen(this, key);
-  },
-  set: function (key, value) {
-    var entry = findUncaughtFrozen(this, key);
-    if (entry) entry[1] = value;
-    else this.a.push([key, value]);
-  },
-  'delete': function (key) {
-    var index = arrayFindIndex(this.a, function (it) {
-      return it[0] === key;
-    });
-    if (~index) this.a.splice(index, 1);
-    return !!~index;
-  }
-};
-
-module.exports = {
-  getConstructor: function (wrapper, NAME, IS_MAP, ADDER) {
-    var C = wrapper(function (that, iterable) {
-      anInstance(that, C, NAME, '_i');
-      that._t = NAME;      // collection type
-      that._i = id++;      // collection id
-      that._l = undefined; // leak store for uncaught frozen objects
-      if (iterable != undefined) forOf(iterable, IS_MAP, that[ADDER], that);
-    });
-    redefineAll(C.prototype, {
-      // 23.3.3.2 WeakMap.prototype.delete(key)
-      // 23.4.3.3 WeakSet.prototype.delete(value)
-      'delete': function (key) {
-        if (!isObject(key)) return false;
-        var data = getWeak(key);
-        if (data === true) return uncaughtFrozenStore(validate(this, NAME))['delete'](key);
-        return data && $has(data, this._i) && delete data[this._i];
-      },
-      // 23.3.3.4 WeakMap.prototype.has(key)
-      // 23.4.3.4 WeakSet.prototype.has(value)
-      has: function has(key) {
-        if (!isObject(key)) return false;
-        var data = getWeak(key);
-        if (data === true) return uncaughtFrozenStore(validate(this, NAME)).has(key);
-        return data && $has(data, this._i);
-      }
-    });
-    return C;
-  },
-  def: function (that, key, value) {
-    var data = getWeak(anObject(key), true);
-    if (data === true) uncaughtFrozenStore(that).set(key, value);
-    else data[that._i] = value;
-    return that;
-  },
-  ufstore: uncaughtFrozenStore
-};
-
-
-/***/ }),
-/* 134 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// https://tc39.github.io/ecma262/#sec-toindex
-var toInteger = __webpack_require__(28);
-var toLength = __webpack_require__(10);
-module.exports = function (it) {
-  if (it === undefined) return 0;
-  var number = toInteger(it);
-  var length = toLength(number);
-  if (number !== length) throw RangeError('Wrong length!');
-  return length;
-};
-
-
-/***/ }),
-/* 135 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// all object keys, includes non-enumerable and symbols
-var gOPN = __webpack_require__(44);
-var gOPS = __webpack_require__(63);
-var anObject = __webpack_require__(2);
-var Reflect = __webpack_require__(3).Reflect;
-module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
-  var keys = gOPN.f(anObject(it));
-  var getSymbols = gOPS.f;
-  return getSymbols ? keys.concat(getSymbols(it)) : keys;
-};
-
-
-/***/ }),
-/* 136 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
-var isArray = __webpack_require__(64);
-var isObject = __webpack_require__(6);
-var toLength = __webpack_require__(10);
-var ctx = __webpack_require__(22);
-var IS_CONCAT_SPREADABLE = __webpack_require__(7)('isConcatSpreadable');
-
-function flattenIntoArray(target, original, source, sourceLen, start, depth, mapper, thisArg) {
-  var targetIndex = start;
-  var sourceIndex = 0;
-  var mapFn = mapper ? ctx(mapper, thisArg, 3) : false;
-  var element, spreadable;
-
-  while (sourceIndex < sourceLen) {
-    if (sourceIndex in source) {
-      element = mapFn ? mapFn(source[sourceIndex], sourceIndex, original) : source[sourceIndex];
-
-      spreadable = false;
-      if (isObject(element)) {
-        spreadable = element[IS_CONCAT_SPREADABLE];
-        spreadable = spreadable !== undefined ? !!spreadable : isArray(element);
-      }
-
-      if (spreadable && depth > 0) {
-        targetIndex = flattenIntoArray(target, original, element, toLength(element.length), targetIndex, depth - 1) - 1;
-      } else {
-        if (targetIndex >= 0x1fffffffffffff) throw TypeError();
-        target[targetIndex] = element;
-      }
-
-      targetIndex++;
-    }
-    sourceIndex++;
-  }
-  return targetIndex;
-}
-
-module.exports = flattenIntoArray;
-
-
-/***/ }),
-/* 137 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// https://github.com/tc39/proposal-string-pad-start-end
-var toLength = __webpack_require__(10);
-var repeat = __webpack_require__(86);
-var defined = __webpack_require__(27);
-
-module.exports = function (that, maxLength, fillString, left) {
-  var S = String(defined(that));
-  var stringLength = S.length;
-  var fillStr = fillString === undefined ? ' ' : String(fillString);
-  var intMaxLength = toLength(maxLength);
-  if (intMaxLength <= stringLength || fillStr == '') return S;
-  var fillLen = intMaxLength - stringLength;
-  var stringFiller = repeat.call(fillStr, Math.ceil(fillLen / fillStr.length));
-  if (stringFiller.length > fillLen) stringFiller = stringFiller.slice(0, fillLen);
-  return left ? stringFiller + S : S + stringFiller;
-};
-
-
-/***/ }),
-/* 138 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var getKeys = __webpack_require__(41);
-var toIObject = __webpack_require__(18);
-var isEnum = __webpack_require__(57).f;
-module.exports = function (isEntries) {
-  return function (it) {
-    var O = toIObject(it);
-    var keys = getKeys(O);
-    var length = keys.length;
-    var i = 0;
-    var result = [];
-    var key;
-    while (length > i) if (isEnum.call(O, key = keys[i++])) {
-      result.push(isEntries ? [key, O[key]] : O[key]);
-    } return result;
-  };
-};
-
-
-/***/ }),
-/* 139 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// https://github.com/DavidBruant/Map-Set.prototype.toJSON
-var classof = __webpack_require__(58);
-var from = __webpack_require__(140);
-module.exports = function (NAME) {
-  return function toJSON() {
-    if (classof(this) != NAME) throw TypeError(NAME + "#toJSON isn't generic");
-    return from(this);
-  };
-};
-
-
-/***/ }),
-/* 140 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var forOf = __webpack_require__(47);
-
-module.exports = function (iter, ITERATOR) {
-  var result = [];
-  forOf(iter, false, result.push, result, ITERATOR);
-  return result;
-};
-
-
-/***/ }),
-/* 141 */
-/***/ (function(module, exports) {
-
-// https://rwaldron.github.io/proposal-math-extensions/
-module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh) {
-  if (
-    arguments.length === 0
-      // eslint-disable-next-line no-self-compare
-      || x != x
-      // eslint-disable-next-line no-self-compare
-      || inLow != inLow
-      // eslint-disable-next-line no-self-compare
-      || inHigh != inHigh
-      // eslint-disable-next-line no-self-compare
-      || outLow != outLow
-      // eslint-disable-next-line no-self-compare
-      || outHigh != outHigh
-  ) return NaN;
-  if (x === Infinity || x === -Infinity) return x;
-  return (x - inLow) * (outHigh - outLow) / (inHigh - inLow) + outLow;
-};
-
-
-/***/ }),
-/* 142 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _model = __webpack_require__(49);
-
-var _model2 = _interopRequireDefault(_model);
-
-var _component = __webpack_require__(5);
-
-var _component2 = _interopRequireDefault(_component);
-
-var _iconset = __webpack_require__(21);
-
-var _events = __webpack_require__(50);
-
-var _events2 = _interopRequireDefault(_events);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-var class_loading_first = "vzb-loading-first";
-var class_loading_data = "vzb-loading-data";
-var class_placeholder = "vzb-placeholder";
-var class_buttons_off = "vzb-buttonlist-off";
-
-var templates = {};
-
-//tool model is quite simple and doesn't need to be registered
-var ToolModel = _model2.default.extend({
-  /**
-   * Initializes the tool model.
-   * @param {Tool}   the tool this tool model belongs to
-   * @param {Object} values The initial values of this model
-   */
-  init: function init(tool, external_model) {
-    this._id = utils.uniqueId("tm");
-    this._type = "tool";
-    this._component = tool;
-
-    // defaults are defined on the Tool
-    // this way, each tool can have it's own default model
-    this.getClassDefaults = function () {
-      return tool.default_model;
-    };
-
-    // combine listeners from tool and external page to one object
-    var listeners = utils.extend(tool.getToolListeners(), external_model.bind);
-    delete external_model.bind; // bind shouldn't go to model tree
-
-    this._super(tool.name, external_model, null, listeners);
-  },
-
-
-  /**
-   * @return {object} Defaults of tool model and children
-   * Tool defaults overwrite other models' default
-   */
-  getDefaults: function getDefaults() {
-    return utils.deepExtend({}, this.getSubmodelDefaults(), this.getClassDefaults());
-  },
-  validate: function validate() {
-
-    var max = 10;
-    var c = 0;
-    var _this = this;
-
-    function validate_func(c) {
-      // ToolModel uses validate function declared on Tool so each Tool can have its own validation.
-      var model = JSON.stringify(_this.getPlainObject());
-      _this._component.validate(_this);
-      var model2 = JSON.stringify(_this.getPlainObject());
-
-      if (c >= max) {
-        utils.error("Max validation loop.");
-      } else if (model !== model2) {
-        validate_func(c++);
-      }
-    }
-
-    validate_func(c);
-  }
-});
-
-//tool
-var Tool = _component2.default.extend({
-  /**
-   * Initializes the tool
-   * @param {Object} placeholder object
-   * @param {Object} external_model External model such as state, data, etc
-   */
-  init: function init(placeholder, external_model) {
-    this._id = utils.uniqueId("t");
-
-    this.template = this.getToolTemplate();
-
-    // super also calls createModel
-    this._super({
-      placeholder: placeholder,
-      model: external_model
-    });
-
-    this.prerender();
-    this.setCSSClasses();
-    this.setResizeHandler();
-
-    this.postrender();
-  },
-  createModel: function createModel(external_model) {
-    external_model = external_model || {}; //external model can be undefined
-    external_model.bind = external_model.bind || {}; //bind functions can be undefined
-    this.model = new ToolModel(this, external_model);
-    this.model.setInterModelListeners();
-  },
-  getToolTemplate: function getToolTemplate() {
-    return this.template || '<div class="vzb-tool vzb-tool-' + this.name + '">' + '<div class="vzb-tool-stage">' + '<div class="vzb-tool-viz">' + "</div>" + '<div class="vzb-tool-time-speed-sliders">' + '<div class="vzb-tool-timeslider">' + "</div>" + '<div class="vzb-tool-stepped-speed-slider">' + "</div>" + "</div>" + "</div>" + '<div class="vzb-tool-sidebar">' + '<div class="vzb-tool-dialogs">' + "</div>" + '<div class="vzb-tool-buttonlist">' + "</div>" + "</div>" + '<div class="vzb-tool-datanotes vzb-hidden">' + "</div>" + '<div class="vzb-tool-treemenu vzb-hidden">' + "</div>" + '<div class="vzb-tool-datawarning vzb-hidden">' + "</div>" + '<div class="vzb-tool-labels vzb-hidden">' + "</div>" + "</div>";
-  },
-  getToolListeners: function getToolListeners() {
-    var _this2 = this;
-
-    var _this = this;
-    return utils.extend(this.model_binds, {
-      "readyOnce": function readyOnce() {
-        return _this2.setResizeHandler();
-      },
-      "change": function change(evt, path) {
-        if (_this._ready) {
-          _this.model.validate();
-
-          if (evt.source.persistent) _this.model.trigger(new _events.DefaultEvent(evt.source, "persistentChange"));
-        }
-      },
-      "hook_change": function hook_change() {
-        if (!_this.model.state.time.splash) {
-          // not block when it initial splash screen
-          _this.beforeLoading();
-        }
-      },
-      "resize:ui": function resizeUi() {
-        if (_this._ready) {
-          _this.triggerResize();
-        }
-      },
-      "translate:locale": function translateLocale() {
-        _this.translateStrings();
-        _this.model.ui.setRTL(_this.model.locale.isRTL());
-      },
-      "load_error": function load_error() {
-        _this2.renderError();
-        _this2.error.apply(_this2, arguments);
-      }
-    });
-  },
-  setResizeHandler: function setResizeHandler() {
-    //only tools have layout (manage sizes)
-    this.model.ui.setContainer(this.element);
-  },
-
-
-  /**
-   * Returns width and height of the area excluding time slider and toolbar/sidebar
-   */
-  getVizWidthHeight: function getVizWidthHeight() {
-    var width = 0,
-        height = 0;
-    if (this.element) {
-      width = d3.select(this.element).select(".vzb-tool-viz").node().clientWidth;
-      height = d3.select(this.element).select(".vzb-tool-viz").node().clientHeight;
-    } else {
-      utils.warn("Tool getVizWidthHeight(): missing this.element");
-    }
-
-    return { width: width, height: height };
-  },
-
-
-  triggerResize: utils.throttle(function () {
-    this.trigger("resize");
-  }, 100),
-
-  startLoading: function startLoading() {
-    var _this3 = this;
-
-    this._super();
-
-    Promise.all([this.model.startPreload(), this.startPreload()]).then(this.afterPreload.bind(this)).then(this.loadSplashScreen.bind(this)).then(function () {
-      return utils.delay(300);
-    }).then(this.model.startLoading.bind(this.model)).then(this.finishLoading.bind(this)).catch(function (error) {
-      _events2.default.unfreezeAll();
-      _this3.model.triggerLoadError(error);
-    });
-  },
-  loadSplashScreen: function loadSplashScreen() {
-    if (this.model.ui.splash) {
-      //TODO: cleanup hardcoded splash screen
-      this.model.state.time.splash = true;
-      return this.model.startLoading({
-        splashScreen: true
-      });
-    }
-    return Promise.resolve();
-  },
-  finishLoading: function finishLoading() {
-    this.model.state.time.splash = false;
-  },
-  getPersistentModel: function getPersistentModel() {
-    //try to find functions in properties of model.
-    function removeFunctions(model) {
-      for (var childKey in model) {
-        if (typeof model[childKey] === "function") {
-          delete model[childKey];
-          utils.warn("minModel validation. Function found in enumerable properties of " + childKey + ". This key is deleted from minModel");
-        } else if (_typeof(model[childKey]) === "object") removeFunctions(model[childKey]);
-      }
-    }
-
-    var currentToolModel = this.model.getPlainObject(true); // true = get only persistent model values
-    removeFunctions(currentToolModel);
-    return currentToolModel;
-  },
-  getPersistentMinimalModel: function getPersistentMinimalModel(diffModel) {
-    var defaultModel = this.model.getDefaults();
-    var currentPersistentModel = this.getPersistentModel();
-    var redundantModel = utils.deepExtend(defaultModel, diffModel);
-    return utils.diffObject(currentPersistentModel, redundantModel);
-  },
-
-
-  /**
-   * Clears a tool
-   */
-
-  clear: function clear() {
-    this.model.ui.clear();
-    this.setModel = this.getModel = function () {
-      return void 0;
-    };
-    this._super();
-  },
-
-
-  /**
-   * Visually display errors
-   */
-  error: function error(options, message) {
-    if (!message) {
-      message = options && options.type === "data" ? "Error loading chart data. <br>Please, try again later." : "Error loading chart";
-    }
-
-    this.placeholder.innerHTML = "<div class=\"vzb-error-message\"><h1>" + _iconset.warn + "</h1><p>" + message + "</p></div>";
-  },
-
-
-  /**
-   * Sets model from external page
-   * @param {Object} JSONModel new model in JSON format
-   * @param {Boolean} overwrite overwrite everything instead of extending
-   */
-  setModel: function setModel(newModelJSON, overwrite) {
-    if (overwrite) {
-      this.model.reset(newModelJSON);
-    } else {
-      this.model.set(newModelJSON);
-    }
-    this.setCSSClasses();
-  },
-
-
-  /**
-   * get model
-   * @return {Object} JSON object of model
-   */
-  getModel: function getModel() {
-    return this.model.getPlainObject() || {};
-  },
-
-  /**
-   * Displays loading class
-   */
-  beforeLoading: function beforeLoading() {
-    utils.addClass(this.placeholder, class_loading_data);
-  },
-
-
-  /* ==========================
-   * Validation and query
-   * ==========================
-   */
-  /**
-   * Validating the tool model
-   * @param model the current tool model to be validated
-   */
-  validate: function validate(model) {
-    model = this.model || model;
-
-    if (!model || !model.state) return utils.warn("tool validation aborted: model.state looks wrong: " + model);
-  },
-  setCSSClasses: function setCSSClasses() {
-    //add placeholder class
-    utils.addClass(this.placeholder, class_placeholder);
-    //add-remove buttonlist class
-    if (!this.model.ui || !this.model.ui.buttons || !this.model.ui.buttons.length) {
-      utils.addClass(this.element, class_buttons_off);
-    } else {
-      utils.removeClass(this.element, class_buttons_off);
-    }
-  }
-});
-
-exports.default = Tool;
-
-/***/ }),
-/* 143 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _hook = __webpack_require__(36);
-
-var _hook2 = _interopRequireDefault(_hook);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI Color Model (hook)
- */
-
-var defaultPalettes = {
-  "_continuous": {
-    "_default": "#ffb600",
-    "0": "hsl(270, 80%, 55%)",
-    "25": "hsl(202.5, 80%, 55%)",
-    "50": "hsl(135, 80%, 55%)",
-    "75": "hsl(48, 70%, 62%)",
-    "100": "hsl(0, 80%, 55%)"
-  },
-  "_discrete": {
-    "_default": "#ffb600",
-    "0": "#4cd843",
-    "1": "#e83739",
-    "2": "#ff7f00",
-    "3": "#c027d4",
-    "4": "#d66425",
-    "5": "#0ab8d8",
-    "6": "#bcfa83",
-    "7": "#ff8684",
-    "8": "#ffb04b",
-    "9": "#f599f5",
-    "10": "#f4f459",
-    "11": "#7fb5ed"
-  },
-  "_default": {
-    "_default": "#ffb600"
-  }
-};
-
-var ColorModel = _hook2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null,
-      scaleType: null,
-      syncModels: [],
-      palette: {},
-      paletteLabels: null,
-      allow: {
-        //this is almost everything, but not "nominal", so no random strings like "name"
-        scales: ["linear", "log", "genericLog", "time", "pow", "ordinal"]
-      }
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null) {
-      var concept = void 0;
-      if (this.autogenerate) {
-        concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
-
-        if (concept) {
-          var obj = {
-            which: concept.concept,
-            use: concept.use || "indicator",
-            scaleType: concept.scales && concept.scales[0] ? concept.scales[0] : "linear"
-          };
-          this.set(obj);
-        }
-      }
-      if (!concept) {
-        var _obj = {
-          which: "_default",
-          use: "constant",
-          scaleType: "ordinal"
-        };
-        this.set(_obj);
-      }
-    }
-    if (this.scaleType == null) {
-      this.scaleType = this.dataSource.getConceptprops(this.which).scales[0];
-    }
-  },
-
-
-  /**
-   * Initializes the color hook
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-    var _this = this;
-    this._type = "color";
-
-    this._super(name, values, parent, bind);
-
-    this._syncModelReferences = {};
-    this._hasDefaultColor = false;
-
-    this.on("hook_change", function () {
-      if (_this._readyOnce || _this._loadCall) return;
-
-      _this._setSyncModels();
-
-      if (_this.palette && Object.keys(_this.palette._data).length !== 0) {
-        var defaultPalette = _this.getDefaultPalette();
-        var currentPalette = _this.getPalette(true);
-        var palette = {};
-        //extend partial current palette with default palette and
-        //switch current palette elements which equals
-        //default palette elments to nonpersistent state
-        Object.keys(defaultPalette).forEach(function (key) {
-          if (!currentPalette[key] || defaultPalette[key] == currentPalette[key]) palette[key] = defaultPalette[key];
-        });
-        _this.set("palette", palette, false, false);
-      }
-    });
-  },
-  setInterModelListeners: function setInterModelListeners() {
-    this._super();
-    this._setSyncModels();
-  },
-
-
-  // args: {colorID, shadeID}
-  getColorShade: function getColorShade(args) {
-    var palette = this.getPalette();
-
-    if (!args) return utils.warn("getColorShade() is missing arguments");
-
-    // if colorID is not given or not found in the palette, replace it with default color
-    if (!args.colorID || !palette[args.colorID]) args.colorID = "_default";
-
-    // if the resolved colr value is not an array (has only one shade) -- return it
-    if (!utils.isArray(palette[args.colorID])) return args.shadeID == "shade" ? d3.rgb(palette[args.colorID]).darker(0.5).toString() : palette[args.colorID];
-
-    var conceptpropsColor = this.getConceptprops().color;
-    var shade = args.shadeID && conceptpropsColor && conceptpropsColor.shades && conceptpropsColor.shades[args.shadeID] ? conceptpropsColor.shades[args.shadeID] : 0;
-
-    return palette[args.colorID][shade];
-  },
-
-
-  /**
-   * Get the above constants
-   */
-  isUserSelectable: function isUserSelectable() {
-    var conceptpropsColor = this.getConceptprops().color;
-    return conceptpropsColor == null || conceptpropsColor.selectable == null || conceptpropsColor.selectable;
-  },
-  setWhich: function setWhich(newValue) {
-    if (this.palette) this.palette._data = {};
-    this._super(newValue);
-    this._setSyncModels();
-  },
-  _setSyncModels: function _setSyncModels() {
-    var _this = this;
-    this.syncModels.forEach(function (modelName) {
-      //fetch the model to sync, it's marker and entities
-      var model = _this.getClosestModel(modelName);
-      var marker = model.isHook() ? model._parent : model;
-      var entities = marker.getClosestModel(marker.space[0]);
-
-      //save the references here locally
-      _this._syncModelReferences[modelName] = { model: model, marker: marker, entities: entities };
-
-      if (_this.isDiscrete()) _this._setSyncModel(model, marker, entities);
-    });
-  },
-  _setSyncModel: function _setSyncModel(model, marker, entities) {
-    if (model == marker) {
-      var newFilter = {
-        dim: this.which,
-        show: {}
-      };
-      marker.setDataSourceForAllSubhooks(this.data);
-      entities.set(newFilter, false, false);
-    } else {
-      if (model.isDiscrete() && model.use !== "constant") model.set({ which: this.which, data: this.data }, false, false);
-    }
-  },
-  getColorlegendMarker: function getColorlegendMarker() {
-    return (this._syncModelReferences["marker_colorlegend"] || {})["marker"];
-  },
-  getColorlegendEntities: function getColorlegendEntities() {
-    return (this._syncModelReferences["marker_colorlegend"] || {})["entities"];
-  },
-
-
-  /**
-   * set color
-   */
-  setColor: function setColor(value, pointer, persistent) {
-    var temp = this.getPalette();
-    temp[pointer] = value;
-    this.scale.range(utils.values(temp));
-    this.palette.set(pointer, value, persistent, persistent);
-  },
-
-
-  /**
-   * maps the value to this hook's specifications
-   * @param value Original value
-   * @returns hooked value
-   */
-  mapValue: function mapValue(value) {
-    //if the property value does not exist, supply the _default
-    // otherwise the missing value would be added to the domain
-    if (this.scale != null && this.isDiscrete() && this._hasDefaultColor && this.scale.domain().indexOf(value) == -1) value = "_default";
-    return this._super(value);
-  },
-  getDefaultPalette: function getDefaultPalette() {
-    var conceptpropsColor = this.getConceptprops().color;
-    var palette = void 0;
-
-    this.discreteDefaultPalette = false;
-
-    if (conceptpropsColor && conceptpropsColor.palette) {
-      //specific color palette from hook concept properties
-      palette = utils.clone(conceptpropsColor.palette);
-    } else if (defaultPalettes[this.which]) {
-      //color palette for this.which exists in palette defaults
-      palette = utils.clone(defaultPalettes[this.which]);
-    } else if (this.use === "constant") {
-      //an explicit hex color constant #abc or #adcdef is provided
-      if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(this.which)) {
-        palette = { "_default": this.which };
-      } else {
-        palette = utils.clone(defaultPalettes["_default"]);
-      }
-    } else {
-      palette = utils.clone(defaultPalettes[this.isDiscrete() ? "_discrete" : "_continuous"]);
-      this.discreteDefaultPalette = true;
-    }
-
-    return palette;
-  },
-  _getPaletteLabels: function _getPaletteLabels() {
-    var conceptpropsColor = this.getConceptprops().color;
-    var paletteLabels = null;
-
-    if (conceptpropsColor && conceptpropsColor.paletteLabels) {
-      //specific color palette from hook concept properties
-      paletteLabels = utils.clone(conceptpropsColor.paletteLabels);
-    }
-    return paletteLabels;
-  },
-  getPaletteLabels: function getPaletteLabels() {
-    return this.paletteLabels.getPlainObject();
-  },
-  getPalette: function getPalette(includeDefault) {
-    //rebuild palette if it's empty
-    if (!this.palette || Object.keys(this.palette._data).length === 0) {
-      var _palette = this.getDefaultPalette();
-      this.set("palette", _palette, false, false);
-      var paletteLabels = this._getPaletteLabels();
-      this.set("paletteLabels", paletteLabels, false, false);
-    }
-    var palette = this.palette.getPlainObject();
-    if (this.use === "indicator" && !includeDefault) {
-      delete palette["_default"];
-    }
-    return palette;
-  },
-
-
-  /**
-   * Gets the domain for this hook
-   * @returns {Array} domain
-   */
-  buildScale: function buildScale() {
-    var scaleType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.scaleType;
-
-    var _this = this;
-
-    var paletteObject = _this.getPalette();
-    var domain = Object.keys(paletteObject);
-    var range = utils.values(paletteObject);
-
-    this._hasDefaultColor = domain.indexOf("_default") > -1;
-
-    if (scaleType == "time") {
-
-      var timeMdl = this._space.time;
-      var limits = timeMdl.splash ? { min: timeMdl.parse(timeMdl.startOrigin), max: timeMdl.parse(timeMdl.endOrigin) } : { min: timeMdl.start, max: timeMdl.end };
-
-      var singlePoint = limits.max - limits.min == 0;
-
-      domain = domain.sort(function (a, b) {
-        return a - b;
-      });
-      range = domain.map(function (m) {
-        return singlePoint ? paletteObject[domain[0]] : paletteObject[m];
-      });
-      domain = domain.map(function (m) {
-        return limits.min.valueOf() + m / 100 * (limits.max.valueOf() - limits.min.valueOf());
-      });
-
-      this.scale = d3.scaleUtc().domain(domain).range(range).interpolate(d3.interpolateCubehelix);
-    } else if (!this.isDiscrete()) {
-
-      var _limits = this.getLimits(this.which);
-      //default domain is based on limits
-      _limits = [_limits.min, _limits.max];
-
-      var _singlePoint = _limits[1] - _limits[0] == 0;
-
-      domain = domain.sort(function (a, b) {
-        return a - b;
-      });
-      range = domain.map(function (m) {
-        return _singlePoint ? paletteObject[domain[0]] : paletteObject[m];
-      });
-      domain = domain.map(function (m) {
-        return _limits[0] + m / 100 * (_limits[1] - _limits[0]);
-      });
-
-      if (d3.min(domain) <= 0 && d3.max(domain) >= 0 && scaleType === "log") scaleType = "genericLog";
-
-      if (scaleType === "log" || scaleType === "genericLog") {
-        var s = d3.scaleGenericlog().domain(_limits).range(_limits);
-        domain = domain.map(function (d) {
-          return s.invert(d);
-        });
-      }
-      this.scale = d3["scale" + utils.capitalize(scaleType)]().domain(domain).range(range).interpolate(d3.interpolateCubehelix);
-    } else {
-      range = range.map(function (m) {
-        return utils.isArray(m) ? m[0] : m;
-      });
-
-      scaleType = "ordinal";
-
-      if (this.discreteDefaultPalette) domain = domain.concat(this.getUnique(this.which));
-      this.scale = d3["scale" + utils.capitalize(scaleType)]().domain(domain).range(range);
-    }
-
-    this.scaleType = scaleType;
-  }
-});
-
-exports.default = ColorModel;
-
-/***/ }),
-/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10414,7 +10005,7 @@ var EntitiesModel = _dataconnected2.default.extend({
   },
 
 
-  objectLeafs: ["show", "autogenerate"],
+  objectLeafs: ["show", "autoconfig"],
   dataConnectedChildren: ["show", "dim", "grouping"],
 
   /**
@@ -10429,10 +10020,19 @@ var EntitiesModel = _dataconnected2.default.extend({
 
     this._super(name, values, parent, bind);
   },
+  preloadData: function preloadData() {
+    this.dataSource = this.getClosestModel(this.data || "data");
+    return this._super();
+  },
   afterPreload: function afterPreload() {
-    if (this.dim == null && this.autogenerate) {
-      var dataSource = this.getClosestModel(this.autogenerate.data);
-      this.dim = dataSource.getConceptByIndex(this.autogenerate.conceptIndex).concept;
+    this.autoconfigureModel();
+  },
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.dim && this.autoconfig) {
+      var concept = this.dataSource.getConcept(this.autoconfig);
+
+      if (concept) this.dim = concept.concept;
+      utils.printAutoconfigResult(this);
     }
   },
 
@@ -10445,10 +10045,10 @@ var EntitiesModel = _dataconnected2.default.extend({
     return this.dim;
   },
   setDimension: function setDimension(dim) {
-    if (this.dim === dim.concept) return;
+    if (this.dim === dim) return;
     var props = {};
     props.show = {};
-    props.dim = dim.concept;
+    props.dim = dim;
     this.set(props);
   },
 
@@ -10548,7 +10148,7 @@ var EntitiesModel = _dataconnected2.default.extend({
 exports.default = EntitiesModel;
 
 /***/ }),
-/* 145 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10557,5285 +10157,13 @@ exports.default = EntitiesModel;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _hook = __webpack_require__(36);
-
-var _hook2 = _interopRequireDefault(_hook);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*
- * VIZABI Group Model
- */
-
-var GroupModel = _hook2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null,
-      merge: false,
-      manualSorting: null,
-      scaleType: "ordinal" // the only one possible, right?
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  /**
-   * Initializes the group hook
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-    this._type = "model";
-
-    this._super(name, values, parent, bind);
-  },
-
-
-  /**
-   * Validates a color hook
-   */
-  validate: function validate() {
-    //there must be no scale
-    if (this.scale) this.scale = null;
-
-    //use must be "property"
-    if (this.use != "property" && this.use != "constant") {
-      utils.warn("group model: use must be 'property' or 'constant'. Resetting to property...");
-      this.use = "property";
-    }
-  }
-});
-
-exports.default = GroupModel;
-
-/***/ }),
-/* 146 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _hook = __webpack_require__(36);
-
-var _hook2 = _interopRequireDefault(_hook);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*
- * VIZABI Data Model (options.data)
- */
-
-var LabelModel = _hook2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  /**
-   * Initializes the size hook
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-
-    this._type = "label";
-
-    this._super(name, values, parent, bind);
-  }
-});
-
-exports.default = LabelModel;
-
-/***/ }),
-/* 147 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _dataconnected = __webpack_require__(55);
-
-var _dataconnected2 = _interopRequireDefault(_dataconnected);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-// this and many other locale information should at some point be stored in an external file with locale information (rtl, date formats etc)
-var rtlLocales = ["ar", "ar-SA"];
-
-var LocaleModel = _dataconnected2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      id: "en",
-      filePath: "assets/translation/"
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  dataConnectedChildren: ["id"],
-  strings: {},
-
-  /**
-   * Initializes the locale model.
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-    this._type = "locale";
-
-    //same constructor, with same arguments
-    this._super(name, values, parent, bind);
-  },
-  _isLoading: function _isLoading() {
-    return !this._loadedOnce || this._loadCall;
-  },
-  preloadData: function preloadData() {
-    return this.loadData();
-  },
-  loadData: function loadData() {
-    var _this = this;
-
-    this.setReady(false);
-    this._loadCall = true;
-
-    // load new concept properties for each data source.
-    // this should be done with listeners, but the load promise can't be returned
-    // through the listeners
-
-    var promises = [];
-    utils.forEach(this._root._data, function (mdl) {
-      if (mdl._type === "data") promises.push(mdl.loadConceptProps());
-    });
-
-    // load UI strings only if we don't have them already
-    if (!this.strings[this.id]) {
-      promises.push(new Promise(function (resolve, reject) {
-        d3.json(_this.filePath + _this.id + ".json", function (error, strings) {
-          if (error) return reject(error);
-          _this._handleNewStrings(strings);
-          resolve();
-        });
-      }));
-    }
-
-    return Promise.all(promises).then(function () {
-      return _this.trigger("translate");
-    }).catch(function () {
-      return _this.handleLoadError();
-    });
-  },
-  _handleNewStrings: function _handleNewStrings(receivedStrings) {
-    this.strings[this.id] = this.strings[this.id] ? utils.extend(this.strings[this.id], receivedStrings) : receivedStrings;
-  },
-
-
-  /**
-   * Gets a certain UI string
-   * @param {String} stringId string identifier
-   * @returns {string} translated string
-   */
-  getUIString: function getUIString(stringId) {
-    if (this.strings && this.strings[this.id] && (this.strings[this.id][stringId] || this.strings[this.id][stringId] === "")) {
-      return this.strings[this.id][stringId];
-    }
-    if (!this.strings || !this.strings[this.id]) utils.warn("Strings are not loaded for the " + this.id + " locale. Check if translation JSON is valid");
-    return stringId;
-  },
-
-
-  /**
-   * Gets the translation function
-   * @returns {Function} translation function
-   */
-  getTFunction: function getTFunction() {
-    var _this2 = this;
-
-    return function (stringId) {
-      var payload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return Object.keys(payload).reduce(function (result, key) {
-        var regexp = new RegExp("{{" + key + "}}", "g");
-        return result.replace(regexp, payload[key]);
-      }, _this2.getUIString(stringId));
-    };
-  },
-  isRTL: function isRTL() {
-    return rtlLocales.indexOf(this.id) !== -1;
-  }
-});
-
-exports.default = LocaleModel;
-
-/***/ }),
-/* 148 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _model = __webpack_require__(49);
-
-var _model2 = _interopRequireDefault(_model);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-/*!
- * HOOK MODEL
- */
-
-var Marker = _model2.default.extend({
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      select: [],
-      highlight: [],
-      superHighlight: [],
-      opacityHighlightDim: 0.1,
-      opacitySelectDim: 0.3,
-      opacityRegular: 1,
-      allowSelectMultiple: true,
-      skipFilter: false
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-  init: function init(name, value, parent, binds, persistent) {
-    var _this = this;
-
-    this._visible = [];
-
-    this._super(name, value, parent, binds, persistent);
-    this.on("ready", this.checkTimeLimits.bind(this));
-    this.on("readyOnce", function () {
-      var exceptions = { exceptType: "time" };
-      var allDimensions = _this._getAllDimensions(exceptions);
-      _this._multiDim = allDimensions.length > 1;
-    });
-  },
-  setDataSourceForAllSubhooks: function setDataSourceForAllSubhooks(data) {
-    var obj = {};
-    this.getSubhooks().forEach(function (hook) {
-      obj[hook._name] = { data: data };
-    });
-    this.set(obj, null, false);
-  },
-
-
-  /**
-   * Validates the model
-   */
-  validate: function validate() {
-    var _this = this;
-    var dimension = this.getDimension();
-    var visible_array = this._visible.map(function (d) {
-      return d[dimension];
-    });
-
-    if (visible_array.length) {
-      this.select = this.select.filter(function (f) {
-        return visible_array.indexOf(f[dimension]) !== -1;
-      });
-      this.setHighlight(this.highlight.filter(function (f) {
-        return visible_array.indexOf(f[dimension]) !== -1;
-      }));
-    }
-  },
-
-
-  /**
-   * Sets the visible entities
-   * @param {Array} arr
-   */
-  setVisible: function setVisible(arr) {
-    this._visible = arr;
-  },
-
-
-  /**
-   * Gets the visible entities
-   * @returns {Array} visible
-   */
-  getVisible: function getVisible(arr) {
-    return this._visible;
-  },
-
-
-  /**
-   * Gets the selected items
-   * @returns {Array} Array of unique selected values
-   */
-  getSelected: function getSelected(dim) {
-    return dim ? this.select.map(function (d) {
-      return d[dim];
-    }) : this.select;
-  },
-  selectMarker: function selectMarker(d) {
-    var _this = this;
-    var value = this._createValue(d);
-    if (this.isSelected(d)) {
-      this.select = this.select.filter(function (d) {
-        return JSON.stringify(_this._createValue(d)) !== JSON.stringify(value);
-      });
-    } else {
-      this.select = this.allowSelectMultiple ? this.select.concat(value) : [value];
-    }
-  },
-
-
-  /**
-   * Select all entities
-   */
-  selectAll: function selectAll(timeDim, timeFormatter) {
-    if (!this.allowSelectMultiple) return;
-
-    var added = void 0;
-    var dimension = this._getFirstDimension({ exceptType: "time" });
-
-    this.select = this._visible.map(function (d) {
-      added = {};
-      added[dimension] = d[dimension];
-      return added;
-    });
-  },
-  isSelected: function isSelected(d) {
-    var _this = this;
-    var value = this._createValue(d);
-
-    return this.select.map(function (d) {
-      return JSON.stringify(_this._createValue(d)) === JSON.stringify(value);
-    }).indexOf(true) !== -1;
-  },
-  _createValue: function _createValue(d) {
-    var dims = this._getAllDimensions({ exceptType: "time" });
-    return dims.reduce(function (value, key) {
-      value[key] = d[key];
-      return value;
-    }, {});
-  },
-
-
-  /**
-   * Gets the highlighted items
-   * @returns {Array} Array of unique highlighted values
-   */
-  getHighlighted: function getHighlighted(dim) {
-    return dim ? this.highlight.map(function (d) {
-      return d[dim];
-    }) : this.highlight;
-  },
-  setHighlight: function setHighlight(arg) {
-    if (!utils.isArray(arg)) {
-      this.setHighlight([].concat(arg));
-      return;
-    }
-    this.getModelObject("highlight").set(arg, false, false); // highlights are always non persistent changes
-  },
-  setSuperHighlight: function setSuperHighlight(value) {
-    this.getModelObject("superHighlight").set(utils.isArray(value) ? value : [value], false, false);
-  },
-  clearSuperHighlighted: function clearSuperHighlighted() {
-    this.setSuperHighlight([]);
-  },
-  isSuperHighlighted: function isSuperHighlighted(d) {
-    var value = JSON.stringify(this._createValue(d));
-
-    return ~this.superHighlight.findIndex(function (d) {
-      return JSON.stringify(d) === value;
-    });
-  },
-  setSelect: function setSelect(arg) {
-    if (!utils.isArray(arg)) {
-      this.setSelect([].concat(arg));
-      return;
-    }
-    this.getModelObject("select").set(arg);
-  },
-
-
-  //TODO: join the following 3 methods with the previous 3
-
-  /**
-   * Highlights an entity from the set
-   */
-  highlightMarker: function highlightMarker(d) {
-    var value = this._createValue(d);
-    if (!this.isHighlighted(d)) {
-      this.setHighlight(this.highlight.concat(value));
-    }
-  },
-
-
-  /**
-   * Unhighlights an entity from the set
-   */
-  unhighlightEntity: function unhighlightEntity(d) {
-    var value = this._createValue(d);
-    if (this.isHighlighted(d)) {
-      this.setHighlight(this.highlight.filter(function (d) {
-        return d[dimension] !== value;
-      }));
-    }
-  },
-
-
-  /**
-   * Checks whether an entity is highlighted from the set
-   * @returns {Boolean} whether the item is highlighted or not
-   */
-  isHighlighted: function isHighlighted(d) {
-    var _this = this;
-    var value = this._createValue(d);
-    return this.highlight.map(function (d) {
-      return JSON.stringify(_this._createValue(d)) === JSON.stringify(value);
-    }).indexOf(true) !== -1;
-  },
-
-
-  /**
-   * Clears selection of items
-   */
-  clearHighlighted: function clearHighlighted() {
-    this.setHighlight([]);
-  },
-  clearSelected: function clearSelected() {
-    this.select = [];
-  },
-  setLabelOffset: function setLabelOffset(d, xy) {
-    if (xy[0] === 0 && xy[1] === 1) return;
-
-    this.select.find(function (selectedMarker) {
-      return utils.comparePlainObjects(selectedMarker, d);
-    }).labelOffset = [Math.round(xy[0] * 1000) / 1000, Math.round(xy[1] * 1000) / 1000];
-
-    //force the model to trigger events even if value is the same
-    this.set("select", this.select, true);
-  },
-  checkTimeLimits: function checkTimeLimits() {
-
-    var time = this._parent.time;
-
-    if (!time) return;
-
-    var tLimits = this.getTimeLimits();
-
-    if (!tLimits) return;
-    if (!utils.isDate(tLimits.min) || !utils.isDate(tLimits.max)) return utils.warn("checkTimeLimits(): min-max look wrong: " + tLimits.min + " " + tLimits.max + ". Expecting Date objects. Ensure that time is properly parsed in the data from reader");
-
-    // change start and end (but keep startOrigin and endOrigin for furhter requests)
-    var newTime = {};
-    if (time.start - tLimits.min != 0 || !time.start && !this.startOrigin) newTime["start"] = d3.max([tLimits.min, time.parse(time.startOrigin)]);
-    if (time.end - tLimits.max != 0 || !time.end && !this.endOrigin) newTime["end"] = d3.min([tLimits.max, time.parse(time.endOrigin)]);
-
-    time.set(newTime, false, false);
-
-    if (newTime.start || newTime.end) {
-      utils.forEach(this.getSubhooks(), function (hook) {
-        if (hook.which == "time") {
-          hook.buildScale();
-        }
-      });
-    }
-
-    //force time validation because time.value might now fall outside of start-end
-    time.validate();
-  },
-
-
-  /**
-   * Gets the narrowest limits of the subhooks with respect to the provided data column
-   * @param {String} attr parameter (data column)
-   * @returns {Object} limits (min and max)
-   * this function is only needed to route the "time" to some indicator,
-   * to adjust time start and end to the max and min time available in data
-   */
-  getTimeLimits: function getTimeLimits() {
-    var _this = this;
-    var time = this._parent.time;
-    var minArray = [],
-        maxArray = [];
-    var min = void 0,
-        max = void 0,
-        items = {};
-    if (!this.cachedTimeLimits) this.cachedTimeLimits = {};
-    utils.forEach(this.getSubhooks(), function (hook) {
-
-      //only indicators depend on time and therefore influence the limits
-      if (hook.use !== "indicator" || !hook._important) return;
-
-      var cachedLimits = _this.cachedTimeLimits[hook._dataId + hook.which];
-
-      if (cachedLimits) {
-        //if already calculated the limits then no ned to do it again
-        min = cachedLimits.min;
-        max = cachedLimits.max;
-      } else {
-        //otherwise calculate own date limits (a costly operation)
-        items = hook.getValidItems().map(function (m) {
-          return m[time.getDimension()];
-        });
-        if (items.length == 0) utils.warn("getTimeLimits() was unable to work with an empty array of valid datapoints");
-        min = d3.min(items);
-        max = d3.max(items);
-      }
-      _this.cachedTimeLimits[hook._dataId + hook.which] = { min: min, max: max };
-      minArray.push(min);
-      maxArray.push(max);
-    });
-
-    var resultMin = d3.max(minArray);
-    var resultMax = d3.min(maxArray);
-    if (resultMin > resultMax) {
-      utils.warn("getTimeLimits(): Availability of the indicator's data has no intersection. I give up and just return some valid time range where you'll find no data points. Enjoy!");
-      resultMin = d3.min(minArray);
-      resultMax = d3.max(maxArray);
-    }
-
-    //return false for the case when neither of hooks was an "indicator" or "important"
-    return !min && !max ? false : { min: resultMin, max: resultMax };
-  },
-  getImportantHooks: function getImportantHooks() {
-    var importantHooks = [];
-    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
-      if (hook._important) {
-        importantHooks.push(name);
-      }
-    });
-    return importantHooks;
-  },
-  getLabelHookNames: function getLabelHookNames() {
-    var _this = this;
-    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
-
-    return KEYS.map(function (key) {
-      var names = {};
-      utils.forEach(_this._dataCube || _this.getSubhooks(true), function (hook, name) {
-        if (hook._type === "label" && hook.getEntity().dim === key) {
-          names.label = name;
-        }
-        if (hook._type !== "label" && hook.getEntity().dim === key) {
-          names.key = name;
-        }
-        return !names.label || !names.key;
-      });
-      return names.label || names.key;
-    });
-  },
-  getKeysMD: function getKeysMD() {
-    var _this = this;
-    var resultKeys = [];
-
-    var KEYS = utils.unique(this._getAllDimensions({ exceptType: "time" }));
-    var TIME = this._getFirstDimension({ type: "time" });
-
-    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
-      if (hook.use === "constant" || hook.use === "property" || !hook._important) return;
-
-      var nested = hook.getNestedItems(KEYS.concat(TIME));
-
-      iterateKeys({}, nested, KEYS, 0, KEYS.length - 1);
-
-      function iterateKeys(keyObj, nested, keyNames, deep, deepMax) {
-        var keys = Object.keys(nested);
-        if (deep < deepMax) {
-          var _deep = deep + 1;
-          for (var i = 0, j = keys.length; i < j; i++) {
-            var _keyObj = {};
-            _keyObj[keyNames[deep]] = keys[i];
-            iterateKeys(_keyObj, nested[keys[i]], keyNames, _deep, deepMax);
-          }
-        } else {
-          resultKeys.push.apply(resultKeys, _toConsumableArray(keys.map(function (key) {
-            var obj = Object.assign({}, keyObj);
-            obj[keyNames[deep]] = key;
-            return obj;
-          })));
-        }
-      }
-    });
-
-    return resultKeys;
-  },
-
-  /**
-   * Computes the intersection of keys in all hooks: a set of keys that have data in each hook
-   * @returns array of keys that have data in all hooks of this._datacube
-   */
-  getKeys: function getKeys(KEY) {
-    var _this = this;
-    var resultKeys = [];
-
-    KEY = KEY || this._getFirstDimension();
-    var TIME = this._getFirstDimension({ type: "time" });
-
-    var grouping = this._getGrouping();
-
-    utils.forEach(this._dataCube || this.getSubhooks(true), function (hook, name) {
-
-      // If hook use is constant, then we can provide no additional info about keys
-      // We can just hope that we have something else than constants =)
-      if (hook.use === "constant") return;
-
-      // Get keys in data of this hook
-      var nested = hook.getNestedItems([KEY, TIME]);
-      var noDataPoints = hook.getHaveNoDataPointsPerKey();
-
-      if (nested["undefined"]) delete nested["undefined"];
-
-      var keys = Object.keys(nested);
-      var keysNoDP = Object.keys(noDataPoints || []);
-
-      if (keys.length > 0 && grouping && grouping.key === KEY) {
-        var _grouping = grouping.grouping;
-        keys = keys.filter(function (key) {
-          return +key % _grouping === 0;
-        });
-      }
-      // If ain't got nothing yet, set the list of keys to result
-      if (resultKeys.length == 0) resultKeys = keys;
-
-      // Remove the keys from it that are not in this hook
-      if (hook._important) resultKeys = resultKeys.filter(function (f) {
-        return keys.indexOf(f) > -1 && keysNoDP.indexOf(f) == -1;
-      });
-    });
-    return resultKeys.map(function (d) {
-      var r = {};r[KEY] = d;return r;
-    });
-  },
-
-
-  /**
-   * @param {Array} entities array of entities
-   * @return String
-   */
-  _getCachePath: function _getCachePath(keys) {
-    //array of steps -- names of all frames
-    var steps = this._parent.time.getAllSteps();
-    var cachePath = this.getClosestModel("locale").id + " - " + steps[0] + " - " + steps[steps.length - 1];
-    this._dataCube = this._dataCube || this.getSubhooks(true);
-    var dataLoading = false;
-    var grouping = this._getGrouping();
-    utils.forEach(this._dataCube, function (hook, name) {
-      if (hook._loadCall) dataLoading = true;
-      cachePath = cachePath + "_" + hook._dataId + hook.which;
-    });
-    if (dataLoading) {
-      return null;
-    }
-    if (grouping) {
-      cachePath = cachePath + "_grouping_" + grouping.key + ":" + grouping.grouping;
-    }
-    if (keys) {
-      cachePath = cachePath + "_" + keys.join(",");
-    }
-    return cachePath;
-  },
-  _getGrouping: function _getGrouping() {
-    var subHooks = this._dataCube || this.getSubhooks(true);
-    var space = subHooks[Object.keys(subHooks)[0]]._space;
-    var result = {};
-    utils.forEach(space, function (entities) {
-      if (entities.grouping) {
-        result.grouping = entities.grouping;
-        result.key = entities.dim;
-        return false;
-      }
-    });
-    return result.grouping ? result : false;
-  },
-  _getAllDimensions: function _getAllDimensions(opts) {
-
-    var models = [];
-    var _this = this;
-    utils.forEach(this.space, function (name) {
-      models.push(_this.getClosestModel(name));
-    });
-
-    opts = opts || {};
-    var dims = [];
-    var dim = void 0;
-
-    utils.forEach(models, function (m) {
-      if (opts.exceptType && m.getType() === opts.exceptType) {
-        return true;
-      }
-      if (opts.onlyType && m.getType() !== opts.onlyType) {
-        return true;
-      }
-      if (dim = m.getDimension()) {
-        dims.push(dim);
-      }
-    });
-
-    return dims;
-  },
-
-
-  /**
-   * gets first dimension that matches type
-   * @param {Object} options
-   * @returns {Array} all unique dimensions
-   */
-  _getFirstDimension: function _getFirstDimension(opts) {
-    var models = [];
-    var _this = this;
-    utils.forEach(this.space, function (name) {
-      models.push(_this.getClosestModel(name));
-    });
-
-    opts = opts || {};
-
-    var dim = false;
-    utils.forEach(models, function (m) {
-      if (opts.exceptType && m.getType() !== opts.exceptType) {
-        dim = m.getDimension();
-        return false;
-      } else if (opts.type && m.getType() === opts.type) {
-        dim = m.getDimension();
-        return false;
-      } else if (!opts.exceptType && !opts.type) {
-        dim = m.getDimension();
-        return false;
-      }
-    });
-    return dim;
-  },
-  framesAreReady: function framesAreReady() {
-    var cachePath = this._getCachePath();
-    if (!this.cachedFrames) return false;
-    return Object.keys(this.cachedFrames[cachePath]).length == this._parent.time.getAllSteps().length;
-  },
-
-
-  /**
-   *
-   * @param {String|null} time of a particularly requested data frame. Null if all frames are requested
-   * @param {function} cb
-   * @param {Array} keys array of entities
-   * @return null
-   */
-  getFrame: function getFrame(time, cb, keys) {
-    //keys = null;
-    var _this = this;
-    if (!this.cachedFrames) this.cachedFrames = {};
-
-    var steps = this._parent.time.getAllSteps();
-    // try to get frame from cache without keys
-    var cachePath = this._getCachePath();
-    if (!cachePath) return cb(null, time);
-    if (time && _this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
-      // if it does, then return that frame directly and stop here
-      //QUESTION: can we call the callback and return the frame? this will allow callbackless API too
-      return cb(_this.cachedFrames[cachePath][time], time);
-    }
-    cachePath = this._getCachePath(keys);
-    if (!cachePath) return cb(null, time);
-
-    // check if the requested time point has a cached animation frame
-    if (time && _this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
-      // if it does, then return that frame directly and stop here
-      //QUESTION: can we call the callback and return the frame? this will allow callbackless API too
-      return cb(_this.cachedFrames[cachePath][time], time);
-    }
-
-    // if it doesn't (the requested time point falls between animation frames or frame is not cached yet)
-    // check if interpolation makes sense: we've requested a particular time and we have more than one frame
-    if (time && steps.length > 1) {
-
-      //find the next frame after the requested time point
-      var nextFrameIndex = d3.bisectLeft(steps, time);
-
-      if (!steps[nextFrameIndex]) {
-        utils.warn("The requested frame is out of range: " + time);
-        cb(null, time);
-        return null;
-      }
-
-      //if "time" doesn't hit the frame precisely
-      if (steps[nextFrameIndex].toString() != time.toString()) {
-
-        //interpolate between frames and fire the callback
-        this._interpolateBetweenFrames(time, nextFrameIndex, steps, function (response) {
-          cb(response, time);
-        }, keys);
-        return null;
-      }
-    }
-
-    //QUESTION: we don't need any further execution after we called for interpolation, right?
-    //request preparing the data, wait until it's done
-    _this.getFrames(time, keys).then(function () {
-      if (!time && _this.cachedFrames[cachePath]) {
-        //time can be null: then return all frames
-        return cb(_this.cachedFrames[cachePath], time);
-      } else if (_this.cachedFrames[cachePath] && _this.cachedFrames[cachePath][time]) {
-        //time can be !null: then a particular frame calculation was forced and now it's done
-        return cb(_this.cachedFrames[cachePath][time], time);
-      }
-      utils.warn("marker.js getFrame: Data is not available for frame: " + time);
-      return cb(null, time);
-    });
-  },
-  _interpolateBetweenFrames: function _interpolateBetweenFrames(time, nextFrameIndex, steps, cb, keys) {
-    var _this = this;
-
-    if (nextFrameIndex == 0) {
-      //getFrame makes sure the frane is ready because a frame with non-existing data might be adressed
-      this.getFrame(steps[nextFrameIndex], function (values) {
-        return cb(values);
-      }, keys);
-    } else {
-      var prevFrameTime = steps[nextFrameIndex - 1];
-      var nextFrameTime = steps[nextFrameIndex];
-
-      //getFrame makes sure the frane is ready because a frame with non-existing data might be adressed
-      this.getFrame(prevFrameTime, function (pValues) {
-        _this.getFrame(nextFrameTime, function (nValues) {
-          var fraction = (time - prevFrameTime) / (nextFrameTime - prevFrameTime);
-          var dataBetweenFrames = {};
-
-          //loop across the hooks
-          utils.forEach(pValues, function (values, hook) {
-            dataBetweenFrames[hook] = {};
-
-            if (_this._multiDim && _this[hook].use == "indicator" && _this[hook].which !== _this._getFirstDimension({ type: "time" })) {
-              var hookDataBF = dataBetweenFrames[hook];
-              var query = _this[hook].dataSource.getData(_this[hook]._dataId, "query");
-              var TIME = query.animatable;
-              var KEY = query.select.key.slice(0);
-              if (TIME && KEY.indexOf(TIME) != -1) KEY.splice(KEY.indexOf(TIME), 1);
-
-              var lastIndex = KEY.length - 1;
-              var iterateKeys = function iterateKeys(firstKeyObject, lastKeyObject, firstKey, pValues, nValues, index) {
-                var keys = Object.keys(pValues);
-                for (var i = 0, j = keys.length; i < j; i++) {
-                  if (index == 0) {
-                    firstKey = keys[i]; //root level
-                  }
-                  if (index == lastIndex) {
-                    mapValue(hookDataBF, firstKey, keys[i], firstKeyObject, lastKeyObject, pValues[keys[i]], nValues[keys[i]]);
-                  } else {
-                    if (index == 0) {
-                      lastKeyObject = firstKeyObject = {};
-                    }
-                    var nextIndex = index + 1;
-                    lastKeyObject[keys[i]] = {};
-                    iterateKeys(firstKeyObject, lastKeyObject[keys[i]], firstKey, pValues[keys[i]], nValues[keys[i]], nextIndex);
-                  }
-                }
-              };
-
-              iterateKeys(null, null, null, values, nValues[hook], 0);
-            } else {
-              //loop across the entities
-              utils.forEach(values, function (val1, key) {
-                var val2 = nValues[hook][key];
-                if (utils.isDate(val1)) {
-                  dataBetweenFrames[hook][key] = time;
-                } else if (!utils.isNumber(val1)) {
-                  //we can be interpolating string values
-                  dataBetweenFrames[hook][key] = val1;
-                } else {
-                  //interpolation between number and null should rerurn null, not a value in between (#1350)
-                  dataBetweenFrames[hook][key] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
-                }
-              });
-            }
-          });
-          cb(dataBetweenFrames);
-
-          function mapValue(hookDataBF, firstKey, lastKey, firstKeyObject, lastKeyObject, val1, val2) {
-            hookDataBF[firstKey] = firstKeyObject[firstKey];
-            if (utils.isDate(val1)) {
-              lastKeyObject[lastKey] = time;
-            } else if (!utils.isNumber(val1)) {
-              //we can be interpolating string values
-              lastKeyObject[lastKey] = val1;
-            } else {
-              //interpolation between number and null should rerurn null, not a value in between (#1350)
-              lastKeyObject[lastKey] = val1 == null || val2 == null ? null : val1 + (val2 - val1) * fraction;
-            }
-          }
-        }, keys);
-      }, keys);
-    }
-  },
-  getFrames: function getFrames(forceFrame, selected) {
-    var _this = this;
-    if (!this.cachedFrames) this.cachedFrames = {};
-
-    var KEY = this._getFirstDimension();
-    var TIME = this._getFirstDimension({ type: "time" });
-
-    if (!this.frameQueues) this.frameQueues = {}; //static queue of frames
-    if (!this.partialResult) this.partialResult = {};
-
-    //array of steps -- names of all frames
-    var steps = this._parent.time.getAllSteps();
-
-    var cachePath = this._getCachePath(selected);
-    if (!cachePath) return new Promise(function (resolve, reject) {
-      resolve();
-    });
-    //if the collection of frames for this data cube is not scheduled yet (otherwise no need to repeat calculation)
-    if (!this.frameQueues[cachePath] || !(this.frameQueues[cachePath] instanceof Promise)) {
-
-      //this is a promise nobody listens to - it prepares all the frames we need without forcing any
-      this.frameQueues[cachePath] = new Promise(function (resolve, reject) {
-
-        _this.partialResult[cachePath] = {};
-        steps.forEach(function (t) {
-          _this.partialResult[cachePath][t] = {};
-        });
-
-        // Assemble the list of keys as an intersection of keys in all queries of all hooks
-        var keys = _this.getKeys();
-
-        var deferredHooks = [];
-        // Assemble data from each hook. Each frame becomes a vector containing the current configuration of hooks.
-        // frame -> hooks -> entities: values
-        utils.forEach(_this._dataCube, function (hook, name) {
-          if (hook.use === "constant") {
-            //special case: fill data with constant values
-            steps.forEach(function (t) {
-              _this.partialResult[cachePath][t][name] = {};
-              keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = hook.which;
-              });
-            });
-          } else if (hook.which === KEY) {
-            //special case: fill data with keys to data itself
-            steps.forEach(function (t) {
-              _this.partialResult[cachePath][t][name] = {};
-              keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = key[KEY];
-              });
-            });
-          } else if (hook.which === TIME) {
-            //special case: fill data with time points
-            steps.forEach(function (t) {
-              _this.partialResult[cachePath][t][name] = {};
-              keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][key[KEY]] = new Date(t);
-              });
-            });
-          } else {
-            //calculation of async frames is taken outside the loop
-            //hooks with real data that needs to be fetched from datamanager
-            deferredHooks.push(hook);
-          }
-        });
-
-        //check if we have any data to get from datamanager
-        if (deferredHooks.length > 0) {
-          var promises = [];
-          utils.forEach(deferredHooks, function (hook) {
-            promises.push(new Promise(function (res, rej) {
-              // need to save the hook state before calling getFrames.
-              // `hook` state might change between calling and resolving the call.
-              // The result needs to be saved to the correct cache, so we need to save current hook state
-              var currentHookState = {
-                name: hook._name,
-                which: hook.which
-              };
-              hook.getFrames(steps, selected).then(function (response) {
-                utils.forEach(response, function (frame, t) {
-                  _this.partialResult[cachePath][t][currentHookState.name] = frame[currentHookState.which];
-                });
-                res();
-              });
-            }));
-          });
-          Promise.all(promises).then(function () {
-            _this.cachedFrames[cachePath] = _this.partialResult[cachePath];
-            resolve();
-          });
-        } else {
-          _this.cachedFrames[cachePath] = _this.partialResult[cachePath];
-          resolve();
-        }
-      });
-    }
-    return new Promise(function (resolve, reject) {
-      if (steps.length < 2 || !forceFrame) {
-        //wait until the above promise is resolved, then resolve the current promise
-        _this.frameQueues[cachePath].then(function () {
-          resolve(); //going back to getFrame(), to ".then"
-        });
-      } else {
-        var promises = [];
-        utils.forEach(_this._dataCube, function (hook, name) {
-          //exception: we know that these are knonwn, no need to calculate these
-          if (hook.use !== "constant" && hook.which !== KEY && hook.which !== TIME) {
-            (function (_hook, _name) {
-              promises.push(new Promise(function (res, rej) {
-                _hook.getFrame(steps, forceFrame, selected).then(function (response) {
-                  _this.partialResult[cachePath][forceFrame][_name] = response[forceFrame][_hook.which];
-                  res();
-                });
-              }));
-            })(hook, name); //isolate this () code with its own hook and name
-          }
-        });
-        if (promises.length > 0) {
-          Promise.all(promises).then(function () {
-            if (!_this.cachedFrames[cachePath]) {
-              _this.cachedFrames[cachePath] = {};
-            }
-            _this.cachedFrames[cachePath][forceFrame] = _this.partialResult[cachePath][forceFrame];
-            resolve();
-          });
-        } else {
-          resolve();
-        }
-      }
-    });
-  },
-  listenFramesQueue: function listenFramesQueue(keys, cb) {
-    var _this = this;
-    var KEY = this._getFirstDimension();
-    var TIME = this._getFirstDimension({ type: "time" });
-    var steps = this._parent.time.getAllSteps();
-    var preparedFrames = {};
-    this.getFrames();
-    var dataIds = [];
-
-    var stepsCount = steps.length;
-    var isDataLoaded = false;
-
-    utils.forEach(_this._dataCube, function (hook, name) {
-      if (!(hook.use === "constant" || hook.which === KEY || hook.which === TIME)) {
-        if (!dataIds.includes(hook._dataId)) {
-          dataIds.push(hook._dataId);
-
-          hook.dataSource.listenFrame(hook._dataId, steps, keys, function (dataId, time) {
-            var keyName = time.toString();
-            if (typeof preparedFrames[keyName] === "undefined") preparedFrames[keyName] = [];
-            if (!preparedFrames[keyName].includes(dataId)) preparedFrames[keyName].push(dataId);
-            if (preparedFrames[keyName].length === dataIds.length) {
-              if (!isDataLoaded && stepsCount === Object.keys(preparedFrames).length) {
-                isDataLoaded = true;
-                _this.trigger("dataLoaded");
-              }
-
-              cb(time);
-            }
-          });
-        }
-      }
-    });
-  },
-  getEntityLimits: function getEntityLimits(entity) {
-    var _this = this;
-    var timePoints = this._parent.time.getAllSteps();
-    var selectedEdgeTimes = [];
-    var hooks = [];
-    utils.forEach(_this.getSubhooks(), function (hook) {
-      if (hook.use == "constant") return;
-      if (hook._important) hooks.push(hook._name);
-    });
-
-    var findEntityWithCompleteHooks = function findEntityWithCompleteHooks(values) {
-      if (!values) return false;
-      for (var i = 0, j = hooks.length; i < j; i++) {
-        if (!(values[hooks[i]][entity] || values[hooks[i]][entity] === 0)) return false;
-      }
-      return true;
-    };
-
-    var findSelectedTime = function findSelectedTime(iterator, findCB) {
-      var point = iterator();
-      if (point == null) return;
-      _this.getFrame(timePoints[point], function (values) {
-        if (findEntityWithCompleteHooks(values)) {
-          findCB(point);
-        } else {
-          findSelectedTime(iterator, findCB);
-        }
-      });
-    };
-    var promises = [];
-    promises.push(new Promise(function (resolve, reject) {
-
-      //find startSelected time
-      findSelectedTime(function () {
-        var max = timePoints.length;
-        var i = 0;
-        return function () {
-          return i < max ? i++ : null;
-        };
-      }(), function (point) {
-        selectedEdgeTimes[0] = timePoints[point];
-        resolve();
-      });
-    }));
-
-    promises.push(new Promise(function (resolve, reject) {
-
-      //find endSelected time
-      findSelectedTime(function () {
-        var i = timePoints.length - 1;
-        return function () {
-          return i >= 0 ? i-- : null;
-        };
-      }(), function (point) {
-        selectedEdgeTimes[1] = timePoints[point];
-        resolve();
-      });
-    }));
-
-    return Promise.all(promises).then(function () {
-      return { "min": selectedEdgeTimes[0], "max": selectedEdgeTimes[1] };
-    });
-  },
-
-
-  /**
-   * Learn what this model should hook to
-   * @returns {Array} space array
-   */
-  getSpace: function getSpace() {
-    if (utils.isArray(this.space)) {
-      return this.space;
-    }
-
-    utils.error('ERROR: space not found.\n You must specify the objects this hook will use under the "space" attribute in the state.\n Example:\n space: ["entities", "time"]');
-  }
-});
-
-exports.default = Marker;
-
-/***/ }),
-/* 149 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _hook = __webpack_require__(36);
-
-var _hook2 = _interopRequireDefault(_hook);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*
- * VIZABI Data Model (options.data)
- */
-
-var SideModel = _hook2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  /**
-   * Initializes the size hook
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-
-    this._type = "side";
-
-    bind["readyOnce"] = this.readyOnce;
-
-    this.state = { left: {}, right: {} };
-    this._super(name, values, parent, bind);
-  },
-  readyOnce: function readyOnce() {
-    if (!this.spaceRef) return;
-    var dataConnChildren = this._space[this.spaceRef].dataConnectedChildren.slice(0);
-    dataConnChildren.splice(dataConnChildren.indexOf("show"), 1);
-    this._space[this.spaceRef].dataConnectedChildren = dataConnChildren;
-  },
-  switchSideState: function switchSideState() {
-    var left = this.state.left;
-    this.state.left = this.state.right;
-    this.state.right = left;
-  },
-  clearSideState: function clearSideState() {
-    this.state = { left: {}, right: {} };
-  }
-});
-
-exports.default = SideModel;
-
-/***/ }),
-/* 150 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _axis = __webpack_require__(105);
-
-var _axis2 = _interopRequireDefault(_axis);
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/*
- * VIZABI Size Model
- */
-
-var SizeModel = _axis2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null,
-      domainMin: null,
-      domainMax: null,
-      zoomedMin: null,
-      zoomedMax: null,
-      extent: [0, 0.85],
-      scaleType: null,
-      allow: {
-        scales: ["ordinal", "linear", "log", "genericLog", "pow"]
-      }
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  _type: "size",
-
-  buildScale: function buildScale() {
-    //do whatever axis.buildScale does
-    this._super();
-    //but then also clamp a numeric scale
-    if (this.scaleType !== "ordinal") this.scale.clamp(true);
-  },
-  autoGenerateModel: function autoGenerateModel() {
-    if (this.which == null) {
-      var concept = void 0;
-      if (this.autogenerate) {
-        concept = this.dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType);
-
-        if (concept) {
-          this.which = concept.concept;
-          this.use = "indicator";
-          this.scaleType = "linear";
-        }
-      }
-      if (!concept) {
-        this.which = "_default";
-        this.use = "constant";
-        this.scaleType = "ordinal";
-      }
-    }
-    if (this.scaleType == null) {
-      this.scaleType = this.dataSource.getConceptprops(this.which).scales[0];
-    }
-  }
-});
-
-exports.default = SizeModel;
-
-/***/ }),
-/* 151 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _hook = __webpack_require__(36);
-
-var _hook2 = _interopRequireDefault(_hook);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*
- * VIZABI Stack Model
- */
-
-var palettes = {
-  "ALL": "all",
-  _default: "none"
-};
-
-var StackModel = _hook2.default.extend({
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      use: null,
-      which: null,
-      merge: false
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  /**
-   * Initializes the stack hook
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-
-    this._type = "model";
-
-    this._super(name, values, parent, bind);
-  },
-
-
-  /**
-   * Validates a color hook
-   */
-  validate: function validate() {
-    //there must be no scale
-    if (this.scale) this.scale = null;
-
-    //use must not be "indicator"
-    if (this.use === "indicator") {
-      utils.warn("stack model: use must not be 'indicator'. Resetting use to 'constant' and which to '" + palettes._default);
-      this.use = "constant";
-      this.which = palettes._default;
-    }
-
-    //if use is "constant"
-    if (this.use === "constant" && utils.values(palettes).indexOf(this.which) == -1) {
-      utils.warn("stack model: the requested value '" + this.which + "' is not allowed. resetting to '" + palettes._default);
-      this.which == palettes._default;
-    }
-  },
-
-
-  /**
-   * Get the above constants
-   */
-  getPalettes: function getPalettes() {
-    return palettes;
-  },
-
-
-  /**
-   * There must be no scale
-   */
-  buildScale: function buildScale() {}
-});
-
-exports.default = StackModel;
-
-/***/ }),
-/* 152 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _dataconnected = __webpack_require__(55);
-
-var _dataconnected2 = _interopRequireDefault(_dataconnected);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI Time Model
- */
-
-// short-cut for developers to get UTC date strings
-// not meant to be used in code!!!
-Date.prototype.utc = Date.prototype.toUTCString;
-
-/*
- * Time formats for internal data
- * all in UTC
- */
-var formats = {
-  "year": { data: d3.time.format.utc("%Y"), ui: d3.time.format.utc("%Y") },
-  "month": { data: d3.time.format.utc("%Y-%m"), ui: d3.time.format.utc("%b %Y") }, // month needs separator according to ISO to not confuse YYYYMM with YYMMDD
-  "day": { data: d3.time.format.utc("%Y%m%d"), ui: d3.time.format.utc("%c") },
-  "hour": { data: d3.time.format.utc("%Y%m%dT%H"), ui: d3.time.format.utc("%b %d %Y, %H") },
-  "minute": { data: d3.time.format.utc("%Y%m%dT%H%M"), ui: d3.time.format.utc("%b %d %Y, %H:%M") },
-  "second": { data: d3.time.format.utc("%Y%m%dT%H%M%S"), ui: d3.time.format.utc("%b %d %Y, %H:%M:%S") },
-  "week": { data: weekFormat(), ui: weekFormat() }, // %Yw%W d3 week format does not comply with ISO
-  "quarter": { data: quarterFormat(), ui: quarterFormat() // %Yq%Q d3 does not support quarters
-  } };
-
-var TimeModel = _dataconnected2.default.extend({
-
-  objectLeafs: ["autogenerate"],
-
-  /**
-   * Default values for this model
-   */
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      dim: null,
-      value: null,
-      start: null,
-      end: null,
-      startOrigin: null,
-      endOrigin: null,
-      startSelected: null,
-      endSelected: null,
-      playable: true,
-      playing: false,
-      loop: false,
-      round: "round",
-      delay: 150, //delay between animation frames
-      delayThresholdX2: 90, //delay X2 boundary: if less -- then every other frame will be dropped and animation dely will be double the value
-      delayThresholdX4: 45, //delay X4 boundary: if less -- then 3/4 frame will be dropped and animation dely will be 4x the value
-      unit: "year",
-      format: { data: null, ui: null }, // overwrite of default formats
-      step: 1, //step must be integer, and expressed in units
-      immediatePlay: true,
-      record: false,
-      offset: 0
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  dataConnectedChildren: ["startOrigin", "endOrigin", "dim"],
-
-  /**
-   * Initializes the locale model.
-   * @param {String} name
-   * @param {Object} values The initial values of this model
-   * @param parent A reference to the parent model
-   * @param {Object} bind Initial events to bind
-   */
-  init: function init(name, values, parent, bind) {
-    this._type = "time";
-
-    //same constructor
-    this._super(name, values, parent, bind);
-    var _this = this;
-    this.initFormatters();
-    this.dragging = false;
-    this.postponePause = false;
-    this.allSteps = {};
-    this.delayAnimations = this.delay;
-
-    //bing play method to model change
-    this.on({
-
-      "change:playing": function changePlaying() {
-        if (_this.playing === true) {
-          _this._startPlaying();
-        } else {
-          _this._stopPlaying();
-        }
-      },
-
-      "change:format": function changeFormat() {
-        _this.initFormatters();
-      }
-
-    });
-  },
-  initFormatters: function initFormatters() {
-    if (formats[this.unit]) {
-      this.formatters = formats[this.unit];
-    }
-    // specifically set formats overwrite unit defaults
-    if (typeof this.format === "string") {
-      this.formatters.data = this.formatters.ui = d3.time.format.utc(this.format);
-    } else {
-      if (this.format.data) {
-        this.formatters.data = d3.time.format.utc(this.format.data);
-      }
-      if (this.format.ui) {
-        this.formatters.ui = d3.time.format.utc(this.format.ui);
-      }
-    }
-    this.validateFormatting();
-  },
-  afterPreload: function afterPreload() {
-    if (this.dim == null && this.autogenerate) {
-      var dataSource = this.getClosestModel(this.autogenerate.data);
-      this.dim = dataSource.getConceptByIndex(this.autogenerate.conceptIndex, this.autogenerate.conceptType).concept;
-    }
-  },
-
-
-  /**
-   * Formats value, start and end dates to actual Date objects
-   */
-  _formatToDates: function _formatToDates() {
-    var persistentValues = ["value"];
-    var date_attr = ["value", "start", "end", "startSelected", "endSelected"];
-    for (var i = 0; i < date_attr.length; i++) {
-      var attr = date_attr[i];
-      if (!utils.isDate(this[attr])) {
-        var date = this.parse(this[attr]);
-        this.set(attr, date, null, persistentValues.indexOf(attr) !== -1);
-      }
-    }
-  },
-
-
-  /*
-   * Formatting and parsing functions
-   * @param {Date} dateObject
-   * @param {String} type Either data or ui.
-   * @returns {String}
-   */
-  formatDate: function formatDate(dateObject) {
-    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
-
-    if (["data", "ui"].indexOf(type) === -1) {
-      utils.warn("Time.formatDate type parameter (" + type + ') invalid. Using "data".');
-      type = data;
-    }
-    if (dateObject == null) return null;
-    return this.formatters[type](dateObject);
-  },
-
-  /* parse to predefined unit */
-  parse: function parse(timeString) {
-    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
-
-    if (timeString == null) return null;
-    return this.formatters[type].parse(timeString.toString());
-  },
-
-
-  /* auto-determines unit from timestring */
-  findFormat: function findFormat(timeString) {
-    var keys = Object.keys(formats);
-    for (var i = 0; i < keys.length; i++) {
-      var dateObject = formats[keys[i]].data.parse(timeString);
-      if (dateObject) return { unit: keys[i], time: dateObject, type: "data" };
-      dateObject = formats[keys[i]].ui.parse(timeString);
-      if (dateObject) return { unit: keys[i], time: dateObject, type: "ui" };
-    }
-    return null;
-  },
-
-
-  /**
-   * Validates the model
-   */
-  validate: function validate() {
-
-    //check if time start and end are not defined but start and end origins are defined
-    if (this.start == null && this.startOrigin) this.set("start", this.startOrigin, null, false);
-    if (this.end == null && this.endOrigin) this.set("end", this.endOrigin, null, false);
-
-    if (this.formatters) {
-      this.validateFormatting();
-    }
-
-    //unit has to be one of the available_time_units
-    if (!formats[this.unit]) {
-      utils.warn(this.unit + ' is not a valid time unit, using "year" instead.');
-      this.unit = "year";
-    }
-
-    if (this.step < 1) {
-      this.step = 1;
-    }
-
-    //end has to be >= than start
-    if (this.end < this.start && this.start != null) {
-      this.set("end", new Date(this.start), null, false);
-    }
-
-    if (this.value < this.startSelected && this.startSelected != null) {
-      this.value = new Date(this.startSelected);
-    }
-
-    if (this.value > this.endSelected && this.endSelected != null) {
-      this.value = new Date(this.endSelected);
-    }
-    if (this.splash === false) {
-      if ((!this.startSelected || this.startSelected < this.start) && this.start != null) {
-        this.set({ startSelected: new Date(this.start) }, null, false /*make change non-persistent for URL and history*/);
-      }
-
-      if ((!this.endSelected || this.endSelected > this.end) && this.end != null) {
-        this.set({ endSelected: new Date(this.end) }, null, false /*make change non-persistent for URL and history*/);
-      }
-    }
-
-    //value has to be between start and end
-    if (this.value < this.start && this.start != null) {
-      this.value = new Date(this.start);
-    } else if (this.value > this.end && this.end != null) {
-      this.value = new Date(this.end);
-    }
-
-    if (this.playable === false && this.playing === true) {
-      this.set("playing", false, null, false);
-    }
-  },
-  validateFormatting: function validateFormatting() {
-    // default to current date. Other option: newTime['start'] || newTime['end'] || time.start || time.end;
-    if (this.value == null) this.set("value", this.parse(this.formatDate(new Date())), null, false);
-
-    //make sure dates are transformed into dates at all times
-    if (!utils.isDate(this.start) || !utils.isDate(this.end) || !utils.isDate(this.value) || !utils.isDate(this.startSelected) || !utils.isDate(this.endSelected)) {
-      this._formatToDates();
-    }
-  },
-
-
-  /**
-   * Plays time
-   */
-  play: function play() {
-    this._startPlaying();
-  },
-
-
-  /**
-   * Pauses time
-   */
-  pause: function pause(soft) {
-    if (soft) {
-      this.postponePause = true;
-    } else {
-      if (this.playing) {
-        this.set("playing", false, null, false);
-        this.set("value", this.value, true, true);
-      }
-    }
-  },
-
-
-  /**
-   * Indicates dragging of time
-   */
-  dragStart: function dragStart() {
-    this.dragging = true;
-  },
-  dragStop: function dragStop() {
-    this.dragging = false;
-  },
-
-
-  /**
-   * gets time range
-   * @returns range between start and end
-   */
-  getRange: function getRange() {
-    var is = this.getIntervalAndStep();
-    return d3["utc" + is.interval].range(this.start, this.end, is.step);
-  },
-
-
-  /**
-   * gets the d3 interval and stepsize for d3 time interval methods
-   * D3's week-interval starts on sunday and d3 does not support a quarter interval
-   **/
-  getIntervalAndStep: function getIntervalAndStep() {
-    var d3Interval = void 0,
-        step = void 0;
-    switch (this.unit) {
-      case "week":
-        d3Interval = "monday";step = this.step;break;
-      case "quarter":
-        d3Interval = "month";step = this.step * 3;break;
-      default:
-        d3Interval = this.unit;step = this.step;break;
-    }
-    return { interval: utils.capitalize(d3Interval), step: step };
-  },
-
-
-  /**
-   * Gets filter for time
-   * @param {Boolean} splash: get filter for current year only
-   * @returns {Object} time filter
-   */
-  getFilter: function getFilter(splash) {
-    var defaultStart = this.parse(this.startOrigin);
-    var defaultEnd = this.parse(this.endOrigin);
-
-    var dim = this.getDimension();
-    var filter = null;
-
-    if (splash) {
-      if (this.value != null) {
-        filter = {};
-        filter[dim] = this.formatters.data(this.value);
-      }
-    } else {
-      var gte = void 0,
-          lte = void 0;
-      if (defaultStart != null) {
-        gte = this.formatters.data(defaultStart);
-      }
-      if (defaultEnd != null) {
-        lte = this.formatters.data(defaultEnd);
-      }
-      if (gte || lte) {
-        filter = {};
-        filter[dim] = {};
-        if (gte) filter[dim]["$gte"] = gte;
-        if (lte) filter[dim]["$lte"] = lte;
-      }
-    }
-    return filter;
-  },
-
-
-  /**
-   * Gets parser for this model
-   * @returns {Function} parser function
-   */
-  getParser: function getParser() {
-    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "data";
-
-    return this.formatters[type].parse;
-  },
-
-
-  /**
-  * Gets formatter for this model
-  * @returns {Function} formatter function
-  */
-  getFormatter: function getFormatter() {
-    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "data";
-
-    return this.formatters[type];
-  },
-
-
-  /**
-   * Gets an array with all time steps for this model
-   * @returns {Array} time array
-   */
-  getAllSteps: function getAllSteps() {
-    if (!this.start || !this.end) {
-      utils.warn("getAllSteps(): invalid start/end time is detected: " + this.start + ", " + this.end);
-      return [];
-    }
-    var hash = "" + this.offset + this.start + this.end + this.step;
-
-    //return if cached
-    if (this.allSteps[hash]) return this.allSteps[hash];
-
-    this.allSteps[hash] = [];
-    var is = this.getIntervalAndStep();
-    var curr = d3["utc" + is.interval].offset(this.start, this.offset);
-    while (+curr <= +this.end) {
-      var _is = this.getIntervalAndStep();
-      this.allSteps[hash].push(curr);
-      curr = d3["utc" + _is.interval].offset(curr, _is.step);
-    }
-    return this.allSteps[hash];
-  },
-
-
-  /**
-   * Snaps the time to integer
-   * possible inputs are "start", "end", "value". "value" is default
-   */
-  snap: function snap(what) {
-    if (!this.round) return;
-    if (what == null) what = "value";
-    var op = "round";
-    if (this.round === "ceil") op = "ceil";
-    if (this.round === "floor") op = "floor";
-    var is = this.getIntervalAndStep();
-    var time = d3["utc" + is.interval][op](this[what]);
-    if (this.value - time != 0 || this.value - this.start == 0 || this.value - this.end == 0) {
-      this.set(what, time, true); //3rd argumennt forces update
-    }
-  },
-
-
-  /**
-   * Starts playing the time, initializing the interval
-   */
-  _startPlaying: function _startPlaying() {
-    //don't play if it's not playable
-    if (!this.playable) return;
-
-    var _this = this;
-
-    //go to start if we start from end point
-    if (this.value >= this.endSelected) {
-      _this.getModelObject("value").set(_this.startSelected, null, false /*make change non-persistent for URL and history*/);
-    } else {
-      //the assumption is that the time is already snapped when we start playing
-      //because only dragging the timeslider can un-snap the time, and it snaps on drag.end
-      //so we don't need this line. let's see if we survive without.
-      //as a consequence, the first time update in playing sequence will have this.playing flag up
-      //so the bubble chart will zoom in smoothly. Closes #1213
-      //this.snap();
-    }
-    this.set("playing", true, null, false);
-    this.playInterval(this.immediatePlay);
-
-    this.trigger("play");
-  },
-  playInterval: function playInterval(immediatePlay) {
-    if (!this.playing) return;
-    var _this = this;
-    this.delayAnimations = this.delay;
-    if (this.delay < this.delayThresholdX2) this.delayAnimations *= 2;
-    if (this.delay < this.delayThresholdX4) this.delayAnimations *= 2;
-
-    var delayAnimations = immediatePlay ? 1 : this.delayAnimations;
-
-    this._intervals.setInterval("playInterval_" + this._id, function () {
-      // when time is playing and it reached the end
-      if (_this.value >= _this.endSelected) {
-        // if looping
-        if (_this.loop) {
-          // reset time to start, silently
-          _this.getModelObject("value").set(_this.startSelected, null, false /*make change non-persistent for URL and history*/);
-        } else {
-          _this.set("playing", false, null, false);
-        }
-      } else {
-
-        _this._intervals.clearInterval("playInterval_" + _this._id);
-
-        if (_this.postponePause || !_this.playing) {
-          _this.set("playing", false, null, false);
-          _this.postponePause = false;
-          _this.getModelObject("value").set(_this.value, true, true /*force the change and make it persistent for URL and history*/);
-        } else {
-          var is = _this.getIntervalAndStep();
-          if (_this.delay < _this.delayThresholdX2) is.step *= 2;
-          if (_this.delay < _this.delayThresholdX4) is.step *= 2;
-          var time = d3["utc" + is.interval].offset(_this.value, is.step);
-          if (time >= _this.endSelected) {
-            // if no playing needed anymore then make the last update persistent and not overshooting
-            _this.getModelObject("value").set(_this.endSelected, null, true /*force the change and make it persistent for URL and history*/);
-          } else {
-            _this.getModelObject("value").set(time, null, false /*make change non-persistent for URL and history*/);
-          }
-          _this.playInterval();
-        }
-      }
-    }, delayAnimations);
-  },
-  incrementTime: function incrementTime(time) {
-    var is = this.getIntervalAndStep();
-    return d3["utc" + is.interval].offset(time, is.step);
-  },
-  decrementTime: function decrementTime(time) {
-    var is = this.getIntervalAndStep();
-    return d3["utc" + is.interval].offset(time, -is.step);
-  },
-
-
-  /**
-   * Stops playing the time, clearing the interval
-   */
-  _stopPlaying: function _stopPlaying() {
-    this._intervals.clearInterval("playInterval_" + this._id);
-    //this.snap();
-    this.trigger("pause");
-  }
-});
-
-/*
- * Week Format to format and parse dates
- * Conforms with ISO8601
- * Follows format: YYYYwWW: 2015w04, 3845w34, 0020w53
- */
-function weekFormat() {
-
-  var format = function format(d) {
-    return formatWeekYear(d) + "w" + formatWeek(d);
-  };
-
-  format.parse = function parse(dateString) {
-    var matchedDate = dateString.match(/^(\d{4})w(\d{2})$/);
-    return matchedDate ? getDateFromWeek(matchedDate[1], matchedDate[2]) : null;
-  };
-
-  var formatWeekYear = function formatWeekYear(d) {
-    var origin = +d;
-    return new Date(origin + (4 - (d.getUTCDay() || 7)) * 86400000).getUTCFullYear();
-  };
-
-  var formatWeek = function formatWeek(d) {
-    var origin = +d;
-    var quote = new Date(origin + (4 - (d.getUTCDay() || 7)) * 86400000);
-    var week = Math.ceil(((quote.getTime() - quote.setUTCMonth(0, 1)) / 86400000 + 1) / 7);
-    return week < 10 ? "0" + week : week;
-  };
-
-  var getDateFromWeek = function getDateFromWeek(p1, p2) {
-    var week = parseInt(p2);
-    var year = p1;
-    var startDateOfYear = new Date(); // always 4th of January (according to standard ISO 8601)
-    startDateOfYear.setUTCFullYear(year);
-    startDateOfYear.setUTCMonth(0);
-    startDateOfYear.setUTCDate(4);
-    var startDayOfWeek = startDateOfYear.getUTCDay() || 7;
-    var dayOfWeek = 1; // Monday === 1
-    var dayOfYear = week * 7 + dayOfWeek - (startDayOfWeek + 4);
-
-    var date = formats["year"].parse(year);
-    date = new Date(date.getTime() + dayOfYear * 24 * 60 * 60 * 1000);
-
-    return date;
-  };
-
-  return format;
-}
-
-/*
- * Quarter Format to format and parse quarter dates
- * A quarter is the month%3
- * Follows format: YYYYqQ: 2015q4, 5847q1, 0040q2
- */
-function quarterFormat() {
-
-  var format = function format(d) {
-    return formats.year.data(d) + "q" + formatQuarter(d);
-  };
-
-  format.parse = function (dateString) {
-    var matchedDate = dateString.match(/^(\d{4})q(\d)$/);
-    return matchedDate ? getDateFromQuarter(matchedDate[1], matchedDate[2]) : null;
-  };
-
-  var formatQuarter = function formatQuarter(d) {
-    return (d.getUTCMonth() / 3 | 0) + 1;
-  };
-
-  var getDateFromQuarter = function getDateFromQuarter(p1, p2) {
-    var quarter = parseInt(p2);
-    var month = 3 * quarter - 2; // first month in quarter
-    var year = p1;
-    return formats.month.data.parse([year, (month < 9 ? "0" : "") + month].join("-"));
-  };
-
-  return format;
-}
-
-exports.default = TimeModel;
-
-/***/ }),
-/* 153 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _model = __webpack_require__(49);
-
-var _model2 = _interopRequireDefault(_model);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-//classes are vzb-portrait, vzb-landscape...
-var class_prefix = "vzb-";
-var class_presentation = "presentation";
-var class_rtl = "rtl";
-var class_portrait = "vzb-portrait";
-var class_landscape = "vzb-landscape";
-
-var UI = _model2.default.extend({
-
-  screen_profiles: {
-    small: {
-      min_width: 0,
-      min_height: 0
-    },
-    medium: {
-      min_width: 600,
-      min_height: 400
-    },
-    large: {
-      min_width: 900,
-      min_height: 520
-    }
-  },
-
-  getClassDefaults: function getClassDefaults() {
-    var defaults = {
-      presentation: false,
-      buttons: [],
-      dialogs: {
-        popup: [],
-        sidebar: [],
-        moreoptions: []
-      },
-      splash: false
-    };
-    return utils.deepExtend(this._super(), defaults);
-  },
-
-
-  /**
-   * Initializes the layout manager
-   */
-  init: function init(name, values, parent, bind) {
-
-    this._type = "ui";
-    this._container = null;
-    //dom element
-    this._curr_profile = "small";
-    this._prev_size = {};
-
-    //resize when window resizes
-    this.resizeHandler = this.resizeHandler.bind(this);
-    window.addEventListener("resize", this.resizeHandler);
-    bind["change:presentation"] = this.updatePresentation.bind(this);
-
-    this._super(name, values, parent, bind);
-
-    //TODO: remove later if IOS >10.3.2
-    //https://openradar.appspot.com/31725316
-    var detectIOS_10_3 = function detectIOS_10_3() {
-      var version = /(?:iPad|iPhone|iPod).+OS\s+(\d+)_(\d+)/.exec(navigator.userAgent);
-      return version && +version[1] >= 10 && +version[2] > 2 && !window.MSStream;
-    };
-    if (detectIOS_10_3()) {
-      this.setSize = utils.debounce(this.setSize, 500);
-    }
-  },
-  resizeHandler: function resizeHandler() {
-    var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    if (this._container) {
-      this.setSize(args.force || false);
-    }
-  },
-
-
-  /**
-   * Calculates the size of the newly resized container
-   */
-  setSize: function setSize(force) {
-    var _this = this;
-    var width = this._container.clientWidth;
-    var height = this._container.clientHeight;
-
-    /**
-     * issue #1118
-     * check if device is iPhone then add top margin for searchbar if it visible
-     */
-    if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) // browser is safari
-    && navigator.userAgent.match(/iPhone/i) // checking device
-    ) {
-        this._container.style.top = 0;
-        if (this._container.clientWidth > this._container.clientHeight // landscape mode
-        && this._container.clientWidth < 700) {
-          // small device
-          var bodyHeight = this._container.clientHeight;
-          var windowHeight = window.innerHeight;
-          if (2 < bodyHeight - windowHeight && bodyHeight - windowHeight <= 45) {
-            // check searchbar is visible
-            this._container.style.top = 44 + "px";
-            document.body.scrollTop = 44; // scrolling empty space
-          }
-        }
-      }
-
-    if (!force && this._prev_size && this._prev_size.width === width && this._prev_size.height === height || !width || !height) {
-      return;
-    }
-
-    // choose profile depending on size
-    utils.forEach(this.screen_profiles, function (range, size) {
-      //remove class
-      utils.removeClass(_this._container, class_prefix + size);
-      //find best fit
-      if (width >= range.min_width && height >= range.min_height) {
-        _this._curr_profile = size;
-      }
-    });
-
-    //update size class
-    utils.addClass(this._container, class_prefix + this._curr_profile);
-
-    //toggle, untoggle classes based on orientation
-    utils.classed(this._container, class_portrait, width < height);
-    utils.classed(this._container, class_landscape, !(width < height));
-
-    this._prev_size.width = width;
-    this._prev_size.height = height;
-    this.trigger("resize");
-  },
-
-
-  /**
-   * Sets the container for this layout
-   * @param container DOM element
-   */
-  setContainer: function setContainer(container) {
-    if (!container.clientWidth || !container.clientHeight) utils.warn("Vizabi is being initialised with a container of incorrect width or height. While this may be handled without a crash, it's not considered a healthy behavior. You should call Vizabi(placeholder,...) function when placeholder is not display:none and has some >0 !=auto width and height");
-
-    this._container = container;
-    this.setSize();
-    this.updatePresentation();
-  },
-
-
-  /**
-   * Sets the presentation mode for this layout
-   * @param {Bool} presentation mode on or off
-   */
-  updatePresentation: function updatePresentation() {
-    utils.classed(this._container, class_prefix + class_presentation, this.presentation);
-    this.trigger("resize");
-  },
-  getPresentationMode: function getPresentationMode() {
-    return this.presentation;
-  },
-  setRTL: function setRTL(flag) {
-    utils.classed(this._container, class_prefix + class_rtl, flag);
-  },
-
-
-  /**
-   * Gets the current selected profile
-   * @returns {String} name of current profile
-   */
-  currentProfile: function currentProfile() {
-    return this._curr_profile;
-  },
-  clear: function clear() {
-    window.removeEventListener("resize", this.resizeHandler);
-  }
-});
-
-exports.default = UI;
-
-/***/ }),
-/* 154 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = genericLog;
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-//  d3.scaleGenericlog
-function genericLog() {
-  return function d3_scale_genericLog(logScale) {
-    var _this = this;
-    var scales = [];
-    var domainParts = [];
-    var eps = 0.1;
-    var delta = 5;
-    var domain = logScale.domain();
-    var range = logScale.range();
-    var interpolator = null;
-    var rangePointingForward = void 0,
-        domainPointingForward = void 0;
-
-    var abs = function abs(arg) {
-      if (arg instanceof Array) return arg.map(function (d) {
-        return Math.abs(d);
-      });
-      return Math.abs(arg);
-    };
-
-    var _buildLinearScale = function _buildLinearScale(fakeDomain, fakeRange) {
-      return {
-        domain: fakeDomain,
-        sign: 1,
-        range: fakeRange,
-        scale: d3.scaleLinear().domain(fakeDomain).range(fakeRange)
-      };
-    };
-
-    var _buildLogScale = function _buildLogScale(fakeDomain, fakeRange, revertDomain) {
-      var normalizedDomain = fakeDomain;
-      //var normalizedRange = fakeRange.slice(0);
-      if (revertDomain) {
-        normalizedDomain = abs(fakeDomain);
-        //fakeRange.reverse();
-      }
-      return {
-        domain: fakeDomain,
-        sign: revertDomain ? -1 : 1,
-        range: fakeRange,
-        scale: d3.scaleLog().domain(normalizedDomain).range(fakeRange)
-      };
-    };
-
-    var buildScales = function buildScales() {
-      rangePointingForward = range[0] < range[range.length - 1];
-      var rangePointingSign = rangePointingForward ? 1 : -1;
-      scales = [];
-      if (domainParts.length == 1) {
-        if (domainParts[0][0] <= 0 && domainParts[0][1] >= 0) {
-          scales = [_buildLinearScale(domainParts[0], range)];
-        } else {
-          scales = [_buildLogScale(domainParts[0], range, domainParts[0][0] <= 0)];
-        }
-      } else {
-        var maxDomain = d3.max(abs(domain));
-        var rangeLength = abs(d3.max(range) - d3.min(range));
-        var rangePointKoef = 1;
-        var firstRangePoint = 0,
-            secondRangePoint = 0,
-            firstEps = 0,
-            secondEps = 0;
-        logScale.domain([eps, maxDomain]).range([0, rangeLength]);
-        var minRangePoint = delta; //logScale(eps * 2);
-        if (domain[0] != 0 && abs(domain[0]) > eps) firstRangePoint = logScale(abs(domain[0]));
-        if (domain[domain.length - 1] != 0 && abs(domain.length - 1) > eps) secondRangePoint = logScale(abs(domain[domain.length - 1]));
-
-        if (abs(domain[0]) > eps) firstEps = minRangePoint;
-
-        if (abs(domain[domain.length - 1]) > eps) secondEps = minRangePoint;
-
-        rangeLength = rangeLength - firstEps - secondEps;
-        if (secondRangePoint != 0) rangePointKoef = abs(firstRangePoint / secondRangePoint);
-
-        var point1 = void 0,
-            point2 = void 0;
-        if (domainParts.length == 2) {
-          // example: [-eps..0,eps][eps, val]
-          if (domain[0] == 0 || abs(domain[0]) <= eps) {
-            point1 = range[0] + firstRangePoint * rangePointKoef * rangePointingSign + secondEps * rangePointingSign;
-            scales = [_buildLinearScale(domainParts[0], [range[0], point1]), _buildLogScale(domainParts[1], [point1, range[range.length - 1]], !domainPointingForward)];
-          } else if (domain[domain.length - 1] == 0 || abs(domain[domain.length - 1]) <= eps) {
-            // example: [-val,-eps][-eps, 0..eps]
-            point1 = range[range.length - 1] - (firstEps + secondEps) * rangePointKoef * rangePointingSign;
-            scales = [_buildLogScale(domainParts[0], [range[0], point1], domainPointingForward), _buildLinearScale(domainParts[1], [point1, range[range.length - 1]])];
-          }
-        } else {
-          point1 = range[0] + rangeLength / (1 / rangePointKoef + 1) * rangePointingSign;
-          point2 = range[0] + (rangeLength / (1 / rangePointKoef + 1) + firstEps + secondEps) * rangePointingSign;
-          scales = [_buildLogScale(domainParts[0], [range[0], point1], domainPointingForward), _buildLinearScale(domainParts[1], [point1, point2]), _buildLogScale(domainParts[2], [point2, range[range.length - 1]], !domainPointingForward)];
-        }
-      }
-    };
-
-    var buildDomain = function buildDomain() {
-      domainPointingForward = domain[0] < domain[domain.length - 1];
-      domainParts = [];
-      if (d3.min(domain) > 0 && d3.max(domain) > 0 || d3.min(domain) < 0 && d3.max(domain) < 0) {
-        domainParts = [domain];
-      } else {
-        var start = void 0,
-            end = void 0;
-        if (domainPointingForward) {
-          start = domain[0];
-          end = domain[domain.length - 1];
-        } else {
-          start = domain[domain.length - 1];
-          end = domain[0];
-        }
-        var _addSubdomain = function _addSubdomain(first, second) {
-          if (domainPointingForward) {
-            domainParts.push([first, second]);
-          } else {
-            domainParts.unshift([second, first]);
-          }
-        };
-        while (start != end) {
-          if (end <= -eps || start >= -eps && end <= eps || start >= eps) {
-            _addSubdomain(start, end);
-            start = end;
-          } else if (start < -eps && end >= -eps) {
-            _addSubdomain(start, -eps);
-            start = -eps;
-          } else if (start >= -eps && end >= eps) {
-            _addSubdomain(start, eps);
-            start = eps;
-          } else {
-            console.warn("Something wrong while build subdomains: " + start + " " + end);
-            start = end;
-          }
-        }
-      }
-      buildScales();
-    };
-
-    var _getScaleByDomain = function _getScaleByDomain(x) {
-      if (domainPointingForward) {
-        if (x < domain[0]) {
-          return scales[0];
-        } else if (x > domain[domain.length - 1]) {
-          return scales[scales.length - 1];
-        }
-
-        for (var i = 0; i < scales.length; i++) {
-          if (x >= scales[i].domain[0] && x <= scales[i].domain[scales[i].domain.length - 1]) {
-            return scales[i];
-          }
-        }
-      } else {
-        if (x > domain[0]) {
-          return scales[0];
-        } else if (x < domain[domain.length - 1]) {
-          return scales[scales.length - 1];
-        }
-
-        for (var _i = 0; _i < scales.length; _i++) {
-          if (x <= scales[_i].domain[0] && x >= scales[_i].domain[scales[_i].domain.length - 1]) {
-            return scales[_i];
-          }
-        }
-      }
-    };
-
-    var getScaleByRange = function getScaleByRange(x) {
-      if (rangePointingForward) {
-        if (x < range[0]) {
-          return scales[0];
-        } else if (x > range[range.length - 1]) {
-          return scales[scales.length - 1];
-        }
-
-        for (var i = 0; i < scales.length; i++) {
-          if (x >= scales[i].range[0] && x <= scales[i].range[scales[i].range.length - 1]) {
-            return scales[i];
-          }
-        }
-      } else {
-        if (x > range[0]) {
-          return scales[0];
-        } else if (x < range[range.length - 1]) {
-          return scales[scales.length - 1];
-        }
-
-        for (var _i2 = 0; _i2 < scales.length; _i2++) {
-          if (x <= scales[_i2].range[0] && x >= scales[_i2].range[1]) {
-            return scales[_i2];
-          }
-        }
-      }
-    };
-
-    //polyfill for IE11
-    Math.sign = Math.sign || function (x) {
-      x = +x;
-      if (x === 0 || isNaN(x)) {
-        return x;
-      }
-      return x > 0 ? 1 : -1;
-    };
-
-    function scale(x) {
-      var currScale = _getScaleByDomain(x);
-
-      return interpolator ? interpolator(currScale.scale(x * currScale.sign)) : currScale.scale(x * currScale.sign);
-    }
-
-    scale.eps = function (arg) {
-      if (!arguments.length) return eps;
-      eps = arg;
-      scale.domain(domain);
-      return scale;
-    };
-
-    scale.delta = function (arg) {
-      if (!arguments.length) return delta;
-      delta = arg;
-      scale.range(range);
-      return scale;
-    };
-
-    scale.domain = function (arg) {
-      if (!arguments.length) return domain;
-
-      // this is an internal array, it will be modified. the input _arg should stay intact
-      switch (arg.length) {
-        // if no values are given, reset input to the default domain (do nothing)
-        case 0:
-          arg = domain;
-          break;
-        // use the given value as a center, get the domain /2 and *2 around it
-        case 1:
-          arg = [arg[0] / 2, arg[0] * 2];
-          break;
-      }
-      //if the domain is just a single value
-      if (arg[0] == arg[arg.length - 1]) {
-        arg[0] /= 2;
-        arg[arg.length - 1] = arg[arg.length - 1] * 2;
-      }
-      domain = arg;
-      var min = d3.min(abs(domain).filter(function (val) {
-        return !!val;
-      }));
-      if (min) eps = Math.min(eps, min / 100);
-      buildDomain();
-      return scale;
-    };
-
-    scale.range = function (arg, force) {
-      if (!arguments.length) return interpolator ? interpolator.range() : range;
-
-      switch (arg.length) {
-        // reset input to the default range
-        case 0:
-          arg = range;
-          break;
-        // use the only value as a center, get the range ±100 around it
-        case 1:
-          arg = [arg[0] - 100, arg[0] + 100];
-          break;
-        // two is the standard case. do nothing
-      }
-
-      //console.log("LOG and LIN range:", logScale.range(), linScale.range());
-      if (interpolator && !force) {
-        interpolator.range(arg);
-      } else {
-        range = arg;
-        var min = d3.min(abs(range).filter(function (val) {
-          return !!val;
-        }));
-
-        if (min) delta = Math.min(delta, min / 100);
-        buildScales();
-      }
-      return scale;
-    };
-
-    scale.interpolate = function (arg) {
-      var interpolatorDomain = domain;
-      if (domainParts.length > 1) {
-        var _domain = domain;
-        var _range = range;
-        var limits = [domain[0], domain[domain.length - 1]];
-        scale.domain(limits).range(limits);
-        interpolatorDomain = _domain.map(function (d) {
-          return scale(d);
-        });
-        scale.domain(_domain).range(_range);
-      }
-      interpolator = d3.scaleLinear().domain(interpolatorDomain).range(range).interpolate(arg);
-      scale.range(interpolator.domain(), true);
-      return scale;
-    };
-
-    scale.invert = function (arg) {
-      var currScale = getScaleByRange(arg);
-      return currScale.scale.invert(arg) * currScale.sign;
-    };
-
-    scale.ticks = function (arg) {
-      var partTicks = void 0;
-      var ticks = [];
-      for (var i = 0; i < scales.length; i++) {
-        if (scales[i].sign == -1) {
-          partTicks = scales[i].scale.ticks().reverse().map(function (val) {
-            return val * -1;
-          });
-        } else {
-          partTicks = scales[i].scale.ticks();
-        }
-        if (ticks.length > 0 && partTicks.length > 0 && ticks[ticks.length - 1] == partTicks[0]) {
-          partTicks.splice(0, 1);
-        }
-        ticks.push.apply(ticks, _toConsumableArray(partTicks));
-      }
-      return ticks;
-    };
-
-    scale.copy = function () {
-      return d3_scale_genericLog(logScale).domain(domain).range(range).delta(delta).eps(eps);
-    };
-
-    return d3.rebind(scale, logScale, "base", "rangeRound", "clamp", "nice", "tickFormat");
-  }(d3.scaleLog().domain([0.1, 200]).range([0, 1000]));
-}
-
-/***/ }),
-/* 155 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-function detectTouchEvent(element, onTap, onLongTap) {
-  var start;
-  var coordX;
-  var coordY;
-  var namespace = onTap ? '.onTap' : '.onLongTap';
-  d3.select(element).on('touchstart' + namespace, function (d, i) {
-    start = d3.event.timeStamp;
-    coordX = d3.event.changedTouches[0].screenX;
-    coordY = d3.event.changedTouches[0].screenY;
-  }).on('touchend' + namespace, function (d, i) {
-    coordX = Math.abs(coordX - d3.event.changedTouches[0].screenX);
-    coordY = Math.abs(coordY - d3.event.changedTouches[0].screenY);
-    if (coordX < 5 && coordY < 5) {
-      if (d3.event.timeStamp - start < 500) return onTap ? onTap(d, i) : undefined;
-      return onLongTap ? onLongTap(d, i) : undefined;
-    } else return undefined;
-  });
-}
-
-//d3.selection.prototype.onTap
-var onTap = function onTap(callback) {
-  return this.each(function () {
-    detectTouchEvent(this, callback);
-  });
-};
-
-//d3.selection.prototype.onLongTap
-var onLongTap = function onLongTap(callback) {
-  return this.each(function () {
-    detectTouchEvent(this, null, callback);
-  });
-};
-
 exports.default = {
-  onTap: onTap,
-  onLongTap: onLongTap
-};
-exports.onTap = onTap;
-exports.onLongTap = onLongTap;
-
-/***/ }),
-/* 156 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _parseDecimalNumber = __webpack_require__(395);
-
-var _parseDecimalNumber2 = _interopRequireDefault(_parseDecimalNumber);
-
-var _reader = __webpack_require__(75);
-
-var _reader2 = _interopRequireDefault(_reader);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var cached = {};
-
-var CSVReader = _reader2.default.extend({
-
-  _name: "csv",
-
-  /**
-   * Initializes the reader.
-   * @param {Object} readerInfo Information about the reader
-   */
-  init: function init(readerInfo) {
-    var _this = this;
-
-    this._data = [];
-    this._basepath = readerInfo.path;
-    this.delimiter = readerInfo.delimiter;
-    this.keySize = readerInfo.keySize || 1;
-
-    this._parseStrategies = [].concat(_toConsumableArray([",.", ".,"].map(function (separator) {
-      return _this._createParseStrategy(separator);
-    })), [function (number) {
-      return number;
-    }]);
-
-    Object.assign(this.ERRORS, {
-      WRONG_TIME_COLUMN_OR_UNITS: "reader/error/wrongTimeUnitsOrColumn",
-      NOT_ENOUGH_ROWS_IN_FILE: "reader/error/notEnoughRows",
-      UNDEFINED_DELIMITER: "reader/error/undefinedDelimiter",
-      EMPTY_HEADERS: "reader/error/emptyHeaders"
-    });
-  },
-  ensureDataIsCorrect: function ensureDataIsCorrect(_ref, parsers) {
-    var columns = _ref.columns,
-        rows = _ref.rows;
-
-    var timeKey = columns[this.keySize];
-
-    var _rows = _slicedToArray(rows, 1),
-        firstRow = _rows[0];
-
-    var parser = parsers[timeKey];
-
-    var time = firstRow[timeKey].trim();
-    if (parser && !parser(time)) {
-      throw this.error(this.ERRORS.WRONG_TIME_COLUMN_OR_UNITS, undefined, {
-        currentYear: new Date().getFullYear(),
-        foundYear: time
-      });
-    }
-
-    if (!columns.filter(Boolean).length) {
-      throw this.error(this.ERRORS.EMPTY_HEADERS);
-    }
-  },
-
-
-  /**
-   * This function returns info about the dataset
-   * in case of CSV reader it's just the name of the file
-   * @returns {object} object of info about the dataset
-   */
-  getDatasetInfo: function getDatasetInfo() {
-    return { name: this._basepath.split("/").pop() };
-  },
-  load: function load() {
-    var _this2 = this;
-
-    var path = this._basepath;
-
-
-    return new Promise(function (resolve, reject) {
-      var cachedData = cached[path];
-
-      if (cachedData) {
-        resolve(cachedData);
-      } else {
-        d3.text(path).get(function (error, text) {
-          if (!text) {
-            return reject("No permissions or empty file: " + path + ". " + error);
-          }
-
-          if (error) {
-            return reject("Error happened while loading csv file: " + path + ". " + error);
-          }
-
-          try {
-            var _delimiter = _this2.delimiter,
-                delimiter = _delimiter === undefined ? _this2._guessDelimiter(text) : _delimiter;
-
-            var parser = d3.dsvFormat(delimiter);
-            var rows = parser.parse(text, function (row) {
-              return Object.keys(row).every(function (key) {
-                return !row[key];
-              }) ? null : row;
-            });
-            var columns = rows.columns;
-
-
-            var result = { columns: columns, rows: rows };
-            cached[path] = result;
-            resolve(result);
-          } catch (e) {
-            return reject(e);
-          }
-        });
-      }
-    });
-  },
-  _guessDelimiter: function _guessDelimiter(text) {
-    var stringsToCheck = 2;
-    var rows = this._getRows(text, stringsToCheck).map(function (row) {
-      return row.replace(/".*?"/g, "");
-    });
-
-    if (rows.length !== stringsToCheck) {
-      throw this.error(this.ERRORS.NOT_ENOUGH_ROWS_IN_FILE);
-    }
-
-    var _rows2 = _slicedToArray(rows, 2),
-        header = _rows2[0],
-        firstRow = _rows2[1];
-
-    var comma = ",",
-        semicolon = ";";
-
-    var commasCountInHeader = this._countCharsInLine(header, comma);
-    var semicolonsCountInHeader = this._countCharsInLine(header, semicolon);
-    var commasCountInFirstRow = this._countCharsInLine(firstRow, comma);
-    var semicolonsCountInFirstRow = this._countCharsInLine(firstRow, semicolon);
-
-    if (this._checkDelimiters(commasCountInHeader, commasCountInFirstRow, semicolonsCountInHeader, semicolonsCountInFirstRow)) {
-      return comma;
-    } else if (this._checkDelimiters(semicolonsCountInHeader, semicolonsCountInFirstRow, commasCountInHeader, commasCountInFirstRow)) {
-      return semicolon;
-    }
-
-    throw this.error(this.ERRORS.UNDEFINED_DELIMITER);
-  },
-  _checkDelimiters: function _checkDelimiters(firstDelimiterInHeader, firstDelimiterInFirstRow, secondDelimiterInHeader, secondDelimiterInFirstRow) {
-    return firstDelimiterInHeader === firstDelimiterInFirstRow && firstDelimiterInHeader > 1 && (secondDelimiterInHeader !== secondDelimiterInFirstRow || !secondDelimiterInHeader && !secondDelimiterInFirstRow || firstDelimiterInHeader > secondDelimiterInHeader && firstDelimiterInFirstRow > secondDelimiterInFirstRow);
-  },
-  _getRows: function _getRows(text) {
-    var count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
-    var re = /([^\r\n]+)/g;
-    var rows = [];
-    var rowsCount = 0;
-
-    var matches = true;
-    while (matches && rowsCount !== count) {
-      matches = re.exec(text);
-      if (matches && matches.length > 1) {
-        ++rowsCount;
-        rows.push(matches[1]);
-      }
-    }
-
-    return rows;
-  },
-  _countCharsInLine: function _countCharsInLine(text, char) {
-    var re = new RegExp(char, "g");
-    var matches = text.match(re);
-    return matches ? matches.length : 0;
-  },
-  _createParseStrategy: function _createParseStrategy(separators) {
-    var _this3 = this;
-
-    return function (value) {
-      var hasOnlyNumbersOrSeparators = !new RegExp("[^\\d" + separators + "]").test(value);
-
-      if (hasOnlyNumbersOrSeparators && value) {
-        var result = (0, _parseDecimalNumber2.default)(value, separators);
-
-        if (!isFinite(result) || isNaN(result)) {
-          _this3._isParseSuccessful = false;
-        }
-
-        return result;
-      }
-
-      return value;
-    };
-  },
-  _mapRows: function _mapRows(rows, query, parsers) {
-    var mapRow = this._getRowMapper(query, parsers);
-
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = this._parseStrategies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var parseStrategy = _step.value;
-
-        this._parse = parseStrategy;
-        this._isParseSuccessful = true;
-
-        var result = [];
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var row = _step2.value;
-
-            var parsed = mapRow(row);
-
-            if (!this._isParseSuccessful) {
-              break;
-            }
-
-            result.push(parsed);
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-
-        if (this._isParseSuccessful) {
-          return result;
-        }
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
-    }
-  },
-
-
-  versionInfo: { version: "0.26.0-1", build: 1504768056362 }
-
-});
-
-exports.default = CSVReader;
-
-/***/ }),
-/* 157 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _brushslider = __webpack_require__(76);
-
-var _brushslider2 = _interopRequireDefault(_brushslider);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI BUBBLE SIZE slider
- * Reusable bubble size slider
- */
-
-var OPTIONS = {
-  TEXT_PARAMS: { TOP: 11, LEFT: 10, MAX_WIDTH: 42, MAX_HEIGHT: 16 },
-  THUMB_STROKE_WIDTH: 4
+  build: 1516906862576,
+  version: "0.28.1"
 };
 
-var PROFILES = {
-  "small": {
-    minRadiusPx: 0.5,
-    maxRadiusEm: 0.05
-  },
-  "medium": {
-    minRadiusPx: 1,
-    maxRadiusEm: 0.05
-  },
-  "large": {
-    minRadiusPx: 1,
-    maxRadiusEm: 0.05
-  }
-};
-
-var BubbleSize = _brushslider2.default.extend({
-
-  /**
-   * Initializes the timeslider.
-   * Executed once before any template is rendered.
-   * @param config The options passed to the component
-   * @param context The component's parent
-   */
-  init: function init(config, context) {
-
-    this.name = "bubblesize";
-
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
-
-    //this.template = this.template || require("./bubblesize.html");
-
-
-    this.model_expects = [{
-      name: "submodel",
-      type: "size"
-    }, {
-      name: "locale",
-      type: "locale"
-    }];
-
-    var _this = this;
-
-    this.changeHandler = this.changeHandler.bind(this);
-    this.readyHandler = this.readyHandler.bind(this);
-
-    this.model_binds = {
-      "change:submodel.domainMin": this.changeHandler,
-      "change:submodel.domainMax": this.changeHandler
-    };
-
-    this._setModel = utils.throttle(this._setModel, 50);
-    //contructor is the same as any component
-    this._super(config, context);
-  },
-  changeHandler: function changeHandler(evt, path) {
-    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
-    this._updateLabels(extent);
-    this._super(evt, path);
-  },
-  readyHandler: function readyHandler(evt) {
-    this._super(evt);
-    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
-    this._setLabelsText();
-  },
-
-
-  /**
-   * Executes after the template is loaded and rendered.
-   * Ideally, it contains HTML instantiations related to template
-   * At this point, this.element and this.placeholder are available as a d3 object
-   */
-  readyOnce: function readyOnce() {
-    var _this = this;
-    this._super();
-
-    this.showArcs = _this.model.submodel.showArcs !== false;
-
-    this.padding.bottom = this.options.BAR_WIDTH + this.options.TEXT_PARAMS.MAX_HEIGHT;
-
-    //For return to round thumbs
-    //var thumbArc = d3.arc()
-    //  .outerRadius(thumbHeight * 0.5)
-    //  .startAngle(0)
-    //  .endAngle(2 * Math.PI)
-
-    //For return to circles
-    //.attr("d", "M0 0 l" + thumbHeight + " " + (-thumbHeight * 0.5) + "v" + thumbHeight + "Z")
-
-    //For return to round thumbs
-    //.attr("d", thumbArc)
-
-    if (_this.showArcs) {
-      this.sliderEl.selectAll(".vzb-bs-slider-thumb-arc").data([0, 0]).enter().append("path").attr("class", "vzb-bs-slider-thumb-arc");
-    }
-
-    this.sliderArcsEl = this.sliderEl.selectAll(".vzb-bs-slider-thumb-arc");
-
-    this.sliderLabelsWrapperEl = this.sliderEl.append("g");
-    this.sliderLabelsWrapperEl.selectAll("text").data([0, 0]).enter().append("text").attr("class", "vzb-bs-slider-thumb-label").attr("text-anchor", function (d, i) {
-      return i ? "start" : "end";
-    }).attr("dy", function (d, i) {
-      return i ? "-0.7em" : "1.4em";
-    });
-
-    this.sliderLabelsEl = this.sliderEl.selectAll("text.vzb-bs-slider-thumb-label");
-
-    //For return to circles
-    // var circleLabelTransform = function(d, i) {
-    //    var dX = i ? textMargin.h + _this.xScale(d) : -textMargin.h,
-    //        dY = -textMargin.v;
-    //    return "translate(" + (dX) + "," + (dY) + ")";
-    // }
-
-    //const extent = _this.model.submodel.extent || [options.EXTENT_MIN, options.EXTENT_MAX];
-    //this._moveBrush(extent);
-
-    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
-
-    if (this.sizeScaleMinMax) {
-      this._setLabelsText();
-    }
-  },
-  ready: function ready() {
-    this._super();
-    this._updateLabels();
-  },
-  getMinMaxBubbleRadius: function getMinMaxBubbleRadius() {
-    var containerWH = this.root.getVizWidthHeight();
-    var minWH = utils.hypotenuse(containerWH.width, containerWH.height);
-
-    var min = this.profiles[this.getLayoutProfile()].minRadiusPx;
-    var max = this.profiles[this.getLayoutProfile()].maxRadiusEm * minWH;
-    if (min > max) max = min;
-
-    return { min: min, max: max };
-  },
-
-
-  /*
-   * RESIZE:
-   * Executed whenever the container is resized
-   */
-  _updateSize: function _updateSize() {
-    var _this2 = this;
-
-    this._super();
-    this.sliderLabelsWrapperEl.attr("transform", this.isRTL ? "scale(-1,1)" : null);
-    this.sliderLabelsEl.attr("text-anchor", function (d, i) {
-      return (_this2.isRTL ? !i : i) ? "start" : "end";
-    });
-  },
-  _resize: function _resize() {
-    var minMaxBubbleRadius = this.getMinMaxBubbleRadius();
-    var padding = this.element.node().offsetWidth - minMaxBubbleRadius.max * 2;
-    this.padding.top = minMaxBubbleRadius.max + this.options.BAR_WIDTH, this.padding.left = padding * 0.5;
-    this.padding.right = padding * 0.5;
-    this.rescaler.range([minMaxBubbleRadius.min * 2, minMaxBubbleRadius.max * 2]);
-
-    this._super();
-  },
-  _getComponentWidth: function _getComponentWidth() {
-    return this.getMinMaxBubbleRadius().max * 2;
-  },
-  _updateThumbs: function _updateThumbs(extent) {
-    this._updateArcs(extent);
-    this._updateLabels(extent);
-  },
-  _updateArcs: function _updateArcs(s) {
-    if (!this.showArcs) return;
-    var _this = this;
-    var valueArc = d3.arc().outerRadius(function (d) {
-      return _this.rescaler(d) * 0.5;
-    }).innerRadius(function (d) {
-      return _this.rescaler(d) * 0.5;
-    }).startAngle(-Math.PI * 0.5).endAngle(Math.PI * 0.5);
-    this.sliderArcsEl.data(s).attr("d", valueArc).attr("transform", function (d) {
-      return "translate(" + _this.rescaler(d) * 0.5 + ",0)";
-    });
-  },
-  _updateLabels: function _updateLabels(s) {
-    var _this3 = this;
-
-    var _this = this;
-    if (s) {
-      this.sliderLabelsEl.data(s);
-    }
-    this.sliderLabelsEl.attr("transform", function (d, i) {
-      var textMargin = { v: _this3.options.TEXT_PARAMS.TOP, h: _this3.options.TEXT_PARAMS.LEFT };
-      var dX = textMargin.h * (i ? 0.5 : -1.0) + _this.rescaler(d);
-      var dY = 0;
-      return "translate(" + (_this.isRTL ? -1 : 1) * dX + "," + dY + ")";
-    });
-  },
-  _setLabelsText: function _setLabelsText() {
-    var _this = this;
-    var texts = [_this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[0]), _this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[1])];
-    _this.sliderLabelsEl.text(function (d, i) {
-      return texts[i];
-    });
-  }
-});
-
-exports.default = BubbleSize;
-
 /***/ }),
-/* 158 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _brushslider = __webpack_require__(76);
-
-var _brushslider2 = _interopRequireDefault(_brushslider);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI BUBBLE SIZE slider
- * Reusable bubble size slider
- */
-
-var OPTIONS = {};
-
-var PROFILES = {
-  "small": {
-    minLabelTextSize: 7,
-    maxLabelTextSize: 21,
-    defaultLabelTextSize: 12
-  },
-  "medium": {
-    minLabelTextSize: 7,
-    maxLabelTextSize: 30,
-    defaultLabelTextSize: 15
-  },
-  "large": {
-    minLabelTextSize: 6,
-    maxLabelTextSize: 48,
-    defaultLabelTextSize: 20
-  }
-};
-
-var SizeSlider = _brushslider2.default.extend({
-
-  /**
-   * Initializes the timeslider.
-   * Executed once before any template is rendered.
-   * @param config The options passed to the component
-   * @param context The component's parent
-   */
-  init: function init(config, context) {
-
-    this.name = "sizeslider";
-
-    this.options = utils.extend(OPTIONS, {});
-    this.profiles = utils.extend(PROFILES, {});
-
-    //this.template = this.template || require("./sizeslider.html");
-
-    this.propertyName = config.propertyname;
-
-    this.model_expects = [{
-      name: "submodel",
-      type: "size"
-    }, {
-      name: "locale",
-      type: "locale"
-    }];
-
-    var _this = this;
-
-    this.changeHandler = this.changeHandler.bind(this);
-    this.readyHandler = this.readyHandler.bind(this);
-
-    this.model_binds = {
-      "change:submodel.domainMin": this.changeHandler,
-      "change:submodel.domainMax": this.changeHandler
-    };
-
-    this._setModel = utils.throttle(this._setModel, 50);
-    //contructor is the same as any component
-    this._super(config, context);
-  },
-  changeHandler: function changeHandler(evt, path) {
-    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
-    this._updateLabels(extent);
-    this._super(evt, path);
-  },
-  readyHandler: function readyHandler(evt) {
-    this.modelUse = this.model.submodel.use;
-    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
-    if (this.modelUse != "constant") {
-      this.sizeScaleMinMax = this.model.submodel.getScale().domain();
-      this.sliderEl.selectAll(".w").classed("vzb-hidden", false);
-      this.sliderEl.select(".selection").classed("vzb-hidden", false);
-      this.sliderEl.select(".overlay").classed("vzb-pointerevents-none", false);
-      this._setLabelsText();
-    } else {
-      this.sliderEl.selectAll(".w").classed("vzb-hidden", true);
-      this.sliderEl.select(".selection").classed("vzb-hidden", true);
-      this.sliderEl.select(".overlay").classed("vzb-pointerevents-none", true);
-      if (!this.model.submodel.which) {
-        var p = this.propertyActiveProfile;
-        extent[1] = (p.default - p.min) / (p.max - p.min);
-        this.model.submodel.which = "_default";
-      }
-    }
-    this._moveBrush(extent);
-  },
-
-
-  /**
-   * Executes after the template is loaded and rendered.
-   * Ideally, it contains HTML instantiations related to template
-   * At this point, this.element and this.placeholder are available as a d3 object
-   */
-  readyOnce: function readyOnce() {
-    var _this = this;
-    this._super();
-
-    var options = this.options;
-
-    var barWidth = options.BAR_WIDTH;
-
-    this.propertyActiveProfile = this.getPropertyActiveProfile();
-
-    this.propertyScale = d3.scaleLinear().domain([options.EXTENT_MIN, options.EXTENT_MAX]).range([this.propertyActiveProfile.min, this.propertyActiveProfile.max]).clamp(true);
-
-    this.padding.top = this.propertyActiveProfile.max + barWidth * 1.25;
-
-    this.translator = this.model.locale.getTFunction();
-
-    this.sliderLabelsWrapperEl = this.sliderEl.append("g");
-    this.sliderLabelsWrapperEl.selectAll("text").data([0, 0]).enter().append("text").attr("class", function (d, i) {
-      return "vzb-szs-slider-thumb-label " + (i ? "e" : "w");
-    }).attr("dy", -barWidth * 1.25 + "px");
-
-    this.sliderLabelsEl = this.sliderEl.selectAll("text.vzb-szs-slider-thumb-label");
-
-    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
-
-    if (this.sizeScaleMinMax) {
-      this._setLabelsText();
-    }
-
-    if (this.model._ready) this.readyHandler();
-  },
-  ready: function ready() {
-    this._super();
-    this._updateLabels();
-  },
-  getPropertyActiveProfile: function getPropertyActiveProfile() {
-    var profile = this.profiles[this.getLayoutProfile()];
-    return { min: profile["min" + this.propertyName], max: profile["max" + this.propertyName], default: profile["default" + this.propertyName] };
-  },
-
-
-  /*
-   * RESIZE:
-   * Executed whenever the container is resized
-   */
-  _updateSize: function _updateSize() {
-    var _this2 = this;
-
-    this._super();
-    this.sliderLabelsWrapperEl.attr("transform", this.isRTL ? "scale(-1,1)" : null);
-    this.sliderLabelsEl.attr("text-anchor", function (d, i) {
-      return (_this2.isRTL ? i : !i) ? "start" : "end";
-    });
-  },
-  _resize: function _resize() {
-    this.propertyActiveProfile = this.getPropertyActiveProfile();
-    this.propertyScale.range([this.propertyActiveProfile.min, this.propertyActiveProfile.max]);
-    this.padding.top = this.propertyActiveProfile.max + this.options.BAR_WIDTH * 1.25;
-
-    this._super();
-  },
-  _updateThumbs: function _updateThumbs(extent) {
-    this._updateLabels(extent);
-  },
-  _updateLabels: function _updateLabels(s) {
-    var _this = this;
-    if (s) {
-      this.sliderLabelsEl.data(s);
-    }
-    this.sliderLabelsEl.attr("transform", function (d, i) {
-      var dX = _this.rescaler(i);
-      var dY = 0;
-      return "translate(" + (_this.isRTL ? -1 : 1) * dX + "," + dY + ")";
-    }).attr("font-size", function (d, i) {
-      return _this.propertyScale(d);
-    });
-    if (_this.model.submodel.use === "constant") this.sliderLabelsEl.text(function (d) {
-      return ~~_this.propertyScale(d) + (_this.translator(_this.ui.constantUnit) || "");
-    });
-  },
-  _setLabelsText: function _setLabelsText() {
-    var _this = this;
-    var texts = [_this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[0]), _this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[1])];
-    _this.sliderLabelsEl.text(function (d, i) {
-      return texts[i];
-    });
-  }
-});
-
-exports.default = SizeSlider;
-
-/***/ }),
-/* 159 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _component = __webpack_require__(5);
-
-var _component2 = _interopRequireDefault(_component);
-
-var _iconset = __webpack_require__(21);
-
-var iconset = _interopRequireWildcard(_iconset);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI BUTTONLIST
- * Reusable buttonlist component
- */
-
-//default existing buttons
-var class_active = "vzb-active";
-var class_hidden = "vzb-hidden";
-var class_active_locked = "vzb-active-locked";
-var class_expand_dialog = "vzb-dialog-side";
-var class_hide_btn = "vzb-dialog-side-btn";
-var class_unavailable = "vzb-unavailable";
-var class_vzb_fullscreen = "vzb-force-fullscreen";
-var class_container_fullscreen = "vzb-container-fullscreen";
-
-var ButtonList = _component2.default.extend({
-
-  /**
-   * Initializes the buttonlist
-   * @param config component configuration
-   * @param context component context (parent)
-   */
-  init: function init(config, context) {
-
-    //set properties
-    var _this = this;
-    this.name = this.name || "gapminder-buttonlist";
-    //    this.template = '<div class="vzb-buttonlist"></div>';
-
-    this.model_expects = [{
-      name: "state",
-      type: "model"
-    }, {
-      name: "ui",
-      type: "ui"
-    }, {
-      name: "locale",
-      type: "locale"
-    }];
-
-    this._available_buttons = {
-      "find": {
-        title: "buttons/find",
-        icon: "search",
-        required: false
-      },
-      "show": {
-        title: "buttons/show",
-        icon: "asterisk",
-        required: false
-      },
-      "moreoptions": {
-        title: "buttons/more_options",
-        icon: "gear",
-        required: true
-      },
-      "colors": {
-        title: "buttons/colors",
-        icon: "paintbrush",
-        required: false
-      },
-      "mapcolors": {
-        title: "buttons/mapcolors",
-        icon: "paintbrush",
-        required: false
-      },
-      "size": {
-        title: "buttons/size",
-        icon: "circle",
-        required: false
-      },
-      "zoom": {
-        title: "buttons/zoom",
-        icon: "cursorPlus",
-        required: false
-      },
-      "fullscreen": {
-        title: "buttons/expand",
-        icon: "expand",
-        func: this.toggleFullScreen.bind(this),
-        required: true
-      },
-      "trails": {
-        title: "buttons/trails",
-        icon: "trails",
-        func: this.toggleBubbleTrails.bind(this),
-        required: false,
-        statebind: "ui.chart.trails",
-        statebindfunc: this.setBubbleTrails.bind(this)
-      },
-      "lock": {
-        title: "buttons/lock",
-        icon: "lock",
-        func: this.toggleBubbleLock.bind(this),
-        required: false,
-        statebind: "ui.chart.lockNonSelected",
-        statebindfunc: this.setBubbleLock.bind(this)
-      },
-      "inpercent": {
-        title: "buttons/inpercent",
-        icon: "percent",
-        func: this.toggleInpercent.bind(this),
-        required: false,
-        statebind: "ui.chart.inpercent",
-        statebindfunc: this.setInpercent.bind(this)
-      },
-      "presentation": {
-        title: "buttons/presentation",
-        icon: "presentation",
-        func: this.togglePresentationMode.bind(this),
-        required: false,
-        statebind: "ui.presentation",
-        statebindfunc: this.setPresentationMode.bind(this)
-      },
-      "about": {
-        title: "buttons/about",
-        icon: "about",
-        required: false
-      },
-      "axes": {
-        title: "buttons/axes",
-        icon: "axes",
-        required: false
-      },
-      "axesmc": {
-        title: "buttons/axesmc",
-        icon: "axes",
-        required: false
-      },
-      "stack": {
-        title: "buttons/stack",
-        icon: "stack",
-        required: false
-      },
-      "side": {
-        title: "buttons/side",
-        icon: "side",
-        required: false
-      },
-      "_default": {
-        title: "Button",
-        icon: "asterisk",
-        required: false
-      }
-    };
-
-    this._active_comp = false;
-
-    this.model_binds = {
-      "change:state.marker.select": function changeStateMarkerSelect(evt) {
-        if (!_this._readyOnce) return;
-
-        _this.setBubbleTrails();
-        _this.setBubbleLock();
-        _this._toggleButtons();
-
-        //scroll button list to end if bottons appeared or disappeared
-        // if(_this.entitiesSelected_1 !== (_this.model.state.marker.select.length > 0)) {
-        //   _this.scrollToEnd();
-        // }
-        // _this.entitiesSelected_1 = _this.model.state.marker.select.length > 0;
-      },
-      "change:ui.chart": function changeUiChart(evt, path) {
-        if (path.indexOf("lockActive") > -1 || path.indexOf("lockUnavailable") > -1) {
-          _this.setBubbleLock();
-        }
-      }
-    };
-
-    // config.ui is same as this.model.ui here but this.model.ui is not yet available because constructor hasn't been called.
-    // can't call constructor earlier because this.model_binds needs to be complete before calling constructor
-    config.ui.buttons.forEach(function (buttonId) {
-      var button = _this._available_buttons[buttonId];
-      if (button && button.statebind) {
-        _this.model_binds["change:" + button.statebind] = function (evt) {
-          button.statebindfunc(buttonId, evt.source.value);
-        };
-      }
-    });
-
-    // builds model
-    this._super(config, context);
-
-    this.validatePopupButtons(this.model.ui.buttons, this.model.ui.dialogs);
-  },
-  readyOnce: function readyOnce() {
-    var _this = this;
-
-    this.element = d3.select(this.placeholder);
-    this.element.selectAll("div").remove();
-
-    this.root.findChildByName("gapminder-dialogs").on("close", function (evt, params) {
-      _this.setButtonActive(params.id, false);
-    });
-
-    var button_expand = (this.model.ui.dialogs || {}).sidebar || [];
-
-    // // if button_expand has been passed in with boolean param or array must check and covert to array
-    // if (button_expand){
-    //   this.model.ui.dialogs.sidebar = (button_expand === true) ? this.model.ui.buttons : button_expand;
-    // }
-
-    // if (button_expand && button_expand.length !== 0) {
-    //     d3.select(this.root.element).classed("vzb-dialog-expand-true", true);
-    // }
-
-    var button_list = [].concat(this.model.ui.buttons);
-
-    // (button_expand||[]).forEach(function(button) {
-    //   if (button_list.indexOf(button) === -1) {
-    //     button_list.push(button);
-    //   }
-    // });
-
-    this.model.ui.buttons = button_list;
-
-    //add buttons and render components
-    this._addButtons(button_list, button_expand);
-
-    //store body overflow
-    this._prev_body_overflow = document.body.style.overflow;
-
-    this.setBubbleTrails();
-    this.setBubbleLock();
-    this.setInpercent();
-    this.setPresentationMode();
-
-    this._toggleButtons();
-  },
-  proceedClick: function proceedClick(id) {
-    var _this = this;
-    var btn = _this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-    var classes = btn.attr("class");
-    var btn_config = _this._available_buttons[id];
-
-    if (btn_config && btn_config.func) {
-      btn_config.func(id);
-    } else {
-      var btn_active = classes.indexOf(class_active) === -1;
-
-      btn.classed(class_active, btn_active);
-      var evt = {};
-      evt["id"] = id;
-      evt["active"] = btn_active;
-      _this.trigger("click", evt);
-    }
-  },
-  validatePopupButtons: function validatePopupButtons(buttons, dialogs) {
-    var _this = this;
-
-    var popupDialogs = dialogs.popup;
-    var popupButtons = buttons.filter(function (d) {
-      return _this._available_buttons[d] && !_this._available_buttons[d].func;
-    });
-    for (var i = 0, j = popupButtons.length; i < j; i++) {
-      if (popupDialogs.indexOf(popupButtons[i]) == -1) {
-        return utils.error('Buttonlist: bad buttons config: "' + popupButtons[i] + '" is missing in popups list');
-      }
-    }
-    return false; //all good
-  },
-
-
-  /*
-   * reset buttons show state
-   */
-  _showAllButtons: function _showAllButtons() {
-    // show all existing buttons
-    var _this = this;
-    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
-    buttons.each(function (d, i) {
-      var button = d3.select(this);
-      button.style("display", "");
-    });
-  },
-
-
-  /*
-  * determine which buttons are shown on the buttonlist
-  */
-  _toggleButtons: function _toggleButtons() {
-    var _this = this;
-    var parent = this.parent.element.node ? this.parent.element : d3.select(this.parent.element);
-
-    //HERE
-    var button_expand = (this.model.ui.dialogs || {}).sidebar || [];
-    _this._showAllButtons();
-
-    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
-
-    var container = this.element.node().getBoundingClientRect();
-
-    var not_required = [];
-    var required = [];
-
-    var button_width = 80;
-    var button_height = 80;
-    var container_width = this.element.node().getBoundingClientRect().width;
-    var container_height = this.element.node().getBoundingClientRect().height;
-    var buttons_width = 0;
-    var buttons_height = 0;
-
-    buttons.each(function (d, i) {
-      var button_data = d;
-      var button = d3.select(this);
-      var expandable = button_expand.indexOf(button_data.id) !== -1;
-      var button_margin = { top: parseInt(button.style("margin-top")), right: parseInt(button.style("margin-right")), left: parseInt(button.style("margin-left")), bottom: parseInt(button.style("margin-bottom")) };
-      button_width = button.node().getBoundingClientRect().width + button_margin.right + button_margin.left;
-      button_height = button.node().getBoundingClientRect().height + button_margin.top + button_margin.bottom;
-
-      if (!button.classed(class_hidden)) {
-        if (!expandable || _this.getLayoutProfile() !== "large") {
-          buttons_width += button_width;
-          buttons_height += button_height;
-          //sort buttons between required and not required buttons.
-          // Not required buttons will only be shown if there is space available
-          if (button_data.required) {
-            required.push(button);
-          } else {
-            not_required.push(button);
-          }
-        } else {
-          button.style("display", "none");
-        }
-      }
-    });
-    var width_diff = buttons_width - container_width;
-    var height_diff = buttons_height - container_height;
-    var number_of_buttons = 1;
-
-    //check if container is landscape or portrait
-    // if portrait small or large with expand, use width
-    if (parent.classed("vzb-large") && parent.classed("vzb-dialog-expand-true") || parent.classed("vzb-small") && parent.classed("vzb-portrait")) {
-      //check if the width_diff is small. If it is, add to the container
-      // width, to allow more buttons in a way that is still usable
-      if (width_diff > 0 && width_diff <= 10) {
-        container_width += width_diff;
-      }
-      number_of_buttons = Math.floor(container_width / button_width) - required.length;
-      if (number_of_buttons < 0) {
-        number_of_buttons = 0;
-      }
-      // else, use height
-    } else {
-      //check if the width_diff is small. If it is, add to the container
-      // width, to allow more buttons in a way that is still usable
-      if (height_diff > 0 && height_diff <= 10) {
-        container_height += height_diff;
-      }
-      number_of_buttons = Math.floor(container_height / button_height) - required.length;
-      if (number_of_buttons < 0) {
-        number_of_buttons = 0;
-      }
-    }
-    //change the display property of non required buttons, from right to
-    // left
-    not_required.reverse();
-    var hiddenButtons = [];
-    for (var i = 0, j = not_required.length - number_of_buttons; i < j; i++) {
-      not_required[i].style("display", "none");
-      hiddenButtons.push(not_required[i].attr("data-btn"));
-    }
-
-    var evt = {};
-    evt["hiddenButtons"] = hiddenButtons;
-    _this.trigger("toggle", evt);
-  },
-
-
-  /*
-   * adds buttons configuration to the components and template_data
-   * @param {Array} button_list list of buttons to be added
-   */
-  _addButtons: function _addButtons(button_list, button_expand) {
-    var _this = this;
-    this._components_config = [];
-    var details_btns = [];
-    if (!button_list.length) return;
-    //add a component for each button
-    for (var i = 0; i < button_list.length; i++) {
-
-      var btn = button_list[i];
-      var btn_config = this._available_buttons[btn];
-
-      //add template data
-      var d = btn_config ? btn : "_default";
-      var details_btn = utils.clone(this._available_buttons[d]);
-      if (d == "_default") {
-        details_btn.title = "buttons/" + btn;
-      }
-      details_btn.id = btn;
-      details_btn.icon = iconset[details_btn.icon];
-      details_btns.push(details_btn);
-    }
-
-    var t = this.getTranslationFunction(true);
-
-    this.element.selectAll("button").data(details_btns).enter().append("button").attr("class", function (d) {
-      var cls = "vzb-buttonlist-btn";
-      if (button_expand.length > 0) {
-        if (button_expand.indexOf(d.id) > -1) {
-          cls += " vzb-dialog-side-btn";
-        }
-      }
-
-      return cls;
-    }).attr("data-btn", function (d) {
-      return d.id;
-    }).html(function (btn) {
-      return "<span class='vzb-buttonlist-btn-icon fa'>" + btn.icon + "</span><span class='vzb-buttonlist-btn-title'>" + t(btn.title) + "</span>";
-    });
-
-    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
-
-    //clicking the button
-    buttons.on("click", function () {
-
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      var id = d3.select(this).attr("data-btn");
-      _this.proceedClick(id);
-    });
-  },
-  scrollToEnd: function scrollToEnd() {
-    var target = 0;
-    var parent = d3.select(".vzb-tool");
-
-    if (parent.classed("vzb-portrait") && parent.classed("vzb-small")) {
-      if (this.model.state.marker.select.length > 0) target = this.element.node().scrollWidth;
-      this.element.node().scrollLeft = target;
-    } else {
-      if (this.model.state.marker.select.length > 0) target = this.element.node().scrollHeight;
-      this.element.node().scrollTop = target;
-    }
-  },
-
-
-  /*
-   * RESIZE:
-   * Executed whenever the container is resized
-   * Ideally, it contains only operations related to size
-   */
-  resize: function resize() {
-    //TODO: what to do when resizing?
-    if (!this.element.selectAll) return utils.warn("buttonlist resize() aborted because element is not yet defined");
-
-    //toggle presentaion off is switch to 'small' profile
-    if (this.getLayoutProfile() === "small" && this.model.ui.presentation) {
-      this.togglePresentationMode();
-    }
-
-    this._toggleButtons();
-  },
-  setButtonActive: function setButtonActive(id, boolActive) {
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-
-    btn.classed(class_active, boolActive);
-  },
-  toggleBubbleTrails: function toggleBubbleTrails() {
-    this.model.ui.chart.trails = !this.model.ui.chart.trails;
-    this.setBubbleTrails();
-  },
-  setBubbleTrails: function setBubbleTrails() {
-    var trails = (this.model.ui.chart || {}).trails;
-    if (!trails && trails !== false) return;
-    var id = "trails";
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-    if (!btn.node()) return utils.warn("setBubbleTrails: no button '" + id + "' found in DOM. doing nothing");
-
-    btn.classed(class_active_locked, trails);
-    btn.classed(class_hidden, this.model.state.marker.select.length == 0);
-  },
-  toggleBubbleLock: function toggleBubbleLock(id) {
-    var active = (this.model.ui.chart || {}).lockActive;
-
-    if (this.model.state.marker.select.length == 0 && !active) return;
-
-    var locked = this.model.ui.chart.lockNonSelected;
-    var time = this.model.state.time;
-    locked = locked ? 0 : time.formatDate(time.value);
-    this.model.ui.chart.lockNonSelected = locked;
-
-    this.setBubbleLock();
-  },
-  setBubbleLock: function setBubbleLock() {
-    var locked = (this.model.ui.chart || {}).lockNonSelected;
-    var active = (this.model.ui.chart || {}).lockActive;
-    var unavailable = (this.model.ui.chart || {}).lockUnavailable || false;
-    if (!locked && locked !== 0) return;
-
-    if (locked !== 0 && this.model.state.marker.select.length === 0 && !active) {
-      locked = this.model.ui.chart.lockNonSelected = 0;
-    }
-
-    var id = "lock";
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-    if (!btn.node()) return utils.warn("setBubbleLock: no button '" + id + "' found in DOM. doing nothing");
-
-    var translator = this.model.locale.getTFunction();
-
-    //btn.classed(class_unavailable, this.model.state.marker.select.length == 0 && !active);
-    btn.classed(class_unavailable, unavailable);
-    if (typeof active === "undefined") {
-      btn.classed(class_hidden, this.model.state.marker.select.length == 0);
-    } else {
-      btn.classed(class_hidden, !active);
-    }
-
-    btn.classed(class_active_locked, locked);
-    btn.select(".vzb-buttonlist-btn-title").text(locked ? locked : translator("buttons/lock"));
-
-    btn.select(".vzb-buttonlist-btn-icon").html(iconset[locked ? "lock" : "unlock"]);
-  },
-  toggleInpercent: function toggleInpercent() {
-    this.model.ui.chart.inpercent = !this.model.ui.chart.inpercent;
-    this.setInpercent();
-  },
-  setInpercent: function setInpercent() {
-    if (typeof (this.model.ui.chart || {}).inpercent === "undefined") return;
-    var id = "inpercent";
-    var translator = this.model.locale.getTFunction();
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-
-    btn.classed(class_active_locked, this.model.ui.chart.inpercent);
-  },
-  togglePresentationMode: function togglePresentationMode() {
-    this.model.ui.presentation = !this.model.ui.presentation;
-    this.setPresentationMode();
-  },
-  setPresentationMode: function setPresentationMode() {
-    var id = "presentation";
-    var translator = this.model.locale.getTFunction();
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-
-    btn.classed(class_active_locked, this.model.ui.presentation);
-  },
-  toggleFullScreen: function toggleFullScreen(id, emulateClick) {
-
-    if (!window) return;
-
-    var component = this;
-    var pholder = component.placeholder;
-    var pholder_found = false;
-    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
-    var fs = !this.model.ui.fullscreen;
-    var body_overflow = fs ? "hidden" : this._prev_body_overflow;
-
-    while (!(pholder_found = utils.hasClass(pholder, "vzb-placeholder"))) {
-      component = component.parent;
-      pholder = component.placeholder;
-    }
-
-    //TODO: figure out a way to avoid fullscreen resize delay in firefox
-    if (fs) {
-      this.resizeInExitHandler = false;
-      launchIntoFullscreen(pholder);
-      subscribeFullscreenChangeEvent.call(this, this.toggleFullScreen.bind(this, id, true));
-    } else {
-      this.resizeInExitHandler = !emulateClick;
-      exitFullscreen.call(this);
-    }
-    utils.classed(pholder, class_vzb_fullscreen, fs);
-    if (typeof container !== "undefined") {
-      utils.classed(container, class_container_fullscreen, fs);
-    }
-
-    this.model.ui.fullscreen = fs;
-    var translator = this.model.locale.getTFunction();
-    btn.classed(class_active_locked, fs);
-
-    btn.select(".vzb-buttonlist-btn-icon").html(iconset[fs ? "unexpand" : "expand"]);
-
-    btn.select(".vzb-buttonlist-btn-title>span").text(translator("buttons/" + (fs ? "unexpand" : "expand"))).attr("data-vzb-translate", "buttons/" + (fs ? "unexpand" : "expand"));
-
-    //restore body overflow
-    document.body.style.overflow = body_overflow;
-
-    if (!this.resizeInExitHandler) this.root.ui.resizeHandler();
-
-    //force window resize event
-    // utils.defer(function() {
-    //   event = window.document.createEvent("HTMLEvents");
-    //   event.initEvent("resize", true, true);
-    //   event.eventName = "resize";
-    //   window.dispatchEvent(event);
-    // });
-  }
-});
-
-function isFullscreen() {
-  if (!window) return false;
-  if (window.document.webkitIsFullScreen !== undefined) return window.document.webkitIsFullScreen;
-  if (window.document.mozFullScreen !== undefined) return window.document.mozFullScreen;
-  if (window.document.msFullscreenElement !== undefined) return window.document.msFullscreenElement;
-
-  return false;
-}
-
-function exitHandler(emulateClickFunc) {
-  if (!isFullscreen()) {
-    removeFullscreenChangeEvent.call(this);
-    if (!this.resizeInExitHandler) {
-      emulateClickFunc();
-    } else {
-      this.root.ui.resizeHandler();
-    }
-  }
-}
-
-function subscribeFullscreenChangeEvent(exitFunc) {
-  if (!window) return;
-  var doc = window.document;
-
-  this.exitFullscreenHandler = exitHandler.bind(this, exitFunc);
-  doc.addEventListener("webkitfullscreenchange", this.exitFullscreenHandler, false);
-  doc.addEventListener("mozfullscreenchange", this.exitFullscreenHandler, false);
-  doc.addEventListener("fullscreenchange", this.exitFullscreenHandler, false);
-  doc.addEventListener("MSFullscreenChange", this.exitFullscreenHandler, false);
-}
-
-function removeFullscreenChangeEvent() {
-  var doc = window.document;
-
-  doc.removeEventListener("webkitfullscreenchange", this.exitFullscreenHandler);
-  doc.removeEventListener("mozfullscreenchange", this.exitFullscreenHandler);
-  doc.removeEventListener("fullscreenchange", this.exitFullscreenHandler);
-  doc.removeEventListener("MSFullscreenChange", this.exitFullscreenHandler);
-}
-
-function launchIntoFullscreen(elem) {
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen && allowWebkitFullscreenAPI()) {
-    elem.webkitRequestFullscreen();
-  }
-}
-
-function exitFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.msExitFullscreen) {
-    document.msExitFullscreen();
-  } else if (document.mozCancelFullScreen) {
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen && allowWebkitFullscreenAPI()) {
-    document.webkitExitFullscreen();
-  } else {
-    removeFullscreenChangeEvent.call(this);
-    this.resizeInExitHandler = false;
-  }
-}
-
-function allowWebkitFullscreenAPI() {
-  return !(navigator.vendor && navigator.vendor.indexOf("Apple") > -1 && navigator.userAgent && !navigator.userAgent.match("CriOS"));
-}
-
-exports.default = ButtonList;
-
-/***/ }),
-/* 160 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _buttonlist = __webpack_require__(159);
-
-var _buttonlist2 = _interopRequireDefault(_buttonlist);
-
-var _iconset = __webpack_require__(21);
-
-var iconset = _interopRequireWildcard(_iconset);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI OPTIONSBUTTONLIST
- * Reusable optionsbuttonlist component
- */
-
-//default existing buttons
-var class_active = "vzb-active";
-// var class_active_locked = "vzb-active-locked";
-// var class_expand_dialog = "vzb-dialog-side";
-// var class_hide_btn = "vzb-dialog-side-btn";
-// var class_unavailable = "vzb-unavailable";
-// var class_vzb_fullscreen = "vzb-force-fullscreen";
-// var class_container_fullscreen = "vzb-container-fullscreen";
-
-var OptionsButtonList = _buttonlist2.default.extend({
-
-  /**
-   * Initializes the buttonlist
-   * @param config component configuration
-   * @param context component context (parent)
-   */
-  init: function init(config, context) {
-
-    //set properties
-    var _this = this;
-    this.name = "gapminder-optionsbuttonlist";
-
-    this._super(config, context);
-  },
-  readyOnce: function readyOnce() {
-    var _this = this;
-    Object.keys(this._available_buttons).forEach(function (buttonId) {
-      var button = _this._available_buttons[buttonId];
-      button.required = !button.required;
-    });
-
-    this.buttonListComp = this.root.findChildByName("gapminder-buttonlist");
-
-    this.buttonListComp.on("click", function (evt, button) {
-      var btn = _this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + button.id + "']");
-      btn.classed(class_active, button.active);
-    });
-
-    this.buttonListComp.on("toggle", function (evt, params) {
-      var btn = _this.element.selectAll(".vzb-buttonlist-btn");
-      var visibleButton = 0;
-      btn.each(function (d) {
-        var button = d3.select(this);
-        var isHidden = params.hiddenButtons.indexOf(d.id) == -1;
-        button.style("display", isHidden ? "none" : "");
-        if (!isHidden) visibleButton++;
-      });
-    });
-
-    this._super();
-  },
-  proceedClick: function proceedClick(id) {
-    var _this = this;
-    this.buttonListComp.proceedClick(id);
-    var btn_data = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']").datum();
-    if (btn_data.func) {
-      setTimeout(function () {
-        _this.root.findChildByName("gapminder-dialogs").closeAllDialogs();
-      }, 200);
-    }
-  },
-  _toggleButtons: function _toggleButtons() {
-    //
-  }
-});
-
-exports.default = OptionsButtonList;
-
-/***/ }),
-/* 161 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _utils = __webpack_require__(1);
-
-var utils = _interopRequireWildcard(_utils);
-
-var _component = __webpack_require__(5);
-
-var _component2 = _interopRequireDefault(_component);
-
-var _d = __webpack_require__(162);
-
-var _d2 = _interopRequireDefault(_d);
-
-var _d3 = __webpack_require__(163);
-
-var _d4 = _interopRequireDefault(_d3);
-
-var _iconset = __webpack_require__(21);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/*!
- * VIZABI BUBBLE COLOR LEGEND COMPONENT
- */
-
-var ColorLegend = _component2.default.extend({
-  init: function init(config, context) {
-    var _this = this;
-    this.template = '<div class="vzb-cl-outer"></div>';
-    this.name = "colorlegend";
-
-    this.model_expects = [{
-      name: "time",
-      type: "time"
-    }, {
-      name: "entities",
-      type: "entities"
-    }, {
-      name: "marker",
-      type: "model"
-    }, {
-      name: "color",
-      type: "color"
-    }, {
-      name: "locale",
-      type: "locale"
-    }, {
-      name: "ui",
-      type: "ui"
-    }];
-
-    this.model_binds = {
-      "change:color.scaleType": function changeColorScaleType(evt, path) {
-        if (!_this._readyOnce || _this.colorModel.isDiscrete()) return;
-        _this.updateView();
-      },
-      "change:color.palette": function changeColorPalette(evt, path) {
-        if (!_this._readyOnce || _this.colorModel.isDiscrete() && !_this.frame) return;
-        _this.updateView();
-      },
-      "change:marker.highlight": function changeMarkerHighlight(evt, values) {
-        if (!_this.colorModel.isDiscrete()) return;
-
-        _this.model.marker.getFrame(_this.model.time.value, function (frame) {
-          if (frame) {
-            var _hlEntities = _this.model.marker.getHighlighted(_this.KEY);
-            _this.updateGroupsOpacity(_hlEntities.map(function (d) {
-              return frame[_this.colorModel._name][d];
-            }));
-          } else {
-            _this.updateGroupsOpacity();
-          }
-        });
-      },
-      "translate:locale": function translateLocale() {
-        _this.colorPicker.translate(_this.model.locale.getTFunction());
-      }
-    };
-
-    //contructor is the same as any component
-    this._super(config, context);
-  },
-  readyOnce: function readyOnce() {
-    var _this = this;
-    this.element = d3.select(this.element);
-
-    //make color in options scrollable
-    d3.select(this.placeholder.parentNode).classed("vzb-dialog-scrollable", true);
-
-    this.colorModel = this.model.color;
-    this.colorlegendMarker = this.colorModel.getColorlegendMarker();
-    if (this.colorlegendMarker) {
-      this.colorlegendMarker.on("ready", function () {
-        _this.ready();
-      });
-    }
-    this.listColorsEl = this.element.append("div").attr("class", "vzb-cl-holder").append("div").attr("class", "vzb-cl-colorlist");
-
-    this.rainbowEl = this.listColorsEl.append("div").attr("class", "vzb-cl-rainbow");
-    this.rainbowCanvasEl = this.rainbowEl.append("canvas");
-    this.minimapEl = this.listColorsEl.append("div").attr("class", "vzb-cl-minimap");
-    this.rainbowLegendEl = this.listColorsEl.append("div").attr("class", "vzb-cl-rainbow-legend");
-    this.rainbowLegendSVG = this.rainbowLegendEl.append("svg");
-    this.rainbowLegendG = this.rainbowLegendSVG.append("g");
-    this.rainbowLegend = null;
-
-    this.labelScaleEl = this.listColorsEl.append("div").attr("class", "vzb-cl-labelscale");
-    this.labelScaleSVG = this.labelScaleEl.append("svg");
-    this.labelScaleG = this.labelScaleSVG.append("g");
-    this.unitDiv = this.listColorsEl.append("div").attr("class", "vzb-cl-unit");
-    this.unitText = this.unitDiv.append("span").attr("class", "vzb-cl-unit-text");
-
-    this.minimapSVG = this.minimapEl.append("svg");
-    this.minimapG = this.minimapSVG.append("g");
-
-    this.colorPicker = new _d2.default(utils.isArray(this.root.element) ? this.root.element : d3.select(this.root.element));
-
-    this.colorPicker.translate(this.model.locale.getTFunction());
-    this._initSelectDialog();
-  },
-  _initSelectDialog: function _initSelectDialog() {
-    var t = this.model.locale.getTFunction();
-
-    this.moreOptionsHint = this.listColorsEl.append("span").classed("vzb-cl-more-hint vzb-hidden", true).text(t("hints/color/more"));
-
-    this.selectDialog = this.listColorsEl.append("div").classed("vzb-cl-select-dialog vzb-hidden", true);
-    this._initSelectDialogItems();
-  },
-  _initSelectDialogItems: function _initSelectDialogItems() {
-    var _this2 = this;
-
-    var t = this.model.locale.getTFunction();
-
-    this.selectDialogTitle = this.selectDialog.append("div").classed("vzb-cl-select-dialog-title", true);
-
-    this.selectDialog.append("div").classed("vzb-cl-select-dialog-close", true).html(_iconset.close).on("click", function () {
-      return _this2._closeSelectDialog();
-    });
-
-    this.selectAllButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item", true).text("✅ " + t("dialogs/color/select-all"));
-
-    this.removeElseButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item", true).text("🗑️ " + t("dialogs/color/remove-else"));
-
-    this.editColorButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item vzb-cl-select-dialog-item-moreoptions", true).text("🎨 " + t("dialogs/color/edit-color"));
-
-    this.editColorButtonTooltip = this.editColorButton.append("div").classed("vzb-cl-select-dialog-item-tooltip", true).text("Dataset author doesn't want you to change this");
-  },
-  _closeSelectDialog: function _closeSelectDialog() {
-    this.selectDialog.classed("vzb-hidden", true);
-  },
-  _bindSelectDialogItems: function _bindSelectDialogItems() {
-    var _this3 = this;
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    var index = args[1],
-        indicators = args[2];
-
-    this.selectDialogTitle.text(indicators[index].textContent);
-
-    this.selectAllButton.on("click", function () {
-      var _interact;
-
-      (_interact = _this3._interact()).clickToSelect.apply(_interact, args);
-      _this3._closeSelectDialog();
-    });
-
-    this.removeElseButton.on("click", function () {
-      var _interact2;
-
-      (_interact2 = _this3._interact()).clickToShow.apply(_interact2, args);
-      _this3._closeSelectDialog();
-    });
-
-    this.editColorButton.on("click", function () {
-      var _interact3;
-
-      (_interact3 = _this3._interact()).clickToChangeColor.apply(_interact3, args);
-      _this3._closeSelectDialog();
-    });
-  },
-  ready: function ready() {
-    var _this = this;
-
-    this.KEY = this.model.entities.getDimension();
-    this.colorlegendDim = this.KEY;
-    this.canShowMap = false;
-
-    if (this.colorModel.isDiscrete() && this.colorModel.use !== "constant" && this.colorlegendMarker) {
-      if (!this.colorlegendMarker._ready) return;
-
-      this.colorlegendDim = this.colorModel.getColorlegendEntities().getDimension();
-
-      this.colorlegendMarker.getFrame(this.model.time.value, function (frame) {
-        if (!frame) return utils.warn("colorlegend received empty frame in ready()");
-        _this.frame = frame;
-        _this.canShowMap = utils.keys((_this.frame || {}).hook_geoshape || {}).length;
-
-        _this.colorlegendKeys = _this.colorlegendMarker.getKeys(_this.colorlegendDim);
-
-        _this.colorlegendKeys.forEach(function (d) {
-          if (!((_this.frame || {}).hook_geoshape || {})[d[_this.colorlegendDim]]) _this.canShowMap = false;
-        });
-        _this.updateView();
-        _this.updateGroupsOpacity();
-      });
-      return;
-    }
-
-    _this.updateView();
-    _this.updateGroupsOpacity();
-  },
-  updateView: function updateView() {
-    var _this5 = this;
-
-    if (!this.element.selectAll) return utils.warn("colorlegend resize() aborted because element is not yet defined");
-
-    var _this = this;
-    var KEY = this.KEY;
-
-    var palette = this.colorModel.getPalette();
-    var canShowMap = this.canShowMap;
-
-    var colorlegendKeys = this.colorlegendKeys || [];
-
-    var colorOptions = this.listColorsEl.selectAll(".vzb-cl-option");
-
-    //Hide and show elements of the color legend
-    //Hide color legend entries if showing minimap or if color hook is a constant
-    //or if using a discrete palette that would map to all entities on the chart and therefore will be too long
-    //in the latter case we should show colors in the "find" list instead
-    var hideColorOptions = canShowMap || this.colorModel.which == "_default" || this.colorlegendMarker && this.colorlegendDim == this.KEY && colorlegendKeys.length > 10 && utils.comparePlainObjects(this.colorModel.getColorlegendEntities().getFilter(), this.model.entities.getFilter());
-
-    colorOptions.classed("vzb-hidden", hideColorOptions);
-
-    this._updateSelectDialog();
-
-    //Hide rainbow element if showing minimap or if color is discrete
-    this.rainbowEl.classed("vzb-hidden", this.colorModel.isDiscrete());
-    this.labelScaleEl.classed("vzb-hidden", this.colorModel.isDiscrete());
-    this.rainbowLegendEl.classed("vzb-hidden", this.colorModel.isDiscrete());
-    //Hide minimap if no data to draw it
-    this.minimapEl.classed("vzb-hidden", !canShowMap || !this.colorModel.isDiscrete());
-
-    this.unitDiv.classed("vzb-hidden", true);
-    var cScale = this.colorModel.getScale();
-
-    if (!this.colorModel.isDiscrete()) {
-
-      var gradientWidth = this.rainbowEl.node().getBoundingClientRect().width;
-      var paletteKeys = Object.keys(palette).map(parseFloat);
-
-      var domain = void 0;
-      var range = void 0;
-      var formatter = this.colorModel.getTickFormatter();
-      var fitIntoScale = null;
-
-      var paletteLabels = this.colorModel.paletteLabels;
-
-      if (paletteLabels) {
-
-        fitIntoScale = "optimistic";
-
-        domain = paletteLabels.map(function (val) {
-          return parseFloat(val);
-        });
-        var paletteMax = d3.max(domain);
-        range = domain.map(function (val) {
-          return val / paletteMax * gradientWidth;
-        });
-      } else {
-
-        domain = cScale.domain();
-        var _paletteMax = d3.max(paletteKeys);
-        range = paletteKeys.map(function (val) {
-          return val / _paletteMax * gradientWidth;
-        });
-      }
-
-      var labelScaleType = d3.min(domain) <= 0 && d3.max(domain) >= 0 && this.colorModel.scaleType === "log" ? "genericLog" : this.colorModel.scaleType;
-
-      var labelScale = d3["scale" + utils.capitalize(labelScaleType === "time" ? "linear" : labelScaleType)]().domain(domain).range(range);
-
-      var marginLeft = parseInt(this.rainbowEl.style("left"), 10) || 0;
-      var marginRight = parseInt(this.rainbowEl.style("right"), 10) || marginLeft;
-
-      this.labelScaleSVG.style("width", marginLeft + gradientWidth + marginRight + "px");
-      this.labelScaleG.attr("transform", "translate(" + marginLeft + ",0)");
-      this.rainbowLegendSVG.style("width", marginLeft + gradientWidth + marginRight + "px");
-      this.rainbowLegendG.attr("transform", "translate(" + marginLeft + ", " + 7 + ")");
-      var labelsAxis = (0, _d4.default)("bottom");
-      labelsAxis.scale(labelScale)
-      //.tickFormat(formatter)
-      .tickSizeOuter(0).tickPadding(6).tickSizeMinor(3, 0).labelerOptions({
-        scaleType: this.colorModel.scaleType,
-        toolMargin: {
-          right: marginRight,
-          left: marginLeft
-        },
-        showOuter: true,
-        formatter: formatter,
-        bump: marginLeft,
-        cssFontSize: "11px",
-        fitIntoScale: fitIntoScale
-      });
-
-      this.labelScaleG.call(labelsAxis);
-
-      var colorRange = cScale.range();
-
-      var gIndicators = range.map(function (val, i) {
-        return { val: val, color: colorRange[i], paletteKey: paletteKeys[i] };
-      });
-      this.rainbowLegend = this.rainbowLegendG.selectAll("circle").data(gIndicators);
-      this.rainbowLegend.exit().remove();
-      this.rainbowLegend = this.rainbowLegend.enter().append("circle").attr("r", "6px").attr("stroke", "#000").on("click", _this._interact().clickToChangeColor).merge(this.rainbowLegend);
-
-      this.rainbowLegend.each(function (d, i) {
-        d3.select(this).attr("fill", d.color);
-        d3.select(this).attr("cx", d.val);
-      });
-
-      this.rainbowCanvasEl.attr("width", gradientWidth).attr("height", 1).style("width", gradientWidth + "px").style("height", "100%");
-
-      var context = this.rainbowCanvasEl.node().getContext("2d");
-      var image = context.createImageData(gradientWidth, 1);
-      for (var i = 0, j = -1, c; i < gradientWidth; ++i) {
-        c = d3.rgb(cScale(labelScale.invert(i)));
-        image.data[++j] = c.r;
-        image.data[++j] = c.g;
-        image.data[++j] = c.b;
-        image.data[++j] = 255;
-      }
-      context.putImageData(image, 0, 0);
-
-      var unit = this.colorModel.getConceptprops().unit || "";
-
-      this.unitDiv.classed("vzb-hidden", unit == "");
-      this.unitText.text(unit);
-
-      colorOptions.classed("vzb-hidden", true);
-    } else {
-
-      //Check if geoshape is provided
-      if (!canShowMap) {
-
-        if (this.colorModel.which == "_default") {
-          colorOptions = colorOptions.data([]);
-        } else {
-          colorOptions = colorOptions.data(hideColorOptions ? [] : colorlegendKeys.length ? colorlegendKeys : Object.keys(this.colorModel.getPalette()).map(function (value) {
-            var result = {};
-            result[_this.colorlegendDim] = value;
-            return result;
-          }), function (d) {
-            return d[_this.colorlegendDim];
-          });
-        }
-
-        colorOptions.exit().remove();
-
-        colorOptions = colorOptions.enter().append("div").attr("class", "vzb-cl-option").each(function () {
-          var _this4 = this;
-
-          d3.select(this).append("div").attr("class", "vzb-cl-color-sample").on("click", function () {
-            _this4._bindSelectDialogItems.apply(_this4, arguments);
-            _this4.selectDialog.classed("vzb-hidden", false);
-          });
-          d3.select(this).append("div").attr("class", "vzb-cl-color-legend");
-        }).on("mouseover", _this._interact().mouseover).on("mouseout", _this._interact().mouseout).on("click", function () {
-          _this5._bindSelectDialogItems.apply(_this5, arguments);
-          _this5.selectDialog.classed("vzb-hidden", false);
-        }).merge(colorOptions);
-
-        colorOptions.each(function (d, index) {
-          d3.select(this).select(".vzb-cl-color-sample").style("background-color", cScale(d[_this.colorlegendDim])).style("border", "1px solid " + cScale(d[_this.colorlegendDim]));
-          //Apply names to color legend entries if color is a property
-          var label = _this.colorlegendMarker ? _this.frame.label[d[_this.colorlegendDim]] : null;
-          if (!label && label !== 0) label = d[_this.colorlegendDim];
-          d3.select(this).select(".vzb-cl-color-legend").text(label);
-        });
-      } else {
-
-        //Drawing a minimap from the hook data
-
-        var tempdivEl = this.minimapEl.append("div").attr("class", "vzb-temp");
-
-        this.minimapSVG.attr("viewBox", null);
-        this.minimapSVG.selectAll("g").remove();
-        this.minimapG = this.minimapSVG.append("g");
-        this.minimapG.selectAll("path").data(colorlegendKeys, function (d) {
-          return d[_this.colorlegendDim];
-        }).enter().append("path").on("mouseover", _this._interact().mouseover).on("mouseout", _this._interact().mouseout).on("click", function () {
-          _this5._bindSelectDialogItems.apply(_this5, arguments);
-          _this5.selectDialog.classed("vzb-hidden", false);
-        }).each(function (d) {
-          var shapeString = _this.frame.hook_geoshape[d[_this.colorlegendDim]].trim();
-
-          //check if shape string starts with svg tag -- then it's a complete svg
-          if (shapeString.slice(0, 4) == "<svg") {
-            //append svg element from string to the temporary div
-            tempdivEl.html(shapeString);
-            //replace the shape string with just the path data from svg
-            //TODO: this is not very resilient. potentially only the first path will be taken!
-            shapeString = tempdivEl.select("svg").select("path").attr("d");
-          }
-
-          d3.select(this).attr("d", shapeString).style("fill", cScale(d[_this.colorlegendDim])).append("title").html(_this.frame.label[d[_this.colorlegendDim]]);
-
-          tempdivEl.html("");
-        });
-
-        var gbbox = this.minimapG.node().getBBox();
-        this.minimapSVG.attr("viewBox", "0 0 " + gbbox.width * 1.05 + " " + gbbox.height * 1.05);
-        tempdivEl.remove();
-      }
-    }
-  },
-  _updateSelectDialog: function _updateSelectDialog() {
-    var isColorSelectable = this.colorModel.isUserSelectable();
-    this.editColorButtonTooltip.classed("vzb-hidden", isColorSelectable);
-    this.editColorButton.classed("vzb-cl-select-dialog-item-disabled", !isColorSelectable);
-
-    this.selectDialog.classed("vzb-hidden", true);
-  },
-  _highlight: function _highlight(values) {
-    utils.getProp(this, ["model", "ui", "chart", "superhighlightOnMinimapHover"]) ? this.model.marker.setSuperHighlight(values) : this.model.marker.setHighlight(values);
-  },
-  _unhighlight: function _unhighlight() {
-    utils.getProp(this, ["model", "ui", "chart", "superhighlightOnMinimapHover"]) ? this.model.marker.clearSuperHighlighted() : this.model.marker.clearHighlighted();
-  },
-  _interact: function _interact() {
-    var _this = this;
-    var KEY = this.KEY;
-    var colorlegendDim = this.colorlegendDim;
-
-    return {
-      mouseover: function mouseover(d, i) {
-        _this.moreOptionsHint.classed("vzb-hidden", false);
-        //disable interaction if so stated in concept properties
-        if (!_this.colorModel.isDiscrete()) return;
-
-        var view = d3.select(this);
-        var target = d[colorlegendDim];
-
-        var values = _this.colorModel.getValidItems()
-        //filter so that only countries of the correct target remain
-        .filter(function (f) {
-          return f[_this.colorModel.which] == target;
-        })
-        //fish out the "key" field, leave the rest behind
-        .map(function (d) {
-          return utils.clone(d, [KEY]);
-        });
-        _this._highlight(values);
-      },
-      mouseout: function mouseout(d, i) {
-        _this.moreOptionsHint.classed("vzb-hidden", true);
-        //disable interaction if so stated in concept properties
-        if (!_this.colorModel.isDiscrete()) return;
-        _this._unhighlight();
-      },
-      clickToChangeColor: function clickToChangeColor(d, i) {
-        //disable interaction if so stated in concept properties
-        if (!_this.colorModel.isUserSelectable()) return;
-        var palette = _this.colorModel.getPalette();
-        var defaultPalette = _this.colorModel.getDefaultPalette();
-        var view = d3.select(this);
-        var target = !_this.colorModel.isDiscrete() ? d.paletteKey : d[colorlegendDim];
-        _this.colorPicker.colorOld(palette[target]).colorDef(defaultPalette[target]).callback(function (value, isClick) {
-          return _this.colorModel.setColor(value, target, isClick);
-        }).fitToScreen([d3.event.pageX, d3.event.pageY]).show(true);
-      },
-      clickToShow: function clickToShow(d, i) {
-        //disable interaction if so stated in concept properties
-        if (!_this.colorModel.isDiscrete()) return;
-
-        var view = d3.select(this);
-        var target = d[colorlegendDim];
-
-        var oldShow = _this.model.entities.show[colorlegendDim] && _this.model.entities.show[colorlegendDim]["$in"] ? utils.clone(_this.model.entities.show[colorlegendDim]["$in"]) : [];
-
-        var entityIndex = oldShow.indexOf(d[colorlegendDim]);
-        if (entityIndex !== -1) {
-          oldShow.splice(entityIndex, 1);
-        } else {
-          oldShow.push(d[colorlegendDim]);
-        }
-
-        var show = {};
-        if (oldShow.length > 0) show[colorlegendDim] = { "$in": oldShow };
-
-        _this.model.entities.set({ show: show });
-      },
-      clickToSelect: function clickToSelect(d, i) {
-        //disable interaction if so stated in concept properties
-        if (!_this.colorModel.isDiscrete()) return;
-
-        var view = d3.select(this);
-        var target = d[colorlegendDim];
-
-        var select = _this.colorModel.getValidItems()
-        //filter so that only countries of the correct target remain
-        .filter(function (f) {
-          return f[_this.colorModel.which] == target;
-        })
-        //fish out the "key" field, leave the rest behind
-        .map(function (d) {
-          return utils.clone(d, [KEY]);
-        });
-
-        if (select.filter(function (d) {
-          return _this.model.marker.isSelected(d);
-        }).length == select.length) {
-          _this.model.marker.clearSelected();
-        } else {
-          _this.model.marker.setSelect(select);
-        }
-      }
-    };
-  },
-  resize: function resize() {
-    this.updateView();
-    this.colorPicker.resize(d3.select(".vzb-colorpicker-svg"));
-  },
-
-
-  /**
-   * Function updates the opacity of color legend elements
-   * @param   {Array} value = [] array of highlighted elements
-   */
-  updateGroupsOpacity: function updateGroupsOpacity() {
-    var highlight = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-
-    var _this = this;
-
-    var clMarker = this.colorModel.getColorlegendMarker() || {};
-    var OPACITY_REGULAR = clMarker.opacityRegular || 0.8;
-    var OPACITY_DIM = clMarker.opacityHighlightDim || 0.5;
-    var OPACITY_HIGHLIGHT = 1;
-
-    var selection = _this.canShowMap ? ".vzb-cl-minimap path" : ".vzb-cl-option .vzb-cl-color-sample";
-
-    this.listColorsEl.selectAll(selection).style("opacity", function (d) {
-      if (!highlight.length) return OPACITY_REGULAR;
-      return highlight.indexOf(d[_this.colorlegendDim]) > -1 ? OPACITY_HIGHLIGHT : OPACITY_DIM;
-    });
-  }
-});
-
-exports.default = ColorLegend;
-
-/***/ }),
-/* 162 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _utils = __webpack_require__(1);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var css = {
-  INVISIBLE: "vzb-invisible",
-  COLOR_POINTER: "vzb-colorpicker-pointer",
-  COLOR_BUTTON: "vzb-colorpicker-cell",
-  COLOR_DEFAULT: "vzb-colorpicker-default",
-  COLOR_SAMPLE: "vzb-colorpicker-sample",
-  COLOR_PICKER: "vzb-colorpicker-svg",
-  COLOR_CIRCLE: "vzb-colorpicker-circle",
-  COLOR_CIRCLES: "vzb-colorpicker-circles",
-  COLOR_SEGMENT: "vzb-colorpicker-segment",
-  COLOR_BACKGR: "vzb-colorpicker-background"
-};
-
-var ColorPicker = function () {
-  function ColorPicker(container) {
-    _classCallCheck(this, ColorPicker);
-
-    this._container = container;
-    this._wrapper = this._container.select("." + css.COLOR_PICKER);
-
-    this._init();
-  }
-
-  _createClass(ColorPicker, [{
-    key: "_init",
-    value: function _init() {
-      this._initVariables();
-      this._initCircles();
-      this._style();
-      this.resize(this._svg);
-    }
-  }, {
-    key: "_initVariables",
-    value: function _initVariables() {
-      // radius of the central hole in color wheel: px
-      this._maxWidth = 280;
-      this._maxHeight = 323;
-
-      this._colorOld = "#000";
-      this._colorDef = "#000";
-      this._colorWhite = "#f8f8f8";
-
-      // margins in % of container's width and height
-      this._margin = {
-        top: 0.1,
-        bottom: 0.1,
-        left: 0.1,
-        right: 0.1
-      };
-
-      this._initSvg();
-
-      var _getComputedStyle = getComputedStyle(this._svg.node()),
-          svgWidth = _getComputedStyle.width,
-          svgHeight = _getComputedStyle.height;
-
-      this._width = this.constructor.px2num(svgWidth);
-      this._height = this.constructor.px2num(svgHeight);
-      this._maxRadius = this._width / 2 * (1 - this._margin.left - this._margin.right);
-
-      // tuning defaults
-      this._nCellsH = 15;
-      // number of cells by hues (angular)
-      this._minH = 0;
-      // which hue do we start from: 0 to 1 instead of 0 to 365
-      this._nCellsL = 4;
-      // number of cells by lightness (radial)
-      this._minL = 0.5;
-      // which lightness to start from: 0 to 1. Recommended .3...0.5
-      this._satConstant = 0.7;
-      // constant saturation for color wheel: 0 to 1. Recommended .7...0.8
-      this._outerL_display = 0.4;
-      // exceptional saturation of the outer circle. the one displayed 0 to 1
-      this._outerL_meaning = 0.3;
-      // exceptional saturation of the outer circle. the one actually meant 0 to 1
-      this._firstAngleSat = 0;
-      // exceptional saturation at first angular segment. Set 0 to have shades of grey
-      this._minRadius = 15;
-      this._arc = d3.arc();
-
-      this._pie = d3.pie().sort(null).value(function (d) {
-        return 1;
-      });
-      this._colorPointer = null;
-      this._showColorPicker = false;
-      this._sampleRect = null;
-      this._sampleText = null;
-      this._callback = function (value) {
-        return console.info("Color picker callback example. Setting color to " + value);
-      };
-      this._colorData = this._generateColorData();
-    }
-  }, {
-    key: "_generateColorData",
-    value: function _generateColorData() {
-      var _minL = this._minL,
-          _minH = this._minH,
-          _nCellsL = this._nCellsL,
-          _nCellsH = this._nCellsH,
-          _firstAngleSat = this._firstAngleSat,
-          _satConstant = this._satConstant,
-          _outerL_display = this._outerL_display,
-          _outerL_meaning = this._outerL_meaning;
-
-
-      var result = [];
-      // loop across circles
-      for (var l = 0; l < _nCellsL; l++) {
-        var lightness = _minL + (1 - _minL) / _nCellsL * l;
-        // new circle of cells
-        result.push([]);
-        // loop across angles
-        for (var h = 0; h <= _nCellsH; h++) {
-          var hue = _minH + (1 - _minH) / _nCellsH * h;
-          // new cell
-          result[l].push({
-            display: this.constructor.hsl2rgb(hue, h === 0 ? _firstAngleSat : _satConstant, l === 0 ? _outerL_display : lightness),
-
-            meaning: this.constructor.hsl2rgb(hue, h === 0 ? _firstAngleSat : _satConstant, l === 0 ? _outerL_meaning : lightness)
-          });
-        }
-      }
-
-      return result;
-    }
-  }, {
-    key: "_initSvg",
-    value: function _initSvg() {
-      var _this = this;
-
-      this._wrapper = this._container.append("div").style("position", "absolute").style("top", "0").style("left", "0").style("width", "100%").style("max-width", this._maxWidth + "px").style("height", "100%").style("max-height", this._maxHeight + "px").style("z-index", 9999).attr("class", css.COLOR_PICKER + " vzb-dialog-shadow").classed(css.INVISIBLE, !this._showColorPicker).on("mouseout", function () {
-        return _this._cellHover(_this._colorOld);
-      });
-
-      this._svg = this._wrapper.append("svg").style("width", "100%").style("height", "100%");
-    }
-  }, {
-    key: "_initCircles",
-    value: function _initCircles() {
-      var _this2 = this;
-
-      var _svg = this._svg,
-          _maxHeight = this._maxHeight,
-          _width = this._width,
-          _height = this._height,
-          _margin = this._margin,
-          _colorData = this._colorData,
-          _nCellsL = this._nCellsL,
-          _minRadius = this._minRadius,
-          _maxRadius = this._maxRadius,
-          _colorWhite = this._colorWhite;
-
-
-      _svg.append("rect").attr("width", _width).attr("height", _maxHeight).attr("class", css.COLOR_BACKGR).on("mouseover", function () {
-        return _this2._cellHover(_this2._colorOld);
-      }).on("click", function () {
-        d3.event.stopPropagation();
-        _this2._changeColor(_this2._colorOld);
-        _this2.show(false);
-      });
-
-      var tx = _maxRadius + _width * _margin.left;
-      var ty = _maxRadius + _height * _margin.top;
-      var circles = _svg.append("g").attr("class", css.COLOR_CIRCLES).attr("transform", "translate(" + tx + ", " + ty + ")");
-
-      _svg.append("rect").attr("class", css.COLOR_SAMPLE).attr("width", _width / 2).attr("height", _height * _margin.top / 2);
-
-      this._sampleRect = _svg.append("rect").attr("class", css.COLOR_SAMPLE).attr("width", _width / 2).attr("x", _width / 2).attr("height", _height * _margin.top / 2);
-
-      _svg.append("text").attr("x", _width * _margin.left).attr("y", _height * _margin.top / 2).attr("dy", "1.3em").attr("class", css.COLOR_SAMPLE).style("text-anchor", "start");
-
-      this._sampleText = _svg.append("text").attr("x", _width * (1 - _margin.right)).attr("y", _height * _margin.top / 2).attr("dy", "1.3em").attr("class", css.COLOR_SAMPLE).style("text-anchor", "end");
-
-      _svg.append("text").attr("x", _width * 0.1).attr("y", _height * (1 - _margin.bottom)).attr("dy", "1.2em").attr("class", "vzb-default-label").style("text-anchor", "start").text("default");
-
-      _svg.append("circle").attr("class", css.COLOR_DEFAULT + " " + css.COLOR_BUTTON).attr("r", _width * _margin.left / 2).attr("cx", _width * _margin.left * 1.5).attr("cy", _height * (1 - _margin.bottom * 1.5)).on("mouseover", function () {
-        d3.select(this).style("stroke", "#444");
-        self._cellHover(self._colorDef);
-      }).on("mouseout", function () {
-        d3.select(this).style("stroke", "none");
-      });
-
-      var self = this;
-      circles.selectAll("." + css.COLOR_CIRCLE).data(_colorData).enter().append("g").attr("class", css.COLOR_CIRCLE).each(function (circleData, index) {
-        self._arc.outerRadius(_minRadius + (_maxRadius - _minRadius) / _nCellsL * (_nCellsL - index)).innerRadius(_minRadius + (_maxRadius - _minRadius) / _nCellsL * (_nCellsL - index - 1));
-
-        var segment = d3.select(this).selectAll("." + css.COLOR_SEGMENT).data(self._pie(circleData)).enter().append("g").attr("class", css.COLOR_SEGMENT);
-
-        segment.append("path").attr("class", css.COLOR_BUTTON).attr("d", self._arc).style("fill", function (d) {
-          return d.data.display;
-        }).style("stroke", function (d) {
-          return d.data.display;
-        }).on("mouseover", function (d) {
-          self._cellHover(d.data.meaning, this);
-        }).on("mouseout", function () {
-          return self._cellUnhover();
-        });
-      });
-
-      circles.append("circle").attr("r", _minRadius).attr("fill", _colorWhite).attr("class", css.COLOR_BUTTON).on("mouseover", function () {
-        d3.select(this).style("stroke", "#555");
-        self._cellHover(_colorWhite);
-      }).on("mouseout", function () {
-        d3.select(this).style("stroke", "none");
-      });
-
-      this._colorPointer = circles.append("path").attr("class", css.COLOR_POINTER + " " + css.INVISIBLE);
-
-      _svg.selectAll("." + css.COLOR_BUTTON).on("click", function (d) {
-        d3.event.stopPropagation();
-        _this2._changeColor(d ? d.data.meaning : _this2._colorDef, true);
-        _this2.show(false);
-      });
-    }
-  }, {
-    key: "_style",
-    value: function _style() {
-      var _svg = this._svg,
-          _colorWhite = this._colorWhite;
-
-
-      _svg.select("." + css.COLOR_BACKGR).style("fill", "white");
-
-      _svg.select("." + css.COLOR_POINTER).style("stroke-width", 2).style("stroke", _colorWhite).style("pointer-events", "none").style("fill", "none");
-
-      _svg.selectAll("." + css.COLOR_BUTTON).style("cursor", "pointer");
-
-      _svg.selectAll("text").style("pointer-events", "none").style("fill", "#D9D9D9").style("font-size", "0.7em").style("text-transform", "uppercase");
-
-      _svg.selectAll("circle." + css.COLOR_BUTTON).style("stroke-width", 2);
-
-      _svg.selectAll("rect." + css.COLOR_SAMPLE).style("pointer-events", "none");
-    }
-  }, {
-    key: "_cellHover",
-    value: function _cellHover(value, view) {
-      // show color pointer if the view is set (a cell of colorwheel)
-      if (view != null) this._colorPointer.classed(css.INVISIBLE, false).attr("d", d3.select(view).attr("d"));
-
-      this._sampleRect.style("fill", value);
-      this._sampleText.text(value);
-
-      var isTouch = (0, _utils.isTouchDevice)();
-
-      this._changeColor(value, isTouch);
-      isTouch && this.show(false);
-    }
-  }, {
-    key: "_changeColor",
-    value: function _changeColor(color) {
-      var isClick = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      this._callback(color, isClick);
-    }
-  }, {
-    key: "_cellUnhover",
-    value: function _cellUnhover() {
-      this._colorPointer.classed(css.INVISIBLE, true);
-    }
-  }, {
-    key: "resize",
-    value: function resize(arg) {
-      if (!arguments.length) return;
-
-      if (typeof arg !== "undefined") {
-        var _margin = this._margin;
-
-        var svg = arg;
-
-        var _getComputedStyle2 = getComputedStyle(svg.node()),
-            svgWidth = _getComputedStyle2.width,
-            svgHeight = _getComputedStyle2.height;
-
-        var width = this.constructor.px2num(svgWidth);
-        var height = this.constructor.px2num(svgHeight);
-
-        var maxRadius = width / 2 * (1 - _margin.left - _margin.right);
-        var selectedColor = svg.select("." + css.COLOR_DEFAULT);
-        var defaultLabel = svg.select(".vzb-default-label");
-        var circles = svg.select("." + css.COLOR_CIRCLES);
-
-        var hPos = maxRadius + height * _margin.top;
-        var hPosCenter = (1 + _margin.top * 0.5) * height * 0.5;
-
-        var tx = maxRadius + width * _margin.left;
-        var ty = hPos > hPosCenter ? hPosCenter : hPos;
-        circles.attr("transform", "translate(" + tx + ", " + ty + ")");
-
-        selectedColor.attr("cx", width * _margin.left * 1.5).attr("cy", height * (1 - _margin.bottom * 1.5));
-
-        defaultLabel.attr("x", width * 0.1).attr("y", height * (1 - _margin.bottom));
-      }
-
-      return this.fitToScreen();
-    }
-  }, {
-    key: "fitToScreen",
-    value: function fitToScreen(arg) {
-      var screen = this._container.node().getBoundingClientRect();
-      var xPos = void 0,
-          yPos = void 0;
-
-      var _getComputedStyle3 = getComputedStyle(this._wrapper.node()),
-          wrapperWidth = _getComputedStyle3.width,
-          wrapperHeight = _getComputedStyle3.height,
-          wrapperRight = _getComputedStyle3.right,
-          wrapperTop = _getComputedStyle3.top;
-
-      var width = this.constructor.px2num(wrapperWidth);
-      var height = this.constructor.px2num(wrapperHeight);
-
-      if (!arg) {
-        xPos = screen.width - this.constructor.px2num(wrapperRight) - width;
-        yPos = this.constructor.px2num(wrapperTop);
-      } else {
-        xPos = arg[0] - screen.left;
-        yPos = arg[1] - screen.top;
-      }
-
-      var styles = { left: "" };
-      if (screen.width * 0.8 <= width) {
-        styles.right = (screen.width - width) * 0.5 + "px";
-      } else if (xPos + width > screen.width) {
-        styles.right = Math.min(screen.width * 0.1, 20) + "px";
-      } else {
-        styles.right = screen.width - xPos - width + "px";
-      }
-
-      if (styles.right) {
-        this._wrapper.style("right", styles.right);
-      }
-
-      if (screen.height * 0.8 <= height) {
-        styles.top = (screen.height - height) * 0.5 + "px";
-      } else if (yPos + height * 1.2 > screen.height) {
-        styles.top = screen.height * 0.9 - height + "px";
-      } else {
-        styles.top = yPos + "px";
-      }
-
-      if (styles.top) {
-        this._wrapper.style("top", styles.top);
-      }
-
-      this._wrapper.style("left", styles.left);
-
-      return this;
-    }
-  }, {
-    key: "show",
-    value: function show(arg) {
-      if (!arguments.length) {
-        return this._showColorPicker;
-      }
-
-      if (this._svg == null) {
-        console.warn("Color picker is missing SVG element. Was init sequence performed?");
-      }
-
-      this._showColorPicker = arg == "toggle" ? !this._showColorPicker : arg;
-
-      if (!this._showColorPicker) {
-        this._callback = function () {
-          return void 0;
-        };
-      }
-
-      this._wrapper.classed(css.INVISIBLE, !this._showColorPicker);
-    }
-  }, {
-    key: "_getOrSet",
-    value: function _getOrSet(property, value) {
-      property = "_" + property;
-
-      if (arguments.length > 1) {
-        this[property] = value;
-        return this;
-      }
-
-      return this[property];
-    }
-  }, {
-    key: "nCellsH",
-    value: function nCellsH() {
-      return this._getOrSet.apply(this, ["nCellsH"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "minH",
-    value: function minH() {
-      return this._getOrSet.apply(this, ["minH"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "nCellsL",
-    value: function nCellsL() {
-      return this._getOrSet.apply(this, ["nCellsL"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "minL",
-    value: function minL() {
-      return this._getOrSet.apply(this, ["minL"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "outerL_display",
-    value: function outerL_display() {
-      return this._getOrSet.apply(this, ["outerL_display"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "outerL_meaning",
-    value: function outerL_meaning() {
-      return this._getOrSet.apply(this, ["outerL_meaning"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "satConstant",
-    value: function satConstant() {
-      return this._getOrSet.apply(this, ["satConstant"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "firstAngleSat",
-    value: function firstAngleSat() {
-      return this._getOrSet.apply(this, ["firstAngleSat"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "minRadius",
-    value: function minRadius() {
-      return this._getOrSet.apply(this, ["minRadius"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "margin",
-    value: function margin() {
-      return this._getOrSet.apply(this, ["margin"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "callback",
-    value: function callback() {
-      return this._getOrSet.apply(this, ["callback"].concat(Array.prototype.slice.call(arguments)));
-    }
-  }, {
-    key: "colorDef",
-    value: function colorDef(arg) {
-      if (!arguments.length) return this._colorDef;
-
-      if (typeof arg !== "undefined") {
-        this._colorDef = arg;
-      }
-
-      if (this._svg == null) {
-        console.warn("Color picker is missing SVG element. Was init sequence performed?");
-      }
-
-      this._svg.select("." + css.COLOR_DEFAULT).style("fill", this._colorDef);
-
-      return this;
-    }
-  }, {
-    key: "translate",
-    value: function translate(translator) {
-      if (typeof translator === "function") {
-        this._svg.select(".vzb-default-label").text(translator("colorpicker/default"));
-      }
-
-      return this;
-    }
-  }, {
-    key: "colorOld",
-    value: function colorOld(arg) {
-      if (!arguments.length) {
-        return this._colorOld;
-      }
-
-      this._colorOld = arg;
-
-      if (this._svg == null) {
-        console.warn("Color picker is missing SVG element. Was init sequence performed?");
-      }
-
-      this._svg.select("rect." + css.COLOR_SAMPLE).style("fill", this._colorOld);
-      this._svg.select("text." + css.COLOR_SAMPLE).text(this._colorOld);
-
-      return this;
-    }
-  }], [{
-    key: "hsl2rgb",
-    value: function hsl2rgb(h, s, l) {
-      var r = void 0,
-          g = void 0,
-          b = void 0;
-      if (s == 0) {
-        r = g = b = l; // achromatic
-      } else {
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = this.hue2rgb(p, q, h + 1 / 3);
-        g = this.hue2rgb(p, q, h);
-        b = this.hue2rgb(p, q, h - 1 / 3);
-      }
-
-      return "#" + Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
-    }
-  }, {
-    key: "hue2rgb",
-    value: function hue2rgb(p, q, t) {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    }
-  }, {
-    key: "px2num",
-    value: function px2num(px) {
-      return parseFloat(px) || 0;
-    }
-  }]);
-
-  return ColorPicker;
-}();
-
-exports.default = ColorPicker;
-
-/***/ }),
-/* 163 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16027,7 +10355,7 @@ function axisSmart(_orient) {
         if (highlightValue == "none") return 1;
 
         var wh = orient == HORIZONTAL ? "width" : "height";
-        var shift = (axis.repositionLabels()[d] || { x: 0, y: 0 })[dimension];
+        var shift = ((axis.repositionLabels() || {})[d] || { x: 0, y: 0 })[dimension];
 
         // opacity depends on the collision between label's boundary boxes
         return axis.hlOpacityScale()(
@@ -16129,7 +10457,7 @@ function axisSmart(_orient) {
     axis.labelFactory = function (options) {
       if (options == null) options = {};
       if (options.scaleType != "linear" && options.scaleType != "time" && options.scaleType != "genericLog" && options.scaleType != "log" && options.scaleType != "ordinal") {
-        return axis.ticks(ticksNumber).tickFormat(null).tickValues(null).tickValuesMinor(null).pivot(null).repositionLabels(null);
+        return axis.ticks(options.limitMaxTickNumber).tickFormat(null).tickValues(null).tickValuesMinor(null).pivot(null).repositionLabels(null);
       }
       if (options.scaleType == "ordinal") return axis;
 
@@ -16684,6 +11012,6068 @@ function axisSmart(_orient) {
 }
 
 /***/ }),
+/* 111 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__(8) && !__webpack_require__(4)(function () {
+  return Object.defineProperty(__webpack_require__(79)('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+/* 112 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports.f = __webpack_require__(7);
+
+
+/***/ }),
+/* 113 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has = __webpack_require__(14);
+var toIObject = __webpack_require__(18);
+var arrayIndexOf = __webpack_require__(62)(false);
+var IE_PROTO = __webpack_require__(81)('IE_PROTO');
+
+module.exports = function (object, names) {
+  var O = toIObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+
+/***/ }),
+/* 114 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__(9);
+var anObject = __webpack_require__(2);
+var getKeys = __webpack_require__(41);
+
+module.exports = __webpack_require__(8) ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = getKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+
+/***/ }),
+/* 115 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+var toIObject = __webpack_require__(18);
+var gOPN = __webpack_require__(44).f;
+var toString = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function (it) {
+  try {
+    return gOPN(it);
+  } catch (e) {
+    return windowNames.slice();
+  }
+};
+
+module.exports.f = function getOwnPropertyNames(it) {
+  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
+};
+
+
+/***/ }),
+/* 116 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// 19.1.2.1 Object.assign(target, source, ...)
+var getKeys = __webpack_require__(41);
+var gOPS = __webpack_require__(63);
+var pIE = __webpack_require__(57);
+var toObject = __webpack_require__(12);
+var IObject = __webpack_require__(56);
+var $assign = Object.assign;
+
+// should work with symbols and should have deterministic property order (V8 bug)
+module.exports = !$assign || __webpack_require__(4)(function () {
+  var A = {};
+  var B = {};
+  // eslint-disable-next-line no-undef
+  var S = Symbol();
+  var K = 'abcdefghijklmnopqrst';
+  A[S] = 7;
+  K.split('').forEach(function (k) { B[k] = k; });
+  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
+}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
+  var T = toObject(target);
+  var aLen = arguments.length;
+  var index = 1;
+  var getSymbols = gOPS.f;
+  var isEnum = pIE.f;
+  while (aLen > index) {
+    var S = IObject(arguments[index++]);
+    var keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S);
+    var length = keys.length;
+    var j = 0;
+    var key;
+    while (length > j) if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
+  } return T;
+} : $assign;
+
+
+/***/ }),
+/* 117 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var aFunction = __webpack_require__(13);
+var isObject = __webpack_require__(6);
+var invoke = __webpack_require__(118);
+var arraySlice = [].slice;
+var factories = {};
+
+var construct = function (F, len, args) {
+  if (!(len in factories)) {
+    for (var n = [], i = 0; i < len; i++) n[i] = 'a[' + i + ']';
+    // eslint-disable-next-line no-new-func
+    factories[len] = Function('F,a', 'return new F(' + n.join(',') + ')');
+  } return factories[len](F, args);
+};
+
+module.exports = Function.bind || function bind(that /* , ...args */) {
+  var fn = aFunction(this);
+  var partArgs = arraySlice.call(arguments, 1);
+  var bound = function (/* args... */) {
+    var args = partArgs.concat(arraySlice.call(arguments));
+    return this instanceof bound ? construct(fn, args.length, args) : invoke(fn, args, that);
+  };
+  if (isObject(fn.prototype)) bound.prototype = fn.prototype;
+  return bound;
+};
+
+
+/***/ }),
+/* 118 */
+/***/ (function(module, exports) {
+
+// fast apply, http://jsperf.lnkit.com/fast-apply/5
+module.exports = function (fn, args, that) {
+  var un = that === undefined;
+  switch (args.length) {
+    case 0: return un ? fn()
+                      : fn.call(that);
+    case 1: return un ? fn(args[0])
+                      : fn.call(that, args[0]);
+    case 2: return un ? fn(args[0], args[1])
+                      : fn.call(that, args[0], args[1]);
+    case 3: return un ? fn(args[0], args[1], args[2])
+                      : fn.call(that, args[0], args[1], args[2]);
+    case 4: return un ? fn(args[0], args[1], args[2], args[3])
+                      : fn.call(that, args[0], args[1], args[2], args[3]);
+  } return fn.apply(that, args);
+};
+
+
+/***/ }),
+/* 119 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var $parseInt = __webpack_require__(3).parseInt;
+var $trim = __webpack_require__(52).trim;
+var ws = __webpack_require__(85);
+var hex = /^[-+]?0[xX]/;
+
+module.exports = $parseInt(ws + '08') !== 8 || $parseInt(ws + '0x16') !== 22 ? function parseInt(str, radix) {
+  var string = $trim(String(str), 3);
+  return $parseInt(string, (radix >>> 0) || (hex.test(string) ? 16 : 10));
+} : $parseInt;
+
+
+/***/ }),
+/* 120 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var $parseFloat = __webpack_require__(3).parseFloat;
+var $trim = __webpack_require__(52).trim;
+
+module.exports = 1 / $parseFloat(__webpack_require__(85) + '-0') !== -Infinity ? function parseFloat(str) {
+  var string = $trim(String(str), 3);
+  var result = $parseFloat(string);
+  return result === 0 && string.charAt(0) == '-' ? -0 : result;
+} : $parseFloat;
+
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var cof = __webpack_require__(23);
+module.exports = function (it, msg) {
+  if (typeof it != 'number' && cof(it) != 'Number') throw TypeError(msg);
+  return +it;
+};
+
+
+/***/ }),
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 20.1.2.3 Number.isInteger(number)
+var isObject = __webpack_require__(6);
+var floor = Math.floor;
+module.exports = function isInteger(it) {
+  return !isObject(it) && isFinite(it) && floor(it) === it;
+};
+
+
+/***/ }),
+/* 123 */
+/***/ (function(module, exports) {
+
+// 20.2.2.20 Math.log1p(x)
+module.exports = Math.log1p || function log1p(x) {
+  return (x = +x) > -1e-8 && x < 1e-8 ? x - x * x / 2 : Math.log(1 + x);
+};
+
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 20.2.2.16 Math.fround(x)
+var sign = __webpack_require__(88);
+var pow = Math.pow;
+var EPSILON = pow(2, -52);
+var EPSILON32 = pow(2, -23);
+var MAX32 = pow(2, 127) * (2 - EPSILON32);
+var MIN32 = pow(2, -126);
+
+var roundTiesToEven = function (n) {
+  return n + 1 / EPSILON - 1 / EPSILON;
+};
+
+module.exports = Math.fround || function fround(x) {
+  var $abs = Math.abs(x);
+  var $sign = sign(x);
+  var a, result;
+  if ($abs < MIN32) return $sign * roundTiesToEven($abs / MIN32 / EPSILON32) * MIN32 * EPSILON32;
+  a = (1 + EPSILON32 / EPSILON) * $abs;
+  result = a - (a - $abs);
+  // eslint-disable-next-line no-self-compare
+  if (result > MAX32 || result != result) return $sign * Infinity;
+  return $sign * result;
+};
+
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// call something on iterator step with safe closing on error
+var anObject = __webpack_require__(2);
+module.exports = function (iterator, fn, value, entries) {
+  try {
+    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
+  // 7.4.6 IteratorClose(iterator, completion)
+  } catch (e) {
+    var ret = iterator['return'];
+    if (ret !== undefined) anObject(ret.call(iterator));
+    throw e;
+  }
+};
+
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var aFunction = __webpack_require__(13);
+var toObject = __webpack_require__(12);
+var IObject = __webpack_require__(56);
+var toLength = __webpack_require__(10);
+
+module.exports = function (that, callbackfn, aLen, memo, isRight) {
+  aFunction(callbackfn);
+  var O = toObject(that);
+  var self = IObject(O);
+  var length = toLength(O.length);
+  var index = isRight ? length - 1 : 0;
+  var i = isRight ? -1 : 1;
+  if (aLen < 2) for (;;) {
+    if (index in self) {
+      memo = self[index];
+      index += i;
+      break;
+    }
+    index += i;
+    if (isRight ? index < 0 : length <= index) {
+      throw TypeError('Reduce of empty array with no initial value');
+    }
+  }
+  for (;isRight ? index >= 0 : length > index; index += i) if (index in self) {
+    memo = callbackfn(memo, self[index], index, O);
+  }
+  return memo;
+};
+
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
+
+var toObject = __webpack_require__(12);
+var toAbsoluteIndex = __webpack_require__(42);
+var toLength = __webpack_require__(10);
+
+module.exports = [].copyWithin || function copyWithin(target /* = 0 */, start /* = 0, end = @length */) {
+  var O = toObject(this);
+  var len = toLength(O.length);
+  var to = toAbsoluteIndex(target, len);
+  var from = toAbsoluteIndex(start, len);
+  var end = arguments.length > 2 ? arguments[2] : undefined;
+  var count = Math.min((end === undefined ? len : toAbsoluteIndex(end, len)) - from, len - to);
+  var inc = 1;
+  if (from < to && to < from + count) {
+    inc = -1;
+    from += count - 1;
+    to += count - 1;
+  }
+  while (count-- > 0) {
+    if (from in O) O[to] = O[from];
+    else delete O[to];
+    to += inc;
+    from += inc;
+  } return O;
+};
+
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports) {
+
+module.exports = function (done, value) {
+  return { value: value, done: !!done };
+};
+
+
+/***/ }),
+/* 129 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 21.2.5.3 get RegExp.prototype.flags()
+if (__webpack_require__(8) && /./g.flags != 'g') __webpack_require__(9).f(RegExp.prototype, 'flags', {
+  configurable: true,
+  get: __webpack_require__(67)
+});
+
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports) {
+
+module.exports = function (exec) {
+  try {
+    return { e: false, v: exec() };
+  } catch (e) {
+    return { e: true, v: e };
+  }
+};
+
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject = __webpack_require__(2);
+var isObject = __webpack_require__(6);
+var newPromiseCapability = __webpack_require__(103);
+
+module.exports = function (C, x) {
+  anObject(C);
+  if (isObject(x) && x.constructor === C) return x;
+  var promiseCapability = newPromiseCapability.f(C);
+  var resolve = promiseCapability.resolve;
+  resolve(x);
+  return promiseCapability.promise;
+};
+
+
+/***/ }),
+/* 132 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var strong = __webpack_require__(133);
+var validate = __webpack_require__(54);
+var MAP = 'Map';
+
+// 23.1 Map Objects
+module.exports = __webpack_require__(70)(MAP, function (get) {
+  return function Map() { return get(this, arguments.length > 0 ? arguments[0] : undefined); };
+}, {
+  // 23.1.3.6 Map.prototype.get(key)
+  get: function get(key) {
+    var entry = strong.getEntry(validate(this, MAP), key);
+    return entry && entry.v;
+  },
+  // 23.1.3.9 Map.prototype.set(key, value)
+  set: function set(key, value) {
+    return strong.def(validate(this, MAP), key === 0 ? 0 : key, value);
+  }
+}, strong, true);
+
+
+/***/ }),
+/* 133 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var dP = __webpack_require__(9).f;
+var create = __webpack_require__(43);
+var redefineAll = __webpack_require__(48);
+var ctx = __webpack_require__(22);
+var anInstance = __webpack_require__(46);
+var forOf = __webpack_require__(47);
+var $iterDefine = __webpack_require__(91);
+var step = __webpack_require__(128);
+var setSpecies = __webpack_require__(45);
+var DESCRIPTORS = __webpack_require__(8);
+var fastKey = __webpack_require__(35).fastKey;
+var validate = __webpack_require__(54);
+var SIZE = DESCRIPTORS ? '_s' : 'size';
+
+var getEntry = function (that, key) {
+  // fast case
+  var index = fastKey(key);
+  var entry;
+  if (index !== 'F') return that._i[index];
+  // frozen object case
+  for (entry = that._f; entry; entry = entry.n) {
+    if (entry.k == key) return entry;
+  }
+};
+
+module.exports = {
+  getConstructor: function (wrapper, NAME, IS_MAP, ADDER) {
+    var C = wrapper(function (that, iterable) {
+      anInstance(that, C, NAME, '_i');
+      that._t = NAME;         // collection type
+      that._i = create(null); // index
+      that._f = undefined;    // first entry
+      that._l = undefined;    // last entry
+      that[SIZE] = 0;         // size
+      if (iterable != undefined) forOf(iterable, IS_MAP, that[ADDER], that);
+    });
+    redefineAll(C.prototype, {
+      // 23.1.3.1 Map.prototype.clear()
+      // 23.2.3.2 Set.prototype.clear()
+      clear: function clear() {
+        for (var that = validate(this, NAME), data = that._i, entry = that._f; entry; entry = entry.n) {
+          entry.r = true;
+          if (entry.p) entry.p = entry.p.n = undefined;
+          delete data[entry.i];
+        }
+        that._f = that._l = undefined;
+        that[SIZE] = 0;
+      },
+      // 23.1.3.3 Map.prototype.delete(key)
+      // 23.2.3.4 Set.prototype.delete(value)
+      'delete': function (key) {
+        var that = validate(this, NAME);
+        var entry = getEntry(that, key);
+        if (entry) {
+          var next = entry.n;
+          var prev = entry.p;
+          delete that._i[entry.i];
+          entry.r = true;
+          if (prev) prev.n = next;
+          if (next) next.p = prev;
+          if (that._f == entry) that._f = next;
+          if (that._l == entry) that._l = prev;
+          that[SIZE]--;
+        } return !!entry;
+      },
+      // 23.2.3.6 Set.prototype.forEach(callbackfn, thisArg = undefined)
+      // 23.1.3.5 Map.prototype.forEach(callbackfn, thisArg = undefined)
+      forEach: function forEach(callbackfn /* , that = undefined */) {
+        validate(this, NAME);
+        var f = ctx(callbackfn, arguments.length > 1 ? arguments[1] : undefined, 3);
+        var entry;
+        while (entry = entry ? entry.n : this._f) {
+          f(entry.v, entry.k, this);
+          // revert to the last existing entry
+          while (entry && entry.r) entry = entry.p;
+        }
+      },
+      // 23.1.3.7 Map.prototype.has(key)
+      // 23.2.3.7 Set.prototype.has(value)
+      has: function has(key) {
+        return !!getEntry(validate(this, NAME), key);
+      }
+    });
+    if (DESCRIPTORS) dP(C.prototype, 'size', {
+      get: function () {
+        return validate(this, NAME)[SIZE];
+      }
+    });
+    return C;
+  },
+  def: function (that, key, value) {
+    var entry = getEntry(that, key);
+    var prev, index;
+    // change existing entry
+    if (entry) {
+      entry.v = value;
+    // create new entry
+    } else {
+      that._l = entry = {
+        i: index = fastKey(key, true), // <- index
+        k: key,                        // <- key
+        v: value,                      // <- value
+        p: prev = that._l,             // <- previous entry
+        n: undefined,                  // <- next entry
+        r: false                       // <- removed
+      };
+      if (!that._f) that._f = entry;
+      if (prev) prev.n = entry;
+      that[SIZE]++;
+      // add to index
+      if (index !== 'F') that._i[index] = entry;
+    } return that;
+  },
+  getEntry: getEntry,
+  setStrong: function (C, NAME, IS_MAP) {
+    // add .keys, .values, .entries, [@@iterator]
+    // 23.1.3.4, 23.1.3.8, 23.1.3.11, 23.1.3.12, 23.2.3.5, 23.2.3.8, 23.2.3.10, 23.2.3.11
+    $iterDefine(C, NAME, function (iterated, kind) {
+      this._t = validate(iterated, NAME); // target
+      this._k = kind;                     // kind
+      this._l = undefined;                // previous
+    }, function () {
+      var that = this;
+      var kind = that._k;
+      var entry = that._l;
+      // revert to the last existing entry
+      while (entry && entry.r) entry = entry.p;
+      // get next entry
+      if (!that._t || !(that._l = entry = entry ? entry.n : that._t._f)) {
+        // or finish the iteration
+        that._t = undefined;
+        return step(1);
+      }
+      // return step by kind
+      if (kind == 'keys') return step(0, entry.k);
+      if (kind == 'values') return step(0, entry.v);
+      return step(0, [entry.k, entry.v]);
+    }, IS_MAP ? 'entries' : 'values', !IS_MAP, true);
+
+    // add [@@species], 23.1.2.2, 23.2.2.2
+    setSpecies(NAME);
+  }
+};
+
+
+/***/ }),
+/* 134 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var strong = __webpack_require__(133);
+var validate = __webpack_require__(54);
+var SET = 'Set';
+
+// 23.2 Set Objects
+module.exports = __webpack_require__(70)(SET, function (get) {
+  return function Set() { return get(this, arguments.length > 0 ? arguments[0] : undefined); };
+}, {
+  // 23.2.3.1 Set.prototype.add(value)
+  add: function add(value) {
+    return strong.def(validate(this, SET), value = value === 0 ? 0 : value, value);
+  }
+}, strong);
+
+
+/***/ }),
+/* 135 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var each = __webpack_require__(30)(0);
+var redefine = __webpack_require__(16);
+var meta = __webpack_require__(35);
+var assign = __webpack_require__(116);
+var weak = __webpack_require__(136);
+var isObject = __webpack_require__(6);
+var fails = __webpack_require__(4);
+var validate = __webpack_require__(54);
+var WEAK_MAP = 'WeakMap';
+var getWeak = meta.getWeak;
+var isExtensible = Object.isExtensible;
+var uncaughtFrozenStore = weak.ufstore;
+var tmp = {};
+var InternalMap;
+
+var wrapper = function (get) {
+  return function WeakMap() {
+    return get(this, arguments.length > 0 ? arguments[0] : undefined);
+  };
+};
+
+var methods = {
+  // 23.3.3.3 WeakMap.prototype.get(key)
+  get: function get(key) {
+    if (isObject(key)) {
+      var data = getWeak(key);
+      if (data === true) return uncaughtFrozenStore(validate(this, WEAK_MAP)).get(key);
+      return data ? data[this._i] : undefined;
+    }
+  },
+  // 23.3.3.5 WeakMap.prototype.set(key, value)
+  set: function set(key, value) {
+    return weak.def(validate(this, WEAK_MAP), key, value);
+  }
+};
+
+// 23.3 WeakMap Objects
+var $WeakMap = module.exports = __webpack_require__(70)(WEAK_MAP, wrapper, methods, weak, true, true);
+
+// IE11 WeakMap frozen keys fix
+if (fails(function () { return new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7; })) {
+  InternalMap = weak.getConstructor(wrapper, WEAK_MAP);
+  assign(InternalMap.prototype, methods);
+  meta.NEED = true;
+  each(['delete', 'has', 'get', 'set'], function (key) {
+    var proto = $WeakMap.prototype;
+    var method = proto[key];
+    redefine(proto, key, function (a, b) {
+      // store frozen objects on internal weakmap shim
+      if (isObject(a) && !isExtensible(a)) {
+        if (!this._f) this._f = new InternalMap();
+        var result = this._f[key](a, b);
+        return key == 'set' ? this : result;
+      // store all the rest on native weakmap
+      } return method.call(this, a, b);
+    });
+  });
+}
+
+
+/***/ }),
+/* 136 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var redefineAll = __webpack_require__(48);
+var getWeak = __webpack_require__(35).getWeak;
+var anObject = __webpack_require__(2);
+var isObject = __webpack_require__(6);
+var anInstance = __webpack_require__(46);
+var forOf = __webpack_require__(47);
+var createArrayMethod = __webpack_require__(30);
+var $has = __webpack_require__(14);
+var validate = __webpack_require__(54);
+var arrayFind = createArrayMethod(5);
+var arrayFindIndex = createArrayMethod(6);
+var id = 0;
+
+// fallback for uncaught frozen keys
+var uncaughtFrozenStore = function (that) {
+  return that._l || (that._l = new UncaughtFrozenStore());
+};
+var UncaughtFrozenStore = function () {
+  this.a = [];
+};
+var findUncaughtFrozen = function (store, key) {
+  return arrayFind(store.a, function (it) {
+    return it[0] === key;
+  });
+};
+UncaughtFrozenStore.prototype = {
+  get: function (key) {
+    var entry = findUncaughtFrozen(this, key);
+    if (entry) return entry[1];
+  },
+  has: function (key) {
+    return !!findUncaughtFrozen(this, key);
+  },
+  set: function (key, value) {
+    var entry = findUncaughtFrozen(this, key);
+    if (entry) entry[1] = value;
+    else this.a.push([key, value]);
+  },
+  'delete': function (key) {
+    var index = arrayFindIndex(this.a, function (it) {
+      return it[0] === key;
+    });
+    if (~index) this.a.splice(index, 1);
+    return !!~index;
+  }
+};
+
+module.exports = {
+  getConstructor: function (wrapper, NAME, IS_MAP, ADDER) {
+    var C = wrapper(function (that, iterable) {
+      anInstance(that, C, NAME, '_i');
+      that._t = NAME;      // collection type
+      that._i = id++;      // collection id
+      that._l = undefined; // leak store for uncaught frozen objects
+      if (iterable != undefined) forOf(iterable, IS_MAP, that[ADDER], that);
+    });
+    redefineAll(C.prototype, {
+      // 23.3.3.2 WeakMap.prototype.delete(key)
+      // 23.4.3.3 WeakSet.prototype.delete(value)
+      'delete': function (key) {
+        if (!isObject(key)) return false;
+        var data = getWeak(key);
+        if (data === true) return uncaughtFrozenStore(validate(this, NAME))['delete'](key);
+        return data && $has(data, this._i) && delete data[this._i];
+      },
+      // 23.3.3.4 WeakMap.prototype.has(key)
+      // 23.4.3.4 WeakSet.prototype.has(value)
+      has: function has(key) {
+        if (!isObject(key)) return false;
+        var data = getWeak(key);
+        if (data === true) return uncaughtFrozenStore(validate(this, NAME)).has(key);
+        return data && $has(data, this._i);
+      }
+    });
+    return C;
+  },
+  def: function (that, key, value) {
+    var data = getWeak(anObject(key), true);
+    if (data === true) uncaughtFrozenStore(that).set(key, value);
+    else data[that._i] = value;
+    return that;
+  },
+  ufstore: uncaughtFrozenStore
+};
+
+
+/***/ }),
+/* 137 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// https://tc39.github.io/ecma262/#sec-toindex
+var toInteger = __webpack_require__(28);
+var toLength = __webpack_require__(10);
+module.exports = function (it) {
+  if (it === undefined) return 0;
+  var number = toInteger(it);
+  var length = toLength(number);
+  if (number !== length) throw RangeError('Wrong length!');
+  return length;
+};
+
+
+/***/ }),
+/* 138 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// all object keys, includes non-enumerable and symbols
+var gOPN = __webpack_require__(44);
+var gOPS = __webpack_require__(63);
+var anObject = __webpack_require__(2);
+var Reflect = __webpack_require__(3).Reflect;
+module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
+  var keys = gOPN.f(anObject(it));
+  var getSymbols = gOPS.f;
+  return getSymbols ? keys.concat(getSymbols(it)) : keys;
+};
+
+
+/***/ }),
+/* 139 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
+var isArray = __webpack_require__(64);
+var isObject = __webpack_require__(6);
+var toLength = __webpack_require__(10);
+var ctx = __webpack_require__(22);
+var IS_CONCAT_SPREADABLE = __webpack_require__(7)('isConcatSpreadable');
+
+function flattenIntoArray(target, original, source, sourceLen, start, depth, mapper, thisArg) {
+  var targetIndex = start;
+  var sourceIndex = 0;
+  var mapFn = mapper ? ctx(mapper, thisArg, 3) : false;
+  var element, spreadable;
+
+  while (sourceIndex < sourceLen) {
+    if (sourceIndex in source) {
+      element = mapFn ? mapFn(source[sourceIndex], sourceIndex, original) : source[sourceIndex];
+
+      spreadable = false;
+      if (isObject(element)) {
+        spreadable = element[IS_CONCAT_SPREADABLE];
+        spreadable = spreadable !== undefined ? !!spreadable : isArray(element);
+      }
+
+      if (spreadable && depth > 0) {
+        targetIndex = flattenIntoArray(target, original, element, toLength(element.length), targetIndex, depth - 1) - 1;
+      } else {
+        if (targetIndex >= 0x1fffffffffffff) throw TypeError();
+        target[targetIndex] = element;
+      }
+
+      targetIndex++;
+    }
+    sourceIndex++;
+  }
+  return targetIndex;
+}
+
+module.exports = flattenIntoArray;
+
+
+/***/ }),
+/* 140 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// https://github.com/tc39/proposal-string-pad-start-end
+var toLength = __webpack_require__(10);
+var repeat = __webpack_require__(87);
+var defined = __webpack_require__(27);
+
+module.exports = function (that, maxLength, fillString, left) {
+  var S = String(defined(that));
+  var stringLength = S.length;
+  var fillStr = fillString === undefined ? ' ' : String(fillString);
+  var intMaxLength = toLength(maxLength);
+  if (intMaxLength <= stringLength || fillStr == '') return S;
+  var fillLen = intMaxLength - stringLength;
+  var stringFiller = repeat.call(fillStr, Math.ceil(fillLen / fillStr.length));
+  if (stringFiller.length > fillLen) stringFiller = stringFiller.slice(0, fillLen);
+  return left ? stringFiller + S : S + stringFiller;
+};
+
+
+/***/ }),
+/* 141 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getKeys = __webpack_require__(41);
+var toIObject = __webpack_require__(18);
+var isEnum = __webpack_require__(57).f;
+module.exports = function (isEntries) {
+  return function (it) {
+    var O = toIObject(it);
+    var keys = getKeys(O);
+    var length = keys.length;
+    var i = 0;
+    var result = [];
+    var key;
+    while (length > i) if (isEnum.call(O, key = keys[i++])) {
+      result.push(isEntries ? [key, O[key]] : O[key]);
+    } return result;
+  };
+};
+
+
+/***/ }),
+/* 142 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// https://github.com/DavidBruant/Map-Set.prototype.toJSON
+var classof = __webpack_require__(58);
+var from = __webpack_require__(143);
+module.exports = function (NAME) {
+  return function toJSON() {
+    if (classof(this) != NAME) throw TypeError(NAME + "#toJSON isn't generic");
+    return from(this);
+  };
+};
+
+
+/***/ }),
+/* 143 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var forOf = __webpack_require__(47);
+
+module.exports = function (iter, ITERATOR) {
+  var result = [];
+  forOf(iter, false, result.push, result, ITERATOR);
+  return result;
+};
+
+
+/***/ }),
+/* 144 */
+/***/ (function(module, exports) {
+
+// https://rwaldron.github.io/proposal-math-extensions/
+module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh) {
+  if (
+    arguments.length === 0
+      // eslint-disable-next-line no-self-compare
+      || x != x
+      // eslint-disable-next-line no-self-compare
+      || inLow != inLow
+      // eslint-disable-next-line no-self-compare
+      || inHigh != inHigh
+      // eslint-disable-next-line no-self-compare
+      || outLow != outLow
+      // eslint-disable-next-line no-self-compare
+      || outHigh != outHigh
+  ) return NaN;
+  if (x === Infinity || x === -Infinity) return x;
+  return (x - inLow) * (outHigh - outLow) / (inHigh - inLow) + outLow;
+};
+
+
+/***/ }),
+/* 145 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _model = __webpack_require__(49);
+
+var _model2 = _interopRequireDefault(_model);
+
+var _component = __webpack_require__(5);
+
+var _component2 = _interopRequireDefault(_component);
+
+var _iconset = __webpack_require__(21);
+
+var _events = __webpack_require__(50);
+
+var _events2 = _interopRequireDefault(_events);
+
+var _dimensionmanager = __webpack_require__(393);
+
+var _dimensionmanager2 = _interopRequireDefault(_dimensionmanager);
+
+var _datamanager = __webpack_require__(394);
+
+var _datamanager2 = _interopRequireDefault(_datamanager);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var class_loading_first = "vzb-loading-first";
+var class_loading_data = "vzb-loading-data";
+var class_placeholder = "vzb-placeholder";
+var class_buttons_off = "vzb-buttonlist-off";
+
+var templates = {};
+
+//tool model is quite simple and doesn't need to be registered
+var ToolModel = _model2.default.extend({
+  /**
+   * Initializes the tool model.
+   * @param {Tool}   the tool this tool model belongs to
+   * @param {Object} values The initial values of this model
+   */
+  init: function init(tool, external_model) {
+    this._id = utils.uniqueId("tm");
+    this._type = "tool";
+    this._component = tool;
+    this.dimensionManager = (0, _dimensionmanager2.default)(this);
+    this.dataManager = (0, _datamanager2.default)(this);
+
+    // defaults are defined on the Tool
+    // this way, each tool can have it's own default model
+    this.getClassDefaults = function () {
+      return tool.default_model;
+    };
+
+    // combine listeners from tool and external page to one object
+    var listeners = utils.extend(tool.getToolListeners(), external_model.bind);
+    delete external_model.bind; // bind shouldn't go to model tree
+
+    this._super(tool.name, external_model, null, listeners);
+  },
+
+
+  /**
+   * @return {object} Defaults of tool model and children
+   * Tool defaults overwrite other models' default
+   */
+  getDefaults: function getDefaults() {
+    return utils.deepExtend({}, this.getSubmodelDefaults(), this.getClassDefaults());
+  },
+  validate: function validate() {
+
+    var max = 10;
+    var c = 0;
+    var _this = this;
+
+    function validate_func(c) {
+      // ToolModel uses validate function declared on Tool so each Tool can have its own validation.
+      var model = JSON.stringify(_this.getPlainObject());
+      _this._component.validate(_this);
+      var model2 = JSON.stringify(_this.getPlainObject());
+
+      if (c >= max) {
+        utils.error("Max validation loop.");
+      } else if (model !== model2) {
+        validate_func(c++);
+      }
+    }
+
+    validate_func(c);
+  },
+  setReady: function setReady(arg) {
+    if (arg !== false) this.checkTimeLimits();
+    this._super(arg);
+  },
+  checkTimeLimits: function checkTimeLimits() {
+
+    var time = this.state.time;
+    var timeDependentMarkers = this.state.getSubmodels(false /*return as array*/, function (f) {
+      return f._type == "marker" && f.space.includes("time");
+    });
+
+    if (!time || !timeDependentMarkers.length) return;
+
+    var tLimits = {};
+    timeDependentMarkers.forEach(function (marker) {
+      var l = marker.getTimeLimits();
+      tLimits.min = d3.max([tLimits.min, l.min]);
+      tLimits.max = d3.min([tLimits.max, l.max]);
+    });
+
+    if (!utils.isDate(tLimits.min) || !utils.isDate(tLimits.max)) return utils.warn("checkTimeLimits(): min-max look wrong: " + tLimits.min + " " + tLimits.max + ". Expecting Date objects. Ensure that time is properly parsed in the data from reader");
+
+    // change start and end (but keep startOrigin and endOrigin for furhter requests)
+    var newTime = {};
+    if (time.start - tLimits.min != 0 || !time.start && !time.startOrigin) newTime["start"] = d3.max([tLimits.min, time.parse(time.startOrigin)]);
+    if (time.end - tLimits.max != 0 || !time.end && !time.endOrigin) newTime["end"] = d3.min([tLimits.max, time.parse(time.endOrigin)]);
+
+    time.setTreeFreezer(true);
+    time.set(newTime, false, false);
+
+    if (newTime.start || newTime.end) {
+      timeDependentMarkers.forEach(function (marker) {
+        utils.forEach(marker.getSubhooks(), function (hook) {
+          if (hook.which == time.dim) {
+            hook.buildScale();
+          }
+        });
+      });
+    }
+    time.setTreeFreezer(false);
+
+    //force time validation because time.value might now fall outside of start-end
+    //time.validate();
+  }
+});
+
+//tool
+var Tool = _component2.default.extend({
+  /**
+   * Initializes the tool
+   * @param {Object} placeholder object
+   * @param {Object} external_model External model such as state, data, etc
+   */
+  init: function init(placeholder, external_model) {
+    this._id = utils.uniqueId("t");
+
+    this.template = this.getToolTemplate();
+
+    // super also calls createModel
+    this._super({
+      placeholder: placeholder,
+      model: external_model
+    });
+
+    this.prerender();
+    this.setCSSClasses();
+    this.setResizeHandler();
+
+    this.postrender();
+  },
+  createModel: function createModel(external_model) {
+    external_model = external_model || {}; //external model can be undefined
+    external_model.bind = external_model.bind || {}; //bind functions can be undefined
+    this.model = new ToolModel(this, external_model);
+    this.model.setInterModelListeners();
+  },
+  getToolTemplate: function getToolTemplate() {
+    return this.template || '<div class="vzb-tool vzb-tool-' + this.name + '">' + '<div class="vzb-tool-stage">' + '<div class="vzb-tool-viz">' + "</div>" + '<div class="vzb-tool-time-speed-sliders">' + '<div class="vzb-tool-timeslider">' + "</div>" + '<div class="vzb-tool-stepped-speed-slider">' + "</div>" + "</div>" + "</div>" + '<div class="vzb-tool-sidebar">' + '<div class="vzb-tool-dialogs">' + "</div>" + '<div class="vzb-tool-buttonlist">' + "</div>" + "</div>" + '<div class="vzb-tool-datanotes vzb-hidden">' + "</div>" + '<div class="vzb-tool-treemenu vzb-hidden">' + "</div>" + '<div class="vzb-tool-datawarning vzb-hidden">' + "</div>" + '<div class="vzb-tool-labels vzb-hidden">' + "</div>" + "</div>";
+  },
+  getToolListeners: function getToolListeners() {
+    var _this2 = this;
+
+    var _this = this;
+    return utils.extend(this.model_binds, {
+      "readyOnce": function readyOnce() {
+        return _this2.setResizeHandler();
+      },
+      "change": function change(evt, path) {
+        if (_this._ready) {
+          _this.model.validate();
+
+          if (evt.source.persistent) _this.model.trigger(new _events.DefaultEvent(evt.source, "persistentChange"));
+        }
+      },
+      "hook_change": function hook_change() {
+        if (!_this.model.state.time.splash) {
+          // not block when it initial splash screen
+          _this.beforeLoading();
+        }
+      },
+      "resize:ui": function resizeUi() {
+        if (_this._ready) {
+          _this.triggerResize();
+        }
+      },
+      "translate:locale": function translateLocale() {
+        _this.translateStrings();
+        _this.model.ui.setRTL(_this.model.locale.isRTL());
+      },
+      "load_error": function load_error() {
+        _this2.renderError();
+        _this2.error.apply(_this2, arguments);
+      }
+    });
+  },
+  setResizeHandler: function setResizeHandler() {
+    //only tools have layout (manage sizes)
+    this.model.ui.setContainer(this.element);
+  },
+
+
+  /**
+   * Returns width and height of the area excluding time slider and toolbar/sidebar
+   */
+  getVizWidthHeight: function getVizWidthHeight() {
+    var width = 0,
+        height = 0;
+    if (this.element) {
+      width = d3.select(this.element).select(".vzb-tool-viz").node().clientWidth;
+      height = d3.select(this.element).select(".vzb-tool-viz").node().clientHeight;
+    } else {
+      utils.warn("Tool getVizWidthHeight(): missing this.element");
+    }
+
+    return { width: width, height: height };
+  },
+
+
+  triggerResize: utils.throttle(function () {
+    this.trigger("resize");
+  }, 100),
+
+  startLoading: function startLoading() {
+    var _this3 = this;
+
+    this._super();
+
+    Promise.all([this.model.startPreload(), this.startPreload()]).then(this.afterPreload.bind(this)).then(this.loadSplashScreen.bind(this)).then(function () {
+      return utils.delay(300);
+    }).then(this.model.startLoading.bind(this.model)).then(this.finishLoading.bind(this)).catch(function (error) {
+      _this3.model.triggerLoadError(error);
+    });
+  },
+  loadSplashScreen: function loadSplashScreen() {
+    if (this.model.ui.splash) {
+      //TODO: cleanup hardcoded splash screen
+      this.model.state.time.splash = true;
+      return this.model.startLoading({
+        splashScreen: true
+      });
+    }
+    return Promise.resolve();
+  },
+  finishLoading: function finishLoading() {
+    this.model.state.time.splash = false;
+  },
+  getPersistentModel: function getPersistentModel() {
+    //try to find functions in properties of model.
+    function removeFunctions(model) {
+      for (var childKey in model) {
+        if (typeof model[childKey] === "function") {
+          delete model[childKey];
+          utils.warn("minModel validation. Function found in enumerable properties of " + childKey + ". This key is deleted from minModel");
+        } else if (_typeof(model[childKey]) === "object") removeFunctions(model[childKey]);
+      }
+    }
+
+    var currentToolModel = this.model.getPlainObject(true); // true = get only persistent model values
+    removeFunctions(currentToolModel);
+    return currentToolModel;
+  },
+  getPersistentMinimalModel: function getPersistentMinimalModel(diffModel) {
+    var defaultModel = this.model.getDefaults();
+    var currentPersistentModel = this.getPersistentModel();
+    var redundantModel = utils.deepExtend(defaultModel, diffModel);
+    return utils.diffObject(currentPersistentModel, redundantModel);
+  },
+
+
+  /**
+   * Clears a tool
+   */
+
+  clear: function clear() {
+    this.model.ui.clear();
+    this.setModel = this.getModel = function () {
+      return void 0;
+    };
+    this._super();
+  },
+
+
+  /**
+   * Visually display errors
+   */
+  error: function error(options, message) {
+    if (!message) {
+      message = options && options.type === "data" ? "Error loading chart data. <br>Please, try again later." : "Error loading chart";
+    }
+
+    var stringify = typeof message === "string" ? message : d3.values(message).join("<br/><br/>");
+
+    this.placeholder.innerHTML = "<div class=\"vzb-error-message\"><h1>" + _iconset.warn + "</h1><p>" + stringify + "</p></div>";
+  },
+
+
+  /**
+   * Sets model from external page
+   * @param {Object} JSONModel new model in JSON format
+   * @param {Boolean} overwrite overwrite everything instead of extending
+   */
+  setModel: function setModel(newModelJSON, overwrite) {
+    if (overwrite) {
+      this.model.reset(newModelJSON);
+    } else {
+      this.model.set(newModelJSON);
+    }
+    this.setCSSClasses();
+  },
+
+
+  /**
+   * get model
+   * @return {Object} JSON object of model
+   */
+  getModel: function getModel() {
+    return this.model.getPlainObject() || {};
+  },
+
+  /**
+   * Displays loading class
+   */
+  beforeLoading: function beforeLoading() {
+    utils.addClass(this.placeholder, class_loading_data);
+  },
+
+
+  /* ==========================
+   * Validation and query
+   * ==========================
+   */
+  /**
+   * Validating the tool model
+   * @param model the current tool model to be validated
+   */
+  validate: function validate(model) {
+    model = this.model || model;
+
+    if (!model || !model.state) return utils.warn("tool validation aborted: model.state looks wrong: " + model);
+  },
+  setCSSClasses: function setCSSClasses() {
+    //add placeholder class
+    utils.addClass(this.placeholder, class_placeholder);
+    //add-remove buttonlist class
+    if (!this.model.ui || !this.model.ui.buttons || !this.model.ui.buttons.length) {
+      utils.addClass(this.element, class_buttons_off);
+    } else {
+      utils.removeClass(this.element, class_buttons_off);
+    }
+  }
+});
+
+exports.default = Tool;
+
+/***/ }),
+/* 146 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI Color Model (hook)
+ */
+
+var defaultPalettes = {
+  "_continuous": {
+    "_default": "#ffb600",
+    "0": "hsl(270, 80%, 55%)",
+    "25": "hsl(202.5, 80%, 55%)",
+    "50": "hsl(135, 80%, 55%)",
+    "75": "hsl(48, 70%, 62%)",
+    "100": "hsl(0, 80%, 55%)"
+  },
+  "_discrete": {
+    "_default": "#ffb600",
+    "0": "#4cd843",
+    "1": "#e83739",
+    "2": "#ff7f00",
+    "3": "#c027d4",
+    "4": "#d66425",
+    "5": "#0ab8d8",
+    "6": "#bcfa83",
+    "7": "#ff8684",
+    "8": "#ffb04b",
+    "9": "#f599f5",
+    "10": "#f4f459",
+    "11": "#7fb5ed"
+  },
+  "_default": {
+    "_default": "#ffb600"
+  }
+};
+
+var ColorModel = _hook2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null,
+      scaleType: null,
+      syncModels: [],
+      palette: {},
+      paletteLabels: null,
+      allow: {
+        scales: ["linear", "log", "genericLog", "time", "pow", "ordinal"]
+      }
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the color hook
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+    var _this = this;
+    this._type = "color";
+
+    this._super(name, values, parent, bind);
+
+    this._syncModelReferences = {};
+    this._hasDefaultColor = false;
+
+    this.on("hook_change", function () {
+      if (_this._readyOnce || _this._loadCall) return;
+
+      _this._setSyncModels();
+
+      if (_this.palette && Object.keys(_this.palette._data).length !== 0) {
+        var defaultPalette = _this.getDefaultPalette();
+        var currentPalette = _this.getPalette();
+        var palette = {};
+        //extend partial current palette with default palette and
+        //switch current palette elements which equals
+        //default palette elments to nonpersistent state
+        Object.keys(defaultPalette).forEach(function (key) {
+          if (!currentPalette[key] || defaultPalette[key] == currentPalette[key]) palette[key] = defaultPalette[key];
+        });
+        _this.set("palette", palette, false, false);
+      }
+    });
+  },
+  setInterModelListeners: function setInterModelListeners() {
+    this._super();
+    this._setSyncModels();
+  },
+
+
+  // args: {colorID, shadeID}
+  getColorShade: function getColorShade(args) {
+    var palette = this.getPalette();
+
+    if (!args) return utils.warn("getColorShade() is missing arguments");
+
+    // if colorID is not given or not found in the palette, replace it with default color
+    //if (!args.colorID || !palette[args.colorID]) args.colorID = "_default";
+
+    // if the resolved colr value is not an array (has only one shade) -- return it
+    if (!utils.isArray(palette[args.colorID])) return args.shadeID == "shade" ? d3.rgb(palette[args.colorID] || this.scale(args.colorID)).darker(0.5).toString() : palette[args.colorID];
+
+    var conceptpropsColor = this.getConceptprops().color;
+    var shade = args.shadeID && conceptpropsColor && conceptpropsColor.shades && conceptpropsColor.shades[args.shadeID] ? conceptpropsColor.shades[args.shadeID] : 0;
+
+    return palette[args.colorID][shade];
+  },
+
+
+  /**
+   * Get the above constants
+   */
+  isUserSelectable: function isUserSelectable() {
+    var conceptpropsColor = this.getConceptprops().color;
+    return conceptpropsColor == null || conceptpropsColor.selectable == null || conceptpropsColor.selectable;
+  },
+  setWhich: function setWhich(newValue) {
+    if (this.palette) this.palette._data = {};
+    this._super(newValue);
+    this._setSyncModels();
+  },
+  _setSyncModels: function _setSyncModels() {
+    var _this = this;
+    this.syncModels.forEach(function (modelName) {
+      //fetch the model to sync, it's marker and entities
+      var model = _this.getClosestModel(modelName);
+      var marker = model.isHook() ? model._parent : model;
+      var entities = marker.getClosestModel(marker.space[0]);
+
+      //save the references here locally
+      _this._syncModelReferences[modelName] = { model: model, marker: marker, entities: entities };
+
+      if (_this.isDiscrete() && _this.use !== "constant") _this._setSyncModel(model, marker, entities);
+    });
+  },
+  _setSyncModel: function _setSyncModel(model, marker, entities) {
+    if (model == marker) {
+      var newFilter = {
+        dim: this.which,
+        show: {}
+      };
+      marker.setDataSourceForAllSubhooks(this.data);
+      entities.set(newFilter, false, false);
+    } else {
+      if (model.isDiscrete() && model.use !== "constant") model.set({ which: this.which, data: this.data }, false, false);
+    }
+  },
+  getColorlegendMarker: function getColorlegendMarker() {
+    return (this._syncModelReferences["marker_colorlegend"] || {})["marker"];
+  },
+  getColorlegendEntities: function getColorlegendEntities() {
+    return (this._syncModelReferences["marker_colorlegend"] || {})["entities"];
+  },
+
+
+  /**
+   * set color
+   */
+  setColor: function setColor(value, pointer, persistent) {
+    var range = void 0;
+    var palette = this.getPalette();
+    if (this.isDiscrete()) {
+      range = this.scale.range();
+      range[this.scale.domain().indexOf(pointer)] = value;
+    } else {
+      palette[pointer] = value;
+      range = utils.values(palette);
+    }
+    this.scale.range(range);
+    this.palette.set(pointer, value, persistent, persistent);
+  },
+
+
+  /**
+   * maps the value to this hook's specifications
+   * @param value Original value
+   * @returns hooked value
+   */
+  mapValue: function mapValue(value) {
+    //if the property value does not exist, supply the _default
+    // otherwise the missing value would be added to the domain
+    if (this.scale != null && this.isDiscrete() && this._hasDefaultColor && this.scale.domain().indexOf(value) == -1) value = "_default";
+    return this._super(value);
+  },
+  getDefaultPalette: function getDefaultPalette() {
+    var conceptpropsColor = this.getConceptprops().color;
+    var palette = void 0;
+
+    this.discreteDefaultPalette = false;
+
+    if (conceptpropsColor && conceptpropsColor.palette) {
+      //specific color palette from hook concept properties
+      palette = utils.clone(conceptpropsColor.palette);
+    } else if (defaultPalettes[this.which]) {
+      //color palette for this.which exists in palette defaults
+      palette = utils.clone(defaultPalettes[this.which]);
+    } else if (this.use === "constant") {
+      //an explicit hex color constant #abc or #adcdef is provided
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(this.which)) {
+        palette = { "_default": this.which };
+      } else {
+        palette = utils.clone(defaultPalettes["_default"]);
+      }
+    } else {
+      palette = utils.clone(defaultPalettes[this.isDiscrete() ? "_discrete" : "_continuous"]);
+      this.discreteDefaultPalette = true;
+    }
+
+    return palette;
+  },
+  _getPaletteLabels: function _getPaletteLabels() {
+    var conceptpropsColor = this.getConceptprops().color;
+    var paletteLabels = null;
+
+    if (conceptpropsColor && conceptpropsColor.paletteLabels) {
+      //specific color palette from hook concept properties
+      paletteLabels = utils.clone(conceptpropsColor.paletteLabels);
+    }
+    return paletteLabels;
+  },
+  getPaletteLabels: function getPaletteLabels() {
+    return this.paletteLabels.getPlainObject();
+  },
+  getPalette: function getPalette() {
+    //rebuild palette if it's empty
+    if (!this.palette || Object.keys(this.palette._data).length === 0) {
+      var _palette = this.getDefaultPalette();
+      this.set("palette", _palette, false, false);
+      var paletteLabels = this._getPaletteLabels();
+      this.set("paletteLabels", paletteLabels, false, false);
+    }
+    var palette = this.palette.getPlainObject();
+    if (this.scaleType !== "ordinal") {
+      delete palette["_default"];
+    }
+    return palette;
+  },
+
+
+  /**
+   * Gets the domain for this hook
+   * @returns {Array} domain
+   */
+  buildScale: function buildScale() {
+    var scaleType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.scaleType;
+
+    var _this = this;
+
+    var paletteObject = _this.getPalette();
+    var domain = Object.keys(paletteObject);
+    var range = utils.values(paletteObject);
+
+    this._hasDefaultColor = domain.indexOf("_default") > -1;
+
+    if (scaleType == "time") {
+
+      var timeMdl = this._space.time;
+      var limits = timeMdl.splash ? { min: timeMdl.parse(timeMdl.startOrigin), max: timeMdl.parse(timeMdl.endOrigin) } : { min: timeMdl.start, max: timeMdl.end };
+
+      var singlePoint = limits.max - limits.min == 0;
+
+      domain = domain.sort(function (a, b) {
+        return a - b;
+      });
+      range = domain.map(function (m) {
+        return singlePoint ? paletteObject[domain[0]] : paletteObject[m];
+      });
+      domain = domain.map(function (m) {
+        return limits.min.valueOf() + m / 100 * (limits.max.valueOf() - limits.min.valueOf());
+      });
+
+      this.scale = d3.scaleUtc().domain(domain).range(range).interpolate(d3.interpolateCubehelix);
+    } else if (!this.isDiscrete()) {
+
+      var _limits = this.getLimits(this.which);
+      //default domain is based on limits
+      _limits = [_limits.min, _limits.max];
+
+      var _singlePoint = _limits[1] - _limits[0] == 0;
+
+      domain = domain.sort(function (a, b) {
+        return a - b;
+      });
+      range = domain.map(function (m) {
+        return _singlePoint ? paletteObject[domain[0]] : paletteObject[m];
+      });
+      domain = domain.map(function (m) {
+        return _limits[0] + m / 100 * (_limits[1] - _limits[0]);
+      });
+
+      if (d3.min(domain) <= 0 && d3.max(domain) >= 0 && scaleType === "log") scaleType = "genericLog";
+
+      if (scaleType === "log" || scaleType === "genericLog") {
+        var s = d3.scaleGenericlog().domain(_limits).range(_limits);
+        domain = domain.map(function (d) {
+          return s.invert(d);
+        });
+      }
+      this.scale = d3["scale" + utils.capitalize(scaleType)]().domain(domain).range(range).interpolate(d3.interpolateCubehelix);
+    } else {
+      range = range.map(function (m) {
+        return utils.isArray(m) ? m[0] : m;
+      });
+
+      scaleType = "ordinal";
+
+      if (this.discreteDefaultPalette) {
+        var defaultPalette = utils.extend({}, defaultPalettes["_discrete"]);
+        delete defaultPalette["_default"];
+        var defaultPaletteKeys = Object.keys(defaultPalette);
+
+        domain = [].concat(this.getUnique(this.which));
+        range = domain.map(function (d, i) {
+          return paletteObject[d] || defaultPalette[defaultPaletteKeys[i % defaultPaletteKeys.length]];
+        });
+        domain.push("_default");
+        range.push(paletteObject["_default"]);
+      }
+
+      this.scale = d3["scale" + utils.capitalize(scaleType)]().domain(domain).range(range);
+    }
+
+    this.scaleType = scaleType;
+  }
+});
+
+exports.default = ColorModel;
+
+/***/ }),
+/* 147 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*
+ * VIZABI Group Model
+ */
+
+var GroupModel = _hook2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null,
+      merge: false,
+      manualSorting: null,
+      scaleType: "ordinal" // the only one possible, right?
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the group hook
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+    this._type = "model";
+
+    this._super(name, values, parent, bind);
+  },
+
+
+  /**
+   * Validates a color hook
+   */
+  validate: function validate() {
+    //there must be no scale
+    if (this.scale) this.scale = null;
+
+    //use must be "property"
+    if (this.use != "property" && this.use != "constant") {
+      utils.warn("group model: use must be 'property' or 'constant'. Resetting to property...");
+      this.use = "property";
+    }
+  }
+});
+
+exports.default = GroupModel;
+
+/***/ }),
+/* 148 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*
+ * VIZABI Data Model (options.data)
+ */
+
+var LabelModel = _hook2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the size hook
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+
+    this._type = "label";
+
+    this._super(name, values, parent, bind);
+  },
+  autoconfigureModel: function autoconfigureModel(autoconfigResult) {
+    if (!this.which && this.autoconfig) {
+      autoconfigResult = this._parent.getAvailableConcept(this.autoconfig) || this._parent.getAvailableConcept({ type: "entity_domain" });
+    }
+    this._super(autoconfigResult);
+  }
+});
+
+exports.default = LabelModel;
+
+/***/ }),
+/* 149 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _dataconnected = __webpack_require__(55);
+
+var _dataconnected2 = _interopRequireDefault(_dataconnected);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+// this and many other locale information should at some point be stored in an external file with locale information (rtl, date formats etc)
+var rtlLocales = ["ar", "ar-SA"];
+
+var LocaleModel = _dataconnected2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      id: "en",
+      filePath: "assets/translation/"
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  dataConnectedChildren: ["id"],
+  strings: {},
+
+  /**
+   * Initializes the locale model.
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+    this._type = "locale";
+
+    //same constructor, with same arguments
+    this._super(name, values, parent, bind);
+  },
+  _isLoading: function _isLoading() {
+    return !this._loadedOnce || this._loadCall;
+  },
+  preloadData: function preloadData() {
+    return this.loadData();
+  },
+  loadData: function loadData() {
+    var _this = this;
+
+    this.setReady(false);
+    this._loadCall = true;
+
+    // load new concept properties for each data source.
+    // this should be done with listeners, but the load promise can't be returned
+    // through the listeners
+
+    var promises = [];
+    utils.forEach(this._root._data, function (mdl) {
+      if (mdl._type === "data") promises.push(mdl.loadConceptProps());
+    });
+
+    // load UI strings only if we don't have them already
+    if (!this.strings[this.id]) {
+      promises.push(new Promise(function (resolve, reject) {
+        d3.json(_this.filePath + _this.id + ".json", function (error, strings) {
+          if (error) return reject(error);
+          _this._handleNewStrings(strings);
+          resolve();
+        });
+      }));
+    }
+
+    return Promise.all(promises).then(function () {
+      return _this.trigger("translate");
+    }).catch(function () {
+      return _this.handleLoadError();
+    });
+  },
+  _handleNewStrings: function _handleNewStrings(receivedStrings) {
+    this.strings[this.id] = this.strings[this.id] ? utils.extend(this.strings[this.id], receivedStrings) : receivedStrings;
+  },
+
+
+  /**
+   * Gets a certain UI string
+   * @param {String} stringId string identifier
+   * @returns {string} translated string
+   */
+  getUIString: function getUIString(stringId) {
+    if (this.strings && this.strings[this.id] && (this.strings[this.id][stringId] || this.strings[this.id][stringId] === "")) {
+      return this.strings[this.id][stringId];
+    }
+    if (!this.strings || !this.strings[this.id]) utils.warn("Strings are not loaded for the " + this.id + " locale. Check if translation JSON is valid");
+    return stringId;
+  },
+
+
+  /**
+   * Gets the translation function
+   * @returns {Function} translation function
+   */
+  getTFunction: function getTFunction() {
+    var _this2 = this;
+
+    return function (stringId) {
+      var payload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return Object.keys(payload).reduce(function (result, key) {
+        var regexp = new RegExp("{{" + key + "}}", "g");
+        return result.replace(regexp, payload[key]);
+      }, _this2.getUIString(stringId));
+    };
+  },
+  isRTL: function isRTL() {
+    return rtlLocales.indexOf(this.id) !== -1;
+  }
+});
+
+exports.default = LocaleModel;
+
+/***/ }),
+/* 150 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*
+ * VIZABI Data Model (options.data)
+ */
+
+var SideModel = _hook2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the size hook
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+
+    this._type = "side";
+
+    bind["readyOnce"] = this.readyOnce;
+
+    this.state = { left: {}, right: {} };
+    this._super(name, values, parent, bind);
+  },
+  readyOnce: function readyOnce() {
+    if (!this.spaceRef) return;
+    var dataConnChildren = this._space[this.spaceRef].dataConnectedChildren.slice(0);
+    dataConnChildren.splice(dataConnChildren.indexOf("show"), 1);
+    this._space[this.spaceRef].dataConnectedChildren = dataConnChildren;
+  },
+  switchSideState: function switchSideState() {
+    var left = this.state.left;
+    this.state.left = this.state.right;
+    this.state.right = left;
+  },
+  clearSideState: function clearSideState() {
+    this.state = { left: {}, right: {} };
+  }
+});
+
+exports.default = SideModel;
+
+/***/ }),
+/* 151 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _axis = __webpack_require__(106);
+
+var _axis2 = _interopRequireDefault(_axis);
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/*
+ * VIZABI Size Model
+ */
+
+var SizeModel = _axis2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null,
+      domainMin: null,
+      domainMax: null,
+      zoomedMin: null,
+      zoomedMax: null,
+      extent: [0, 0.85],
+      scaleType: null,
+      allow: {
+        scales: ["ordinal", "linear", "log", "genericLog", "pow"]
+      }
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  _type: "size",
+
+  buildScale: function buildScale() {
+    //do whatever axis.buildScale does
+    this._super();
+    //but then also clamp a numeric scale
+    if (this.scaleType !== "ordinal") this.scale.clamp(true);
+  }
+});
+
+exports.default = SizeModel;
+
+/***/ }),
+/* 152 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*
+ * VIZABI Stack Model
+ */
+
+var palettes = {
+  "ALL": "all",
+  _default: "none"
+};
+
+var StackModel = _hook2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      use: null,
+      which: null,
+      merge: false
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the stack hook
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+
+    this._type = "model";
+
+    this._super(name, values, parent, bind);
+  },
+
+
+  /**
+   * Validates a color hook
+   */
+  validate: function validate() {
+    //there must be no scale
+    if (this.scale) this.scale = null;
+
+    //use must not be "indicator"
+    if (this.use === "indicator") {
+      utils.warn("stack model: use must not be 'indicator'. Resetting use to 'constant' and which to '" + palettes._default);
+      this.use = "constant";
+      this.which = palettes._default;
+    }
+
+    //if use is "constant"
+    if (this.use === "constant" && utils.values(palettes).indexOf(this.which) == -1) {
+      utils.warn("stack model: the requested value '" + this.which + "' is not allowed. resetting to '" + palettes._default);
+      this.which == palettes._default;
+    }
+  },
+
+
+  /**
+   * Get the above constants
+   */
+  getPalettes: function getPalettes() {
+    return palettes;
+  },
+
+
+  /**
+   * There must be no scale
+   */
+  buildScale: function buildScale() {}
+});
+
+exports.default = StackModel;
+
+/***/ }),
+/* 153 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _dataconnected = __webpack_require__(55);
+
+var _dataconnected2 = _interopRequireDefault(_dataconnected);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI Time Model
+ */
+
+// short-cut for developers to get UTC date strings
+// not meant to be used in code!!!
+Date.prototype.utc = Date.prototype.toUTCString;
+
+/*
+ * Time formats for internal data
+ * all in UTC
+ */
+var formats = {
+  "year": { data: d3.time.format.utc("%Y"), ui: d3.time.format.utc("%Y") },
+  "month": { data: d3.time.format.utc("%Y-%m"), ui: d3.time.format.utc("%b %Y") }, // month needs separator according to ISO to not confuse YYYYMM with YYMMDD
+  "day": { data: d3.time.format.utc("%Y%m%d"), ui: d3.time.format.utc("%c") },
+  "hour": { data: d3.time.format.utc("%Y%m%dT%H"), ui: d3.time.format.utc("%b %d %Y, %H") },
+  "minute": { data: d3.time.format.utc("%Y%m%dT%H%M"), ui: d3.time.format.utc("%b %d %Y, %H:%M") },
+  "second": { data: d3.time.format.utc("%Y%m%dT%H%M%S"), ui: d3.time.format.utc("%b %d %Y, %H:%M:%S") },
+  "week": { data: weekFormat(), ui: weekFormat() }, // %Yw%W d3 week format does not comply with ISO
+  "quarter": { data: quarterFormat(), ui: quarterFormat() // %Yq%Q d3 does not support quarters
+  } };
+
+var TimeModel = _dataconnected2.default.extend({
+
+  /**
+   * Default values for this model
+   */
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      dim: null,
+      value: null,
+      start: null,
+      end: null,
+      startOrigin: null,
+      endOrigin: null,
+      startSelected: null,
+      endSelected: null,
+      playable: true,
+      playing: false,
+      loop: false,
+      round: "round",
+      delay: 150, //delay between animation frames
+      delayThresholdX2: 90, //delay X2 boundary: if less -- then every other frame will be dropped and animation dely will be double the value
+      delayThresholdX4: 45, //delay X4 boundary: if less -- then 3/4 frame will be dropped and animation dely will be 4x the value
+      unit: "year",
+      format: { data: null, ui: null }, // overwrite of default formats
+      step: 1, //step must be integer, and expressed in units
+      immediatePlay: true,
+      record: false,
+      offset: 0
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  objectLeafs: ["autoconfig"],
+  dataConnectedChildren: ["startOrigin", "endOrigin", "dim"],
+
+  /**
+   * Initializes the locale model.
+   * @param {String} name
+   * @param {Object} values The initial values of this model
+   * @param parent A reference to the parent model
+   * @param {Object} bind Initial events to bind
+   */
+  init: function init(name, values, parent, bind) {
+    this._type = "time";
+
+    //same constructor
+    this._super(name, values, parent, bind);
+    var _this = this;
+    this.initFormatters();
+    this.dragging = false;
+    this.postponePause = false;
+    this.allSteps = {};
+    this.delayAnimations = this.delay;
+
+    //bing play method to model change
+    this.on({
+
+      "change:playing": function changePlaying() {
+        if (_this.playing === true) {
+          _this._startPlaying();
+        } else {
+          _this._stopPlaying();
+        }
+      },
+
+      "change:format": function changeFormat() {
+        _this.initFormatters();
+      }
+
+    });
+  },
+  initFormatters: function initFormatters() {
+    if (formats[this.unit]) {
+      this.formatters = formats[this.unit];
+    }
+    // specifically set formats overwrite unit defaults
+    if (typeof this.format === "string") {
+      this.formatters.data = this.formatters.ui = d3.time.format.utc(this.format);
+    } else {
+      if (this.format.data) {
+        this.formatters.data = d3.time.format.utc(this.format.data);
+      }
+      if (this.format.ui) {
+        this.formatters.ui = d3.time.format.utc(this.format.ui);
+      }
+    }
+    this.validateFormatting();
+  },
+  preloadData: function preloadData() {
+    this.dataSource = this.getClosestModel(this.data || "data");
+    return this._super();
+  },
+  afterPreload: function afterPreload() {
+    this.autoconfigureModel();
+  },
+  autoconfigureModel: function autoconfigureModel() {
+    if (!this.dim && this.autoconfig) {
+      var concept = this.dataSource.getConcept(this.autoconfig);
+
+      if (concept) this.dim = concept.concept;
+      utils.printAutoconfigResult(this);
+    }
+  },
+
+
+  /**
+   * Formats value, start and end dates to actual Date objects
+   */
+  _formatToDates: function _formatToDates() {
+    var persistentValues = ["value"];
+    var date_attr = ["value", "start", "end", "startSelected", "endSelected"];
+    for (var i = 0; i < date_attr.length; i++) {
+      var attr = date_attr[i];
+      if (!utils.isDate(this[attr])) {
+        var date = this.parse(this[attr]);
+        this.set(attr, date, null, persistentValues.indexOf(attr) !== -1);
+      }
+    }
+  },
+
+
+  /*
+   * Formatting and parsing functions
+   * @param {Date} dateObject
+   * @param {String} type Either data or ui.
+   * @returns {String}
+   */
+  formatDate: function formatDate(dateObject) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
+
+    if (["data", "ui"].indexOf(type) === -1) {
+      utils.warn("Time.formatDate type parameter (" + type + ') invalid. Using "data".');
+      type = data;
+    }
+    if (dateObject == null) return null;
+    return this.formatters[type](dateObject);
+  },
+
+  /* parse to predefined unit */
+  parse: function parse(timeString) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
+
+    if (timeString == null) return null;
+    return this.formatters[type].parse(timeString.toString());
+  },
+
+
+  /* auto-determines unit from timestring */
+  findFormat: function findFormat(timeString) {
+    var keys = Object.keys(formats);
+    for (var i = 0; i < keys.length; i++) {
+      var dateObject = formats[keys[i]].data.parse(timeString);
+      if (dateObject) return { unit: keys[i], time: dateObject, type: "data" };
+      dateObject = formats[keys[i]].ui.parse(timeString);
+      if (dateObject) return { unit: keys[i], time: dateObject, type: "ui" };
+    }
+    return null;
+  },
+
+
+  /**
+   * Validates the model
+   */
+  validate: function validate() {
+
+    //check if time start and end are not defined but start and end origins are defined
+    if (this.start == null && this.startOrigin) this.set("start", this.startOrigin, null, false);
+    if (this.end == null && this.endOrigin) this.set("end", this.endOrigin, null, false);
+
+    if (this.formatters) {
+      this.validateFormatting();
+    }
+
+    //unit has to be one of the available_time_units
+    if (!formats[this.unit]) {
+      utils.warn(this.unit + ' is not a valid time unit, using "year" instead.');
+      this.unit = "year";
+    }
+
+    if (this.step < 1) {
+      this.step = 1;
+    }
+
+    //end has to be >= than start
+    if (this.end < this.start && this.start != null) {
+      this.set("end", new Date(this.start), null, false);
+    }
+
+    if (this.value < this.startSelected && this.startSelected != null) {
+      this.value = new Date(this.startSelected);
+    }
+
+    if (this.value > this.endSelected && this.endSelected != null) {
+      this.value = new Date(this.endSelected);
+    }
+    if (this.splash === false) {
+      if ((!this.startSelected || this.startSelected < this.start) && this.start != null) {
+        this.set({ startSelected: new Date(this.start) }, null, false /*make change non-persistent for URL and history*/);
+      }
+
+      if ((!this.endSelected || this.endSelected > this.end) && this.end != null) {
+        this.set({ endSelected: new Date(this.end) }, null, false /*make change non-persistent for URL and history*/);
+      }
+    }
+
+    //value has to be between start and end
+    if (this.value < this.start && this.start != null) {
+      this.value = new Date(this.start);
+    } else if (this.value > this.end && this.end != null) {
+      this.value = new Date(this.end);
+    }
+
+    if (this.playable === false && this.playing === true) {
+      this.set("playing", false, null, false);
+    }
+  },
+  validateFormatting: function validateFormatting() {
+    // default to current date. Other option: newTime['start'] || newTime['end'] || time.start || time.end;
+    if (this.value == null) this.set("value", this.parse(this.formatDate(new Date())), null, false);
+
+    //make sure dates are transformed into dates at all times
+    if (!utils.isDate(this.start) || !utils.isDate(this.end) || !utils.isDate(this.value) || !utils.isDate(this.startSelected) || !utils.isDate(this.endSelected)) {
+      this._formatToDates();
+    }
+  },
+
+
+  /**
+   * Plays time
+   */
+  play: function play() {
+    this._startPlaying();
+  },
+
+
+  /**
+   * Pauses time
+   */
+  pause: function pause(soft) {
+    if (soft) {
+      this.postponePause = true;
+    } else {
+      if (this.playing) {
+        this.set("playing", false, null, false);
+        this.set("value", this.value, true, true);
+      }
+    }
+  },
+
+
+  /**
+   * Indicates dragging of time
+   */
+  dragStart: function dragStart() {
+    this.dragging = true;
+  },
+  dragStop: function dragStop() {
+    this.dragging = false;
+  },
+
+
+  /**
+   * gets time range
+   * @returns range between start and end
+   */
+  getRange: function getRange() {
+    var is = this.getIntervalAndStep();
+    return d3["utc" + is.interval].range(this.start, this.end, is.step);
+  },
+
+
+  /**
+   * gets the d3 interval and stepsize for d3 time interval methods
+   * D3's week-interval starts on sunday and d3 does not support a quarter interval
+   **/
+  getIntervalAndStep: function getIntervalAndStep() {
+    var d3Interval = void 0,
+        step = void 0;
+    switch (this.unit) {
+      case "week":
+        d3Interval = "monday";step = this.step;break;
+      case "quarter":
+        d3Interval = "month";step = this.step * 3;break;
+      default:
+        d3Interval = this.unit;step = this.step;break;
+    }
+    return { interval: utils.capitalize(d3Interval), step: step };
+  },
+
+
+  /**
+   * Gets filter for time
+   * @param {Boolean} splash: get filter for current year only
+   * @returns {Object} time filter
+   */
+  getFilter: function getFilter(splash) {
+    var defaultStart = this.parse(this.startOrigin);
+    var defaultEnd = this.parse(this.endOrigin);
+
+    var dim = this.getDimension();
+    var filter = null;
+
+    if (splash) {
+      if (this.value != null) {
+        filter = {};
+        filter[dim] = this.formatters.data(this.value);
+      }
+    } else {
+      var gte = void 0,
+          lte = void 0;
+      if (defaultStart != null) {
+        gte = this.formatters.data(defaultStart);
+      }
+      if (defaultEnd != null) {
+        lte = this.formatters.data(defaultEnd);
+      }
+      if (gte || lte) {
+        filter = {};
+        filter[dim] = {};
+        if (gte) filter[dim]["$gte"] = gte;
+        if (lte) filter[dim]["$lte"] = lte;
+      }
+    }
+    return filter;
+  },
+
+
+  /**
+   * Gets parser for this model
+   * @returns {Function} parser function
+   */
+  getParser: function getParser() {
+    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "data";
+
+    return this.formatters[type].parse;
+  },
+
+
+  /**
+  * Gets formatter for this model
+  * @returns {Function} formatter function
+  */
+  getFormatter: function getFormatter() {
+    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "data";
+
+    return this.formatters[type];
+  },
+
+
+  /**
+   * Gets an array with all time steps for this model
+   * @returns {Array} time array
+   */
+  getAllSteps: function getAllSteps() {
+    if (!this.start || !this.end) {
+      utils.warn("getAllSteps(): invalid start/end time is detected: " + this.start + ", " + this.end);
+      return [];
+    }
+    var hash = "" + this.offset + this.start + this.end + this.step;
+
+    //return if cached
+    if (this.allSteps[hash]) return this.allSteps[hash];
+
+    this.allSteps[hash] = [];
+    var is = this.getIntervalAndStep();
+    var curr = d3["utc" + is.interval].count(this.start, this.end) < this.offset ? new Date(this.start) : d3["utc" + is.interval].offset(this.start, this.offset);
+    while (+curr <= +this.end) {
+      var _is = this.getIntervalAndStep();
+      this.allSteps[hash].push(curr);
+      curr = d3["utc" + _is.interval].offset(curr, _is.step);
+    }
+    return this.allSteps[hash];
+  },
+
+
+  /**
+   * Snaps the time to integer
+   * possible inputs are "start", "end", "value". "value" is default
+   */
+  snap: function snap(what) {
+    if (!this.round) return;
+    if (what == null) what = "value";
+    var op = "round";
+    if (this.round === "ceil") op = "ceil";
+    if (this.round === "floor") op = "floor";
+    var is = this.getIntervalAndStep();
+    var time = d3["utc" + is.interval][op](this[what]);
+    if (this.value - time != 0 || this.value - this.start == 0 || this.value - this.end == 0) {
+      this.set(what, time, true); //3rd argumennt forces update
+    }
+  },
+
+
+  /**
+   * Starts playing the time, initializing the interval
+   */
+  _startPlaying: function _startPlaying() {
+    //don't play if it's not playable
+    if (!this.playable) return;
+
+    var _this = this;
+
+    //go to start if we start from end point
+    if (this.value >= this.endSelected) {
+      _this.getModelObject("value").set(_this.startSelected, null, false /*make change non-persistent for URL and history*/);
+    } else {
+      //the assumption is that the time is already snapped when we start playing
+      //because only dragging the timeslider can un-snap the time, and it snaps on drag.end
+      //so we don't need this line. let's see if we survive without.
+      //as a consequence, the first time update in playing sequence will have this.playing flag up
+      //so the bubble chart will zoom in smoothly. Closes #1213
+      //this.snap();
+    }
+    this.set("playing", true, null, false);
+    this.playInterval(this.immediatePlay);
+
+    this.trigger("play");
+  },
+  playInterval: function playInterval(immediatePlay) {
+    if (!this.playing) return;
+    var _this = this;
+    this.delayAnimations = this.delay;
+    if (this.delay < this.delayThresholdX2) this.delayAnimations *= 2;
+    if (this.delay < this.delayThresholdX4) this.delayAnimations *= 2;
+
+    var delayAnimations = immediatePlay ? 1 : this.delayAnimations;
+
+    this._intervals.setInterval("playInterval_" + this._id, function () {
+      // when time is playing and it reached the end
+      if (_this.value >= _this.endSelected) {
+        // if looping
+        if (_this.loop) {
+          // reset time to start, silently
+          _this.getModelObject("value").set(_this.startSelected, null, false /*make change non-persistent for URL and history*/);
+        } else {
+          _this.set("playing", false, null, false);
+        }
+      } else {
+
+        _this._intervals.clearInterval("playInterval_" + _this._id);
+
+        if (_this.postponePause || !_this.playing) {
+          _this.set("playing", false, null, false);
+          _this.postponePause = false;
+          _this.getModelObject("value").set(_this.value, true, true /*force the change and make it persistent for URL and history*/);
+        } else {
+          var is = _this.getIntervalAndStep();
+          if (_this.delay < _this.delayThresholdX2) is.step *= 2;
+          if (_this.delay < _this.delayThresholdX4) is.step *= 2;
+          var time = d3["utc" + is.interval].offset(_this.value, is.step);
+          if (time >= _this.endSelected) {
+            // if no playing needed anymore then make the last update persistent and not overshooting
+            _this.getModelObject("value").set(_this.endSelected, null, true /*force the change and make it persistent for URL and history*/);
+          } else {
+            _this.getModelObject("value").set(time, null, false /*make change non-persistent for URL and history*/);
+          }
+          _this.playInterval();
+        }
+      }
+    }, delayAnimations);
+  },
+  incrementTime: function incrementTime(time) {
+    var is = this.getIntervalAndStep();
+    return d3["utc" + is.interval].offset(time, is.step);
+  },
+  decrementTime: function decrementTime(time) {
+    var is = this.getIntervalAndStep();
+    return d3["utc" + is.interval].offset(time, -is.step);
+  },
+
+
+  /**
+   * Stops playing the time, clearing the interval
+   */
+  _stopPlaying: function _stopPlaying() {
+    this._intervals.clearInterval("playInterval_" + this._id);
+    //this.snap();
+    this.trigger("pause");
+  }
+});
+
+/*
+ * Week Format to format and parse dates
+ * Conforms with ISO8601
+ * Follows format: YYYYwWW: 2015w04, 3845w34, 0020w53
+ */
+function weekFormat() {
+
+  var format = function format(d) {
+    return formatWeekYear(d) + "w" + formatWeek(d);
+  };
+
+  format.parse = function parse(dateString) {
+    var matchedDate = dateString.match(/^(\d{4})w(\d{2})$/);
+    return matchedDate ? getDateFromWeek(matchedDate[1], matchedDate[2]) : null;
+  };
+
+  var formatWeekYear = function formatWeekYear(d) {
+    if (!(d instanceof Date)) d = new Date(+d);
+    return new Date(+d + (4 - (d.getUTCDay() || 7)) * 86400000).getUTCFullYear();
+  };
+
+  var formatWeek = function formatWeek(d) {
+    if (!(d instanceof Date)) d = new Date(+d);
+    var quote = new Date(+d + (4 - (d.getUTCDay() || 7)) * 86400000);
+    var week = Math.ceil(((quote.getTime() - quote.setUTCMonth(0, 1)) / 86400000 + 1) / 7);
+    return week < 10 ? "0" + week : week;
+  };
+
+  var getDateFromWeek = function getDateFromWeek(p1, p2) {
+    var week = parseInt(p2);
+    var year = p1;
+    var startDateOfYear = new Date(); // always 4th of January (according to standard ISO 8601)
+    startDateOfYear.setUTCFullYear(year);
+    startDateOfYear.setUTCMonth(0);
+    startDateOfYear.setUTCDate(4);
+    var startDayOfWeek = startDateOfYear.getUTCDay() || 7;
+    var dayOfWeek = 1; // Monday === 1
+    var dayOfYear = week * 7 + dayOfWeek - (startDayOfWeek + 4);
+
+    var date = formats["year"].data.parse(year);
+    date = new Date(date.getTime() + dayOfYear * 24 * 60 * 60 * 1000);
+
+    return date;
+  };
+
+  return format;
+}
+
+/*
+ * Quarter Format to format and parse quarter dates
+ * A quarter is the month%3
+ * Follows format: YYYYqQ: 2015q4, 5847q1, 0040q2
+ */
+function quarterFormat() {
+
+  var format = function format(d) {
+    return formats.year.data(d) + "q" + formatQuarter(d);
+  };
+
+  format.parse = function (dateString) {
+    var matchedDate = dateString.match(/^(\d{4})q(\d)$/);
+    return matchedDate ? getDateFromQuarter(matchedDate[1], matchedDate[2]) : null;
+  };
+
+  var formatQuarter = function formatQuarter(d) {
+    if (!(d instanceof Date)) d = new Date(+d);
+    return (d.getUTCMonth() / 3 | 0) + 1;
+  };
+
+  var getDateFromQuarter = function getDateFromQuarter(p1, p2) {
+    var quarter = parseInt(p2);
+    var month = 3 * quarter - 2; // first month in quarter
+    var year = p1;
+    return formats.month.data.parse([year, (month < 9 ? "0" : "") + month].join("-"));
+  };
+
+  return format;
+}
+
+exports.default = TimeModel;
+
+/***/ }),
+/* 154 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _model = __webpack_require__(49);
+
+var _model2 = _interopRequireDefault(_model);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+//classes are vzb-portrait, vzb-landscape...
+var class_prefix = "vzb-";
+var class_presentation = "presentation";
+var class_rtl = "rtl";
+var class_portrait = "vzb-portrait";
+var class_landscape = "vzb-landscape";
+
+var UI = _model2.default.extend({
+
+  screen_profiles: {
+    small: {
+      min_width: 0,
+      min_height: 0
+    },
+    medium: {
+      min_width: 600,
+      min_height: 400
+    },
+    large: {
+      min_width: 900,
+      min_height: 520
+    }
+  },
+
+  getClassDefaults: function getClassDefaults() {
+    var defaults = {
+      presentation: false,
+      buttons: [],
+      dialogs: {
+        popup: [],
+        sidebar: [],
+        moreoptions: []
+      },
+      splash: false
+    };
+    return utils.deepExtend(this._super(), defaults);
+  },
+
+
+  /**
+   * Initializes the layout manager
+   */
+  init: function init(name, values, parent, bind) {
+
+    this._type = "ui";
+    this._container = null;
+    //dom element
+    this._curr_profile = "small";
+    this._prev_size = {};
+
+    //resize when window resizes
+    this.resizeHandler = this.resizeHandler.bind(this);
+    window.addEventListener("resize", this.resizeHandler);
+    bind["change:presentation"] = this.updatePresentation.bind(this);
+
+    this._super(name, values, parent, bind);
+
+    //TODO: remove later if IOS >10.3.2
+    //https://openradar.appspot.com/31725316
+    var detectIOS_10_3 = function detectIOS_10_3() {
+      var version = /(?:iPad|iPhone|iPod).+OS\s+(\d+)_(\d+)/.exec(navigator.userAgent);
+      return version && +version[1] >= 10 && +version[2] > 2 && !window.MSStream;
+    };
+    if (detectIOS_10_3()) {
+      this.setSize = utils.debounce(this.setSize, 500);
+    }
+  },
+  resizeHandler: function resizeHandler() {
+    var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    if (this._container) {
+      this.setSize(args.force || false);
+    }
+  },
+
+
+  /**
+   * Calculates the size of the newly resized container
+   */
+  setSize: function setSize(force) {
+    var _this = this;
+    var width = this._container.clientWidth;
+    var height = this._container.clientHeight;
+
+    /**
+     * issue #1118
+     * check if device is iPhone then add top margin for searchbar if it visible
+     */
+    if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) // browser is safari
+    && navigator.userAgent.match(/iPhone/i) // checking device
+    ) {
+        this._container.style.top = 0;
+        if (this._container.clientWidth > this._container.clientHeight // landscape mode
+        && this._container.clientWidth < 700) {
+          // small device
+          var bodyHeight = this._container.clientHeight;
+          var windowHeight = window.innerHeight;
+          if (2 < bodyHeight - windowHeight && bodyHeight - windowHeight <= 45) {
+            // check searchbar is visible
+            this._container.style.top = 44 + "px";
+            document.body.scrollTop = 44; // scrolling empty space
+          }
+        }
+      }
+
+    if (!force && this._prev_size && this._prev_size.width === width && this._prev_size.height === height || !width || !height) {
+      return;
+    }
+
+    // choose profile depending on size
+    utils.forEach(this.screen_profiles, function (range, size) {
+      //remove class
+      utils.removeClass(_this._container, class_prefix + size);
+      //find best fit
+      if (width >= range.min_width && height >= range.min_height) {
+        _this._curr_profile = size;
+      }
+    });
+
+    //update size class
+    utils.addClass(this._container, class_prefix + this._curr_profile);
+
+    //toggle, untoggle classes based on orientation
+    utils.classed(this._container, class_portrait, width < height);
+    utils.classed(this._container, class_landscape, !(width < height));
+
+    this._prev_size.width = width;
+    this._prev_size.height = height;
+    this.trigger("resize");
+  },
+
+
+  /**
+   * Sets the container for this layout
+   * @param container DOM element
+   */
+  setContainer: function setContainer(container) {
+    if (!container.clientWidth || !container.clientHeight) utils.warn("Vizabi is being initialised with a container of incorrect width or height. While this may be handled without a crash, it's not considered a healthy behavior. You should call Vizabi(placeholder,...) function when placeholder is not display:none and has some >0 !=auto width and height");
+
+    this._container = container;
+    this.setSize();
+    this.updatePresentation();
+  },
+
+
+  /**
+   * Sets the presentation mode for this layout
+   * @param {Bool} presentation mode on or off
+   */
+  updatePresentation: function updatePresentation() {
+    utils.classed(this._container, class_prefix + class_presentation, this.presentation);
+    this.trigger("resize");
+  },
+  getPresentationMode: function getPresentationMode() {
+    return this.presentation;
+  },
+  setRTL: function setRTL(flag) {
+    utils.classed(this._container, class_prefix + class_rtl, flag);
+  },
+
+
+  /**
+   * Gets the current selected profile
+   * @returns {String} name of current profile
+   */
+  currentProfile: function currentProfile() {
+    return this._curr_profile;
+  },
+  clear: function clear() {
+    window.removeEventListener("resize", this.resizeHandler);
+  }
+});
+
+exports.default = UI;
+
+/***/ }),
+/* 155 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = genericLog;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+//  d3.scaleGenericlog
+function genericLog() {
+  return function d3_scale_genericLog(logScale) {
+    var _this = this;
+    var scales = [];
+    var domainParts = [];
+    var eps = 0.1;
+    var delta = 5;
+    var domain = logScale.domain();
+    var range = logScale.range();
+    var interpolator = null;
+    var rangePointingForward = void 0,
+        domainPointingForward = void 0;
+
+    var abs = function abs(arg) {
+      if (arg instanceof Array) return arg.map(function (d) {
+        return Math.abs(d);
+      });
+      return Math.abs(arg);
+    };
+
+    var _buildLinearScale = function _buildLinearScale(fakeDomain, fakeRange) {
+      return {
+        domain: fakeDomain,
+        sign: 1,
+        range: fakeRange,
+        scale: d3.scaleLinear().domain(fakeDomain).range(fakeRange)
+      };
+    };
+
+    var _buildLogScale = function _buildLogScale(fakeDomain, fakeRange, revertDomain) {
+      var normalizedDomain = fakeDomain;
+      //var normalizedRange = fakeRange.slice(0);
+      if (revertDomain) {
+        normalizedDomain = abs(fakeDomain);
+        //fakeRange.reverse();
+      }
+      return {
+        domain: fakeDomain,
+        sign: revertDomain ? -1 : 1,
+        range: fakeRange,
+        scale: d3.scaleLog().domain(normalizedDomain).range(fakeRange)
+      };
+    };
+
+    var buildScales = function buildScales() {
+      rangePointingForward = range[0] < range[range.length - 1];
+      var rangePointingSign = rangePointingForward ? 1 : -1;
+      scales = [];
+      if (domainParts.length == 1) {
+        if (domainParts[0][0] <= 0 && domainParts[0][1] >= 0) {
+          scales = [_buildLinearScale(domainParts[0], range)];
+        } else {
+          scales = [_buildLogScale(domainParts[0], range, domainParts[0][0] <= 0)];
+        }
+      } else {
+        var maxDomain = d3.max(abs(domain));
+        var rangeLength = abs(d3.max(range) - d3.min(range));
+        var rangePointKoef = 1;
+        var firstRangePoint = 0,
+            secondRangePoint = 0,
+            firstEps = 0,
+            secondEps = 0;
+        logScale.domain([eps, maxDomain]).range([0, rangeLength]);
+        var minRangePoint = delta; //logScale(eps * 2);
+        if (domain[0] != 0 && abs(domain[0]) > eps) firstRangePoint = logScale(abs(domain[0]));
+        if (domain[domain.length - 1] != 0 && abs(domain.length - 1) > eps) secondRangePoint = logScale(abs(domain[domain.length - 1]));
+
+        if (abs(domain[0]) > eps) firstEps = minRangePoint;
+
+        if (abs(domain[domain.length - 1]) > eps) secondEps = minRangePoint;
+
+        rangeLength = rangeLength - firstEps - secondEps;
+        if (secondRangePoint != 0) rangePointKoef = abs(firstRangePoint / secondRangePoint);
+
+        var point1 = void 0,
+            point2 = void 0;
+        if (domainParts.length == 2) {
+          // example: [-eps..0,eps][eps, val]
+          if (domain[0] == 0 || abs(domain[0]) <= eps) {
+            point1 = range[0] + firstRangePoint * rangePointKoef * rangePointingSign + secondEps * rangePointingSign;
+            scales = [_buildLinearScale(domainParts[0], [range[0], point1]), _buildLogScale(domainParts[1], [point1, range[range.length - 1]], !domainPointingForward)];
+          } else if (domain[domain.length - 1] == 0 || abs(domain[domain.length - 1]) <= eps) {
+            // example: [-val,-eps][-eps, 0..eps]
+            point1 = range[range.length - 1] - (firstEps + secondEps) * rangePointKoef * rangePointingSign;
+            scales = [_buildLogScale(domainParts[0], [range[0], point1], domainPointingForward), _buildLinearScale(domainParts[1], [point1, range[range.length - 1]])];
+          }
+        } else {
+          point1 = range[0] + rangeLength / (1 / rangePointKoef + 1) * rangePointingSign;
+          point2 = range[0] + (rangeLength / (1 / rangePointKoef + 1) + firstEps + secondEps) * rangePointingSign;
+          scales = [_buildLogScale(domainParts[0], [range[0], point1], domainPointingForward), _buildLinearScale(domainParts[1], [point1, point2]), _buildLogScale(domainParts[2], [point2, range[range.length - 1]], !domainPointingForward)];
+        }
+      }
+    };
+
+    var buildDomain = function buildDomain() {
+      domainPointingForward = domain[0] < domain[domain.length - 1];
+      domainParts = [];
+      if (d3.min(domain) > 0 && d3.max(domain) > 0 || d3.min(domain) < 0 && d3.max(domain) < 0) {
+        domainParts = [domain];
+      } else {
+        var start = void 0,
+            end = void 0;
+        if (domainPointingForward) {
+          start = domain[0];
+          end = domain[domain.length - 1];
+        } else {
+          start = domain[domain.length - 1];
+          end = domain[0];
+        }
+        var _addSubdomain = function _addSubdomain(first, second) {
+          if (domainPointingForward) {
+            domainParts.push([first, second]);
+          } else {
+            domainParts.unshift([second, first]);
+          }
+        };
+        while (start != end) {
+          if (end <= -eps || start >= -eps && end <= eps || start >= eps) {
+            _addSubdomain(start, end);
+            start = end;
+          } else if (start < -eps && end >= -eps) {
+            _addSubdomain(start, -eps);
+            start = -eps;
+          } else if (start >= -eps && end >= eps) {
+            _addSubdomain(start, eps);
+            start = eps;
+          } else {
+            console.warn("Something wrong while build subdomains: " + start + " " + end);
+            start = end;
+          }
+        }
+      }
+      buildScales();
+    };
+
+    var _getScaleByDomain = function _getScaleByDomain(x) {
+      if (domainPointingForward) {
+        if (x < domain[0]) {
+          return scales[0];
+        } else if (x > domain[domain.length - 1]) {
+          return scales[scales.length - 1];
+        }
+
+        for (var i = 0; i < scales.length; i++) {
+          if (x >= scales[i].domain[0] && x <= scales[i].domain[scales[i].domain.length - 1]) {
+            return scales[i];
+          }
+        }
+      } else {
+        if (x > domain[0]) {
+          return scales[0];
+        } else if (x < domain[domain.length - 1]) {
+          return scales[scales.length - 1];
+        }
+
+        for (var _i = 0; _i < scales.length; _i++) {
+          if (x <= scales[_i].domain[0] && x >= scales[_i].domain[scales[_i].domain.length - 1]) {
+            return scales[_i];
+          }
+        }
+      }
+    };
+
+    var getScaleByRange = function getScaleByRange(x) {
+      if (rangePointingForward) {
+        if (x < range[0]) {
+          return scales[0];
+        } else if (x > range[range.length - 1]) {
+          return scales[scales.length - 1];
+        }
+
+        for (var i = 0; i < scales.length; i++) {
+          if (x >= scales[i].range[0] && x <= scales[i].range[scales[i].range.length - 1]) {
+            return scales[i];
+          }
+        }
+      } else {
+        if (x > range[0]) {
+          return scales[0];
+        } else if (x < range[range.length - 1]) {
+          return scales[scales.length - 1];
+        }
+
+        for (var _i2 = 0; _i2 < scales.length; _i2++) {
+          if (x <= scales[_i2].range[0] && x >= scales[_i2].range[1]) {
+            return scales[_i2];
+          }
+        }
+      }
+    };
+
+    //polyfill for IE11
+    Math.sign = Math.sign || function (x) {
+      x = +x;
+      if (x === 0 || isNaN(x)) {
+        return x;
+      }
+      return x > 0 ? 1 : -1;
+    };
+
+    function scale(x) {
+      var currScale = _getScaleByDomain(x);
+
+      return interpolator ? interpolator(currScale.scale(x * currScale.sign)) : currScale.scale(x * currScale.sign);
+    }
+
+    scale.eps = function (arg) {
+      if (!arguments.length) return eps;
+      eps = arg;
+      scale.domain(domain);
+      return scale;
+    };
+
+    scale.delta = function (arg) {
+      if (!arguments.length) return delta;
+      delta = arg;
+      scale.range(range);
+      return scale;
+    };
+
+    scale.domain = function (arg) {
+      if (!arguments.length) return domain;
+
+      // this is an internal array, it will be modified. the input _arg should stay intact
+      switch (arg.length) {
+        // if no values are given, reset input to the default domain (do nothing)
+        case 0:
+          arg = domain;
+          break;
+        // use the given value as a center, get the domain /2 and *2 around it
+        case 1:
+          arg = [arg[0] / 2, arg[0] * 2];
+          break;
+      }
+      //if the domain is just a single value
+      if (arg[0] == arg[arg.length - 1]) {
+        arg[0] /= 2;
+        arg[arg.length - 1] = arg[arg.length - 1] * 2;
+      }
+      domain = arg;
+      var min = d3.min(abs(domain).filter(function (val) {
+        return !!val;
+      }));
+      if (min) eps = Math.min(eps, min / 100);
+      buildDomain();
+      return scale;
+    };
+
+    scale.range = function (arg, force) {
+      if (!arguments.length) return interpolator ? interpolator.range() : range;
+
+      switch (arg.length) {
+        // reset input to the default range
+        case 0:
+          arg = range;
+          break;
+        // use the only value as a center, get the range ±100 around it
+        case 1:
+          arg = [arg[0] - 100, arg[0] + 100];
+          break;
+        // two is the standard case. do nothing
+      }
+
+      //console.log("LOG and LIN range:", logScale.range(), linScale.range());
+      if (interpolator && !force) {
+        interpolator.range(arg);
+      } else {
+        range = arg;
+        var min = d3.min(abs(range).filter(function (val) {
+          return !!val;
+        }));
+
+        if (min) delta = Math.min(delta, min / 100);
+        buildScales();
+      }
+      return scale;
+    };
+
+    scale.interpolate = function (arg) {
+      var interpolatorDomain = domain;
+      if (domainParts.length > 1) {
+        var _domain = domain;
+        var _range = range;
+        var limits = [domain[0], domain[domain.length - 1]];
+        scale.domain(limits).range(limits);
+        interpolatorDomain = _domain.map(function (d) {
+          return scale(d);
+        });
+        scale.domain(_domain).range(_range);
+      }
+      interpolator = d3.scaleLinear().domain(interpolatorDomain).range(range).interpolate(arg);
+      scale.range(interpolator.domain(), true);
+      return scale;
+    };
+
+    scale.invert = function (arg) {
+      var currScale = getScaleByRange(arg);
+      return currScale.scale.invert(arg) * currScale.sign;
+    };
+
+    scale.ticks = function (arg) {
+      var partTicks = void 0;
+      var ticks = [];
+      for (var i = 0; i < scales.length; i++) {
+        if (scales[i].sign == -1) {
+          partTicks = scales[i].scale.ticks().reverse().map(function (val) {
+            return val * -1;
+          });
+        } else {
+          partTicks = scales[i].scale.ticks();
+        }
+        if (ticks.length > 0 && partTicks.length > 0 && ticks[ticks.length - 1] == partTicks[0]) {
+          partTicks.splice(0, 1);
+        }
+        ticks.push.apply(ticks, _toConsumableArray(partTicks));
+      }
+      return ticks;
+    };
+
+    scale.copy = function () {
+      return d3_scale_genericLog(logScale).domain(domain).range(range).delta(delta).eps(eps);
+    };
+
+    return d3.rebind(scale, logScale, "base", "rangeRound", "clamp", "nice", "tickFormat");
+  }(d3.scaleLog().domain([0.1, 200]).range([0, 1000]));
+}
+
+/***/ }),
+/* 156 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+function detectTouchEvent(element, onTap, onLongTap) {
+  var start;
+  var coordX;
+  var coordY;
+  var namespace = onTap ? '.onTap' : '.onLongTap';
+  d3.select(element).on('touchstart' + namespace, function (d, i) {
+    start = d3.event.timeStamp;
+    coordX = d3.event.changedTouches[0].screenX;
+    coordY = d3.event.changedTouches[0].screenY;
+  }).on('touchend' + namespace, function (d, i) {
+    coordX = Math.abs(coordX - d3.event.changedTouches[0].screenX);
+    coordY = Math.abs(coordY - d3.event.changedTouches[0].screenY);
+    if (coordX < 5 && coordY < 5) {
+      if (d3.event.timeStamp - start < 500) return onTap ? onTap(d, i) : undefined;
+      return onLongTap ? onLongTap(d, i) : undefined;
+    } else return undefined;
+  });
+}
+
+//d3.selection.prototype.onTap
+var onTap = function onTap(callback) {
+  return this.each(function () {
+    detectTouchEvent(this, callback);
+  });
+};
+
+//d3.selection.prototype.onLongTap
+var onLongTap = function onLongTap(callback) {
+  return this.each(function () {
+    detectTouchEvent(this, null, callback);
+  });
+};
+
+exports.default = {
+  onTap: onTap,
+  onLongTap: onLongTap
+};
+exports.onTap = onTap;
+exports.onLongTap = onLongTap;
+
+/***/ }),
+/* 157 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _parseDecimalNumber = __webpack_require__(397);
+
+var _parseDecimalNumber2 = _interopRequireDefault(_parseDecimalNumber);
+
+var _reader = __webpack_require__(75);
+
+var _reader2 = _interopRequireDefault(_reader);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var cached = {};
+
+var CSVReader = _reader2.default.extend({
+
+  _name: "csv",
+
+  /**
+   * Initializes the reader.
+   * @param {Object} readerInfo Information about the reader
+   */
+  init: function init(readerInfo) {
+    var _this = this;
+
+    this._data = [];
+    this._lastModified = readerInfo.lastModified || "";
+    this._basepath = readerInfo.path;
+    this.delimiter = readerInfo.delimiter;
+    this.keySize = readerInfo.keySize || 1;
+    this.assetsPath = readerInfo.assetsPath || "";
+
+    this._parseStrategies = [].concat(_toConsumableArray([",.", ".,"].map(function (separator) {
+      return _this._createParseStrategy(separator);
+    })), [function (number) {
+      return number;
+    }]);
+
+    Object.assign(this.ERRORS, {
+      WRONG_TIME_COLUMN_OR_UNITS: "reader/error/wrongTimeUnitsOrColumn",
+      NOT_ENOUGH_ROWS_IN_FILE: "reader/error/notEnoughRows",
+      UNDEFINED_DELIMITER: "reader/error/undefinedDelimiter",
+      EMPTY_HEADERS: "reader/error/emptyHeaders",
+      DIFFERENT_SEPARATORS: "reader/error/differentSeparators"
+    });
+  },
+  ensureDataIsCorrect: function ensureDataIsCorrect(_ref, parsers) {
+    var columns = _ref.columns,
+        rows = _ref.rows;
+
+    var timeKey = columns[this.keySize];
+
+    var _rows = _slicedToArray(rows, 1),
+        firstRow = _rows[0];
+
+    var parser = parsers[timeKey];
+
+    var time = firstRow[timeKey].trim();
+    if (parser && !parser(time)) {
+      throw this.error(this.ERRORS.WRONG_TIME_COLUMN_OR_UNITS, undefined, {
+        currentYear: new Date().getFullYear(),
+        foundYear: time
+      });
+    }
+
+    if (!columns.filter(Boolean).length) {
+      throw this.error(this.ERRORS.EMPTY_HEADERS);
+    }
+  },
+
+
+  /**
+   * This function returns info about the dataset
+   * in case of CSV reader it's just the name of the file
+   * @returns {object} object of info about the dataset
+   */
+  getDatasetInfo: function getDatasetInfo() {
+    return { name: this._basepath.split("/").pop() };
+  },
+  load: function load() {
+    var _this2 = this;
+
+    var path = this._basepath,
+        _lastModified = this._lastModified;
+
+
+    return new Promise(function (resolve, reject) {
+      var cachedData = cached[path + _lastModified];
+
+      if (cachedData) {
+        resolve(cachedData);
+      } else {
+        d3.text(path).get(function (error, text) {
+          if (!text) {
+            return reject("No permissions or empty file: " + path + ". " + error);
+          }
+
+          if (error) {
+            return reject("Error happened while loading csv file: " + path + ". " + error);
+          }
+
+          try {
+            var _delimiter = _this2.delimiter,
+                delimiter = _delimiter === undefined ? _this2._guessDelimiter(text) : _delimiter;
+
+            var parser = d3.dsvFormat(delimiter);
+            var rows = parser.parse(text, function (row) {
+              return Object.keys(row).every(function (key) {
+                return !row[key];
+              }) ? null : row;
+            });
+            var columns = rows.columns;
+
+
+            var result = { columns: columns, rows: rows };
+            cached[path + _lastModified] = result;
+            resolve(result);
+          } catch (e) {
+            return reject(e);
+          }
+        });
+      }
+    });
+  },
+  getAsset: function getAsset(asset) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var path = this.assetsPath + asset;
+
+    return new Promise(function (resolve, reject) {
+      d3.json(path).get(function (error, text) {
+        if (!text) return reject("No permissions or empty file: " + path + ". " + error);
+        if (error) return reject(error);
+        resolve(text);
+      });
+    });
+  },
+  _guessDelimiter: function _guessDelimiter(text) {
+    var stringsToCheck = 2;
+    var rows = this._getRows(text.replace(/"[^\r]*?"/g, ""), stringsToCheck);
+
+    if (rows.length !== stringsToCheck) {
+      throw this.error(this.ERRORS.NOT_ENOUGH_ROWS_IN_FILE);
+    }
+
+    var _rows2 = _slicedToArray(rows, 2),
+        header = _rows2[0],
+        firstRow = _rows2[1];
+
+    var comma = ",",
+        semicolon = ";";
+
+    var commasCountInHeader = this._countCharsInLine(header, comma);
+    var semicolonsCountInHeader = this._countCharsInLine(header, semicolon);
+    var commasCountInFirstRow = this._countCharsInLine(firstRow, comma);
+    var semicolonsCountInFirstRow = this._countCharsInLine(firstRow, semicolon);
+
+    if (this._checkDelimiters(commasCountInHeader, commasCountInFirstRow, semicolonsCountInHeader, semicolonsCountInFirstRow)) {
+      return comma;
+    } else if (this._checkDelimiters(semicolonsCountInHeader, semicolonsCountInFirstRow, commasCountInHeader, commasCountInFirstRow)) {
+      return semicolon;
+    }
+
+    throw this.error(this.ERRORS.UNDEFINED_DELIMITER);
+  },
+  _checkDelimiters: function _checkDelimiters(firstDelimiterInHeader, firstDelimiterInFirstRow, secondDelimiterInHeader, secondDelimiterInFirstRow) {
+    return firstDelimiterInHeader === firstDelimiterInFirstRow && firstDelimiterInHeader > 1 && (secondDelimiterInHeader !== secondDelimiterInFirstRow || !secondDelimiterInHeader && !secondDelimiterInFirstRow || firstDelimiterInHeader > secondDelimiterInHeader && firstDelimiterInFirstRow > secondDelimiterInFirstRow);
+  },
+  _getRows: function _getRows(text) {
+    var count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+    var re = /([^\r\n]+)/g;
+    var rows = [];
+    var rowsCount = 0;
+
+    var matches = true;
+    while (matches && rowsCount !== count) {
+      matches = re.exec(text);
+      if (matches && matches.length > 1) {
+        ++rowsCount;
+        rows.push(matches[1]);
+      }
+    }
+
+    return rows;
+  },
+  _countCharsInLine: function _countCharsInLine(text, char) {
+    var re = new RegExp(char, "g");
+    var matches = text.match(re);
+    return matches ? matches.length : 0;
+  },
+  _createParseStrategy: function _createParseStrategy(separators) {
+    var _this3 = this;
+
+    return function (value) {
+      var hasOnlyNumbersOrSeparators = !new RegExp("[^-\\d" + separators + "]").test(value);
+
+      if (hasOnlyNumbersOrSeparators && value) {
+        var result = (0, _parseDecimalNumber2.default)(value, separators);
+
+        if (!isFinite(result) || isNaN(result)) {
+          _this3._isParseSuccessful = false;
+        }
+
+        return result;
+      }
+
+      return value;
+    };
+  },
+  _mapRows: function _mapRows(rows, query, parsers) {
+    var mapRow = this._getRowMapper(query, parsers);
+    this._failedParseStrategies = 0;
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = this._parseStrategies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var parseStrategy = _step.value;
+
+        this._parse = parseStrategy;
+        this._isParseSuccessful = true;
+
+        var result = [];
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var row = _step2.value;
+
+            var parsed = mapRow(row);
+
+            if (!this._isParseSuccessful) {
+              this._failedParseStrategies++;
+              break;
+            }
+
+            result.push(parsed);
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+
+        if (this._isParseSuccessful) {
+          if (this._failedParseStrategies === this._parseStrategies.length - 1) {
+            throw this.error(this.ERRORS.DIFFERENT_SEPARATORS);
+          }
+          return result;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+  },
+
+
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
+
+});
+
+exports.default = CSVReader;
+
+/***/ }),
+/* 158 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _brushslider = __webpack_require__(77);
+
+var _brushslider2 = _interopRequireDefault(_brushslider);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI BUBBLE SIZE slider
+ * Reusable bubble size slider
+ */
+
+var OPTIONS = {
+  TEXT_PARAMS: { TOP: 11, LEFT: 10, MAX_WIDTH: 42, MAX_HEIGHT: 16 },
+  THUMB_STROKE_WIDTH: 4
+};
+
+var PROFILES = {
+  "small": {
+    minRadiusPx: 0.5,
+    maxRadiusEm: 0.05
+  },
+  "medium": {
+    minRadiusPx: 1,
+    maxRadiusEm: 0.05
+  },
+  "large": {
+    minRadiusPx: 1,
+    maxRadiusEm: 0.05
+  }
+};
+
+var BubbleSize = _brushslider2.default.extend({
+
+  /**
+   * Initializes the timeslider.
+   * Executed once before any template is rendered.
+   * @param config The options passed to the component
+   * @param context The component's parent
+   */
+  init: function init(config, context) {
+
+    this.name = "bubblesize";
+
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
+
+    //this.template = this.template || require("./bubblesize.html");
+
+
+    this.model_expects = [{
+      name: "submodel",
+      type: "size"
+    }, {
+      name: "locale",
+      type: "locale"
+    }];
+
+    var _this = this;
+
+    this.changeHandler = this.changeHandler.bind(this);
+    this.readyHandler = this.readyHandler.bind(this);
+
+    this.model_binds = {
+      "change:submodel.domainMin": this.changeHandler,
+      "change:submodel.domainMax": this.changeHandler
+    };
+
+    this._setModel = utils.throttle(this._setModel, 50);
+    //contructor is the same as any component
+    this._super(config, context);
+  },
+  changeHandler: function changeHandler(evt, path) {
+    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
+    this._updateLabels(extent);
+    this._super(evt, path);
+  },
+  readyHandler: function readyHandler(evt) {
+    this._super(evt);
+    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
+    this._setLabelsText();
+  },
+
+
+  /**
+   * Executes after the template is loaded and rendered.
+   * Ideally, it contains HTML instantiations related to template
+   * At this point, this.element and this.placeholder are available as a d3 object
+   */
+  readyOnce: function readyOnce() {
+    var _this = this;
+    this._super();
+
+    this.showArcs = _this.model.submodel.showArcs !== false;
+
+    this.padding.bottom = this.options.BAR_WIDTH + this.options.TEXT_PARAMS.MAX_HEIGHT;
+
+    //For return to round thumbs
+    //var thumbArc = d3.arc()
+    //  .outerRadius(thumbHeight * 0.5)
+    //  .startAngle(0)
+    //  .endAngle(2 * Math.PI)
+
+    //For return to circles
+    //.attr("d", "M0 0 l" + thumbHeight + " " + (-thumbHeight * 0.5) + "v" + thumbHeight + "Z")
+
+    //For return to round thumbs
+    //.attr("d", thumbArc)
+
+    if (_this.showArcs) {
+      this.sliderEl.selectAll(".vzb-bs-slider-thumb-arc").data([0, 0]).enter().append("path").attr("class", "vzb-bs-slider-thumb-arc");
+    }
+
+    this.sliderArcsEl = this.sliderEl.selectAll(".vzb-bs-slider-thumb-arc");
+
+    this.sliderLabelsWrapperEl = this.sliderEl.append("g");
+    this.sliderLabelsWrapperEl.selectAll("text").data([0, 0]).enter().append("text").attr("class", "vzb-bs-slider-thumb-label").attr("text-anchor", function (d, i) {
+      return i ? "start" : "end";
+    }).attr("dy", function (d, i) {
+      return i ? "-0.7em" : "1.4em";
+    });
+
+    this.sliderLabelsEl = this.sliderEl.selectAll("text.vzb-bs-slider-thumb-label");
+
+    //For return to circles
+    // var circleLabelTransform = function(d, i) {
+    //    var dX = i ? textMargin.h + _this.xScale(d) : -textMargin.h,
+    //        dY = -textMargin.v;
+    //    return "translate(" + (dX) + "," + (dY) + ")";
+    // }
+
+    //const extent = _this.model.submodel.extent || [options.EXTENT_MIN, options.EXTENT_MAX];
+    //this._moveBrush(extent);
+
+    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
+
+    if (this.sizeScaleMinMax) {
+      this._setLabelsText();
+    }
+  },
+  ready: function ready() {
+    this._super();
+    this._updateLabels();
+  },
+  getMinMaxBubbleRadius: function getMinMaxBubbleRadius() {
+    var containerWH = this.root.getVizWidthHeight();
+    var minWH = utils.hypotenuse(containerWH.width, containerWH.height);
+
+    var min = this.profiles[this.getLayoutProfile()].minRadiusPx;
+    var max = this.profiles[this.getLayoutProfile()].maxRadiusEm * minWH;
+    if (min > max) max = min;
+
+    return { min: min, max: max };
+  },
+
+
+  /*
+   * RESIZE:
+   * Executed whenever the container is resized
+   */
+  _updateSize: function _updateSize() {
+    var _this2 = this;
+
+    this._super();
+    this.sliderLabelsWrapperEl.attr("transform", this.isRTL ? "scale(-1,1)" : null);
+    this.sliderLabelsEl.attr("text-anchor", function (d, i) {
+      return (_this2.isRTL ? !i : i) ? "start" : "end";
+    });
+  },
+  _resize: function _resize() {
+    var minMaxBubbleRadius = this.getMinMaxBubbleRadius();
+    var padding = this.element.node().offsetWidth - minMaxBubbleRadius.max * 2;
+    this.padding.top = minMaxBubbleRadius.max + this.options.BAR_WIDTH, this.padding.left = padding * 0.5;
+    this.padding.right = padding * 0.5;
+    this.rescaler.range([minMaxBubbleRadius.min * 2, minMaxBubbleRadius.max * 2]);
+
+    this._super();
+  },
+  _getComponentWidth: function _getComponentWidth() {
+    return this.getMinMaxBubbleRadius().max * 2;
+  },
+  _updateThumbs: function _updateThumbs(extent) {
+    this._updateArcs(extent);
+    this._updateLabels(extent);
+  },
+  _updateArcs: function _updateArcs(s) {
+    if (!this.showArcs) return;
+    var _this = this;
+    var valueArc = d3.arc().outerRadius(function (d) {
+      return _this.rescaler(d) * 0.5;
+    }).innerRadius(function (d) {
+      return _this.rescaler(d) * 0.5;
+    }).startAngle(-Math.PI * 0.5).endAngle(Math.PI * 0.5);
+    this.sliderArcsEl.data(s).attr("d", valueArc).attr("transform", function (d) {
+      return "translate(" + _this.rescaler(d) * 0.5 + ",0)";
+    });
+  },
+  _updateLabels: function _updateLabels(s) {
+    var _this3 = this;
+
+    var _this = this;
+    if (s) {
+      this.sliderLabelsEl.data(s);
+    }
+    this.sliderLabelsEl.attr("transform", function (d, i) {
+      var textMargin = { v: _this3.options.TEXT_PARAMS.TOP, h: _this3.options.TEXT_PARAMS.LEFT };
+      var dX = textMargin.h * (i ? 0.5 : -1.0) + _this.rescaler(d);
+      var dY = 0;
+      return "translate(" + (_this.isRTL ? -1 : 1) * dX + "," + dY + ")";
+    });
+  },
+  _setLabelsText: function _setLabelsText() {
+    var _this = this;
+    var texts = [_this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[0]), _this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[1])];
+    _this.sliderLabelsEl.text(function (d, i) {
+      return texts[i];
+    });
+  }
+});
+
+exports.default = BubbleSize;
+
+/***/ }),
+/* 159 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _brushslider = __webpack_require__(77);
+
+var _brushslider2 = _interopRequireDefault(_brushslider);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI BUBBLE SIZE slider
+ * Reusable bubble size slider
+ */
+
+var OPTIONS = {};
+
+var PROFILES = {
+  "small": {
+    minLabelTextSize: 7,
+    maxLabelTextSize: 21,
+    defaultLabelTextSize: 12
+  },
+  "medium": {
+    minLabelTextSize: 7,
+    maxLabelTextSize: 30,
+    defaultLabelTextSize: 15
+  },
+  "large": {
+    minLabelTextSize: 6,
+    maxLabelTextSize: 48,
+    defaultLabelTextSize: 20
+  }
+};
+
+var SizeSlider = _brushslider2.default.extend({
+
+  /**
+   * Initializes the timeslider.
+   * Executed once before any template is rendered.
+   * @param config The options passed to the component
+   * @param context The component's parent
+   */
+  init: function init(config, context) {
+
+    this.name = "sizeslider";
+
+    var options = utils.extend({}, OPTIONS);
+    this.options = utils.extend(options, this.options || {});
+    var profiles = utils.extend({}, PROFILES);
+    this.profiles = utils.extend(profiles, this.profiles || {});
+
+    //this.template = this.template || require("./sizeslider.html");
+
+    this.propertyName = config.propertyname;
+
+    this.model_expects = [{
+      name: "submodel",
+      type: "size"
+    }, {
+      name: "locale",
+      type: "locale"
+    }];
+
+    var _this = this;
+
+    this.changeHandler = this.changeHandler.bind(this);
+    this.readyHandler = this.readyHandler.bind(this);
+
+    this.model_binds = {
+      "change:submodel.domainMin": this.changeHandler,
+      "change:submodel.domainMax": this.changeHandler
+    };
+
+    this._setModel = utils.throttle(this._setModel, 50);
+    //contructor is the same as any component
+    this._super(config, context);
+  },
+  changeHandler: function changeHandler(evt, path) {
+    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
+    this._updateLabels(extent);
+    this._super(evt, path);
+  },
+  readyHandler: function readyHandler(evt) {
+    this.modelUse = this.model.submodel.use;
+    var extent = this.model.submodel.extent || [this.options.EXTENT_MIN, this.options.EXTENT_MAX];
+    if (this.modelUse != "constant") {
+      this.sizeScaleMinMax = this.model.submodel.getScale().domain();
+      this.sliderEl.selectAll(".w").classed("vzb-hidden", false);
+      this.sliderEl.select(".selection").classed("vzb-hidden", false);
+      this.sliderEl.select(".overlay").classed("vzb-pointerevents-none", false);
+      this._setLabelsText();
+    } else {
+      this.sliderEl.selectAll(".w").classed("vzb-hidden", true);
+      this.sliderEl.select(".selection").classed("vzb-hidden", true);
+      this.sliderEl.select(".overlay").classed("vzb-pointerevents-none", true);
+      if (!this.model.submodel.which) {
+        var p = this.propertyActiveProfile;
+        extent[1] = (p.default - p.min) / (p.max - p.min);
+        this.model.submodel.which = "_default";
+      }
+    }
+    this._moveBrush(extent);
+  },
+
+
+  /**
+   * Executes after the template is loaded and rendered.
+   * Ideally, it contains HTML instantiations related to template
+   * At this point, this.element and this.placeholder are available as a d3 object
+   */
+  readyOnce: function readyOnce() {
+    var _this = this;
+    this._super();
+
+    var options = this.options;
+
+    var barWidth = options.BAR_WIDTH;
+
+    this.propertyActiveProfile = this.getPropertyActiveProfile();
+
+    this.propertyScale = d3.scaleLinear().domain([options.EXTENT_MIN, options.EXTENT_MAX]).range([this.propertyActiveProfile.min, this.propertyActiveProfile.max]).clamp(true);
+
+    this.padding.top = this.propertyActiveProfile.max + barWidth * 1.25;
+
+    this.translator = this.model.locale.getTFunction();
+
+    this.sliderLabelsWrapperEl = this.sliderEl.append("g");
+    this.sliderLabelsWrapperEl.selectAll("text").data([0, 0]).enter().append("text").attr("class", function (d, i) {
+      return "vzb-szs-slider-thumb-label " + (i ? "e" : "w");
+    }).attr("dy", -barWidth * 1.25 + "px");
+
+    this.sliderLabelsEl = this.sliderEl.selectAll("text.vzb-szs-slider-thumb-label");
+
+    this.sizeScaleMinMax = this.model.submodel.getScale().domain();
+
+    if (this.sizeScaleMinMax) {
+      this._setLabelsText();
+    }
+
+    if (this.model._ready) this.readyHandler();
+  },
+  ready: function ready() {
+    this._super();
+    this._updateLabels();
+  },
+  getPropertyActiveProfile: function getPropertyActiveProfile() {
+    var profile = this.profiles[this.getLayoutProfile()];
+    return { min: profile["min" + this.propertyName], max: profile["max" + this.propertyName], default: profile["default" + this.propertyName] };
+  },
+
+
+  /*
+   * RESIZE:
+   * Executed whenever the container is resized
+   */
+  _updateSize: function _updateSize() {
+    var _this2 = this;
+
+    this._super();
+    this.sliderLabelsWrapperEl.attr("transform", this.isRTL ? "scale(-1,1)" : null);
+    this.sliderLabelsEl.attr("text-anchor", function (d, i) {
+      return (_this2.isRTL ? i : !i) ? "start" : "end";
+    });
+  },
+  _resize: function _resize() {
+    this.propertyActiveProfile = this.getPropertyActiveProfile();
+    this.propertyScale.range([this.propertyActiveProfile.min, this.propertyActiveProfile.max]);
+    this.padding.top = this.propertyActiveProfile.max + this.options.BAR_WIDTH * 1.25;
+
+    this._super();
+  },
+  _updateThumbs: function _updateThumbs(extent) {
+    this._updateLabels(extent);
+  },
+  _updateLabels: function _updateLabels(s) {
+    var _this = this;
+    if (s) {
+      this.sliderLabelsEl.data(s);
+    }
+    this.sliderLabelsEl.attr("transform", function (d, i) {
+      var dX = _this.rescaler(i);
+      var dY = 0;
+      return "translate(" + (_this.isRTL ? -1 : 1) * dX + "," + dY + ")";
+    }).attr("font-size", function (d, i) {
+      return _this.propertyScale(d);
+    });
+    if (_this.model.submodel.use === "constant") this.sliderLabelsEl.text(function (d) {
+      return ~~_this.propertyScale(d) + (_this.translator(_this.ui.constantUnit) || "");
+    });
+  },
+  _setLabelsText: function _setLabelsText() {
+    var _this = this;
+    var texts = [_this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[0]), _this.model.submodel.getTickFormatter()(_this.sizeScaleMinMax[1])];
+    _this.sliderLabelsEl.text(function (d, i) {
+      return texts[i];
+    });
+  }
+});
+
+exports.default = SizeSlider;
+
+/***/ }),
+/* 160 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _component = __webpack_require__(5);
+
+var _component2 = _interopRequireDefault(_component);
+
+var _iconset = __webpack_require__(21);
+
+var iconset = _interopRequireWildcard(_iconset);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI BUTTONLIST
+ * Reusable buttonlist component
+ */
+
+//default existing buttons
+var class_active = "vzb-active";
+var class_hidden = "vzb-hidden";
+var class_active_locked = "vzb-active-locked";
+var class_expand_dialog = "vzb-dialog-side";
+var class_hide_btn = "vzb-dialog-side-btn";
+var class_unavailable = "vzb-unavailable";
+var class_vzb_fullscreen = "vzb-force-fullscreen";
+var class_container_fullscreen = "vzb-container-fullscreen";
+
+var ButtonList = _component2.default.extend({
+
+  /**
+   * Initializes the buttonlist
+   * @param config component configuration
+   * @param context component context (parent)
+   */
+  init: function init(config, context) {
+
+    //set properties
+    var _this = this;
+    this.name = this.name || "gapminder-buttonlist";
+    //    this.template = '<div class="vzb-buttonlist"></div>';
+
+    this.model_expects = [{
+      name: "state",
+      type: "model"
+    }, {
+      name: "ui",
+      type: "ui"
+    }, {
+      name: "locale",
+      type: "locale"
+    }];
+
+    this._available_buttons = {
+      "find": {
+        title: "buttons/find",
+        icon: "search",
+        required: false
+      },
+      "show": {
+        title: "buttons/show",
+        icon: "asterisk",
+        required: false
+      },
+      "moreoptions": {
+        title: "buttons/more_options",
+        icon: "gear",
+        required: true
+      },
+      "colors": {
+        title: "buttons/colors",
+        icon: "paintbrush",
+        required: false
+      },
+      "mapcolors": {
+        title: "buttons/mapcolors",
+        icon: "paintbrush",
+        required: false
+      },
+      "size": {
+        title: "buttons/size",
+        icon: "circle",
+        required: false
+      },
+      "zoom": {
+        title: "buttons/zoom",
+        icon: "cursorPlus",
+        required: false
+      },
+      "fullscreen": {
+        title: "buttons/expand",
+        icon: "expand",
+        func: this.toggleFullScreen.bind(this),
+        required: true
+      },
+      "trails": {
+        title: "buttons/trails",
+        icon: "trails",
+        func: this.toggleBubbleTrails.bind(this),
+        required: false,
+        statebind: "ui.chart.trails",
+        statebindfunc: this.setBubbleTrails.bind(this)
+      },
+      "lock": {
+        title: "buttons/lock",
+        icon: "lock",
+        func: this.toggleBubbleLock.bind(this),
+        required: false,
+        statebind: "ui.chart.lockNonSelected",
+        statebindfunc: this.setBubbleLock.bind(this)
+      },
+      "inpercent": {
+        title: "buttons/inpercent",
+        icon: "percent",
+        func: this.toggleInpercent.bind(this),
+        required: false,
+        statebind: "ui.chart.inpercent",
+        statebindfunc: this.setInpercent.bind(this)
+      },
+      "presentation": {
+        title: "buttons/presentation",
+        icon: "presentation",
+        func: this.togglePresentationMode.bind(this),
+        required: false,
+        statebind: "ui.presentation",
+        statebindfunc: this.setPresentationMode.bind(this)
+      },
+      "about": {
+        title: "buttons/about",
+        icon: "about",
+        required: false
+      },
+      "axes": {
+        title: "buttons/axes",
+        icon: "axes",
+        required: false
+      },
+      "axesmc": {
+        title: "buttons/axesmc",
+        icon: "axes",
+        required: false
+      },
+      "stack": {
+        title: "buttons/stack",
+        icon: "stack",
+        required: false
+      },
+      "side": {
+        title: "buttons/side",
+        icon: "side",
+        required: false
+      },
+      "_default": {
+        title: "Button",
+        icon: "asterisk",
+        required: false
+      }
+    };
+
+    this._active_comp = false;
+
+    this.model_binds = {
+      "change:state.marker.select": function changeStateMarkerSelect(evt) {
+        if (!_this._readyOnce) return;
+
+        _this.setBubbleTrails();
+        _this.setBubbleLock();
+        _this._toggleButtons();
+
+        //scroll button list to end if bottons appeared or disappeared
+        // if(_this.entitiesSelected_1 !== (_this.model.state.marker.select.length > 0)) {
+        //   _this.scrollToEnd();
+        // }
+        // _this.entitiesSelected_1 = _this.model.state.marker.select.length > 0;
+      },
+      "change:ui.chart": function changeUiChart(evt, path) {
+        if (!_this._readyOnce) return;
+
+        if (path.indexOf("lockActive") > -1 || path.indexOf("lockUnavailable") > -1) {
+          _this.setBubbleLock();
+        }
+      }
+    };
+
+    // config.ui is same as this.model.ui here but this.model.ui is not yet available because constructor hasn't been called.
+    // can't call constructor earlier because this.model_binds needs to be complete before calling constructor
+    config.ui.buttons.forEach(function (buttonId) {
+      var button = _this._available_buttons[buttonId];
+      if (button && button.statebind) {
+        _this.model_binds["change:" + button.statebind] = function (evt) {
+          if (!_this._readyOnce) return;
+          button.statebindfunc(buttonId, evt.source.value);
+        };
+      }
+    });
+
+    // builds model
+    this._super(config, context);
+
+    this.validatePopupButtons(this.model.ui.buttons, this.model.ui.dialogs);
+  },
+  readyOnce: function readyOnce() {
+    var _this = this;
+
+    this.element = d3.select(this.placeholder);
+    this.element.selectAll("div").remove();
+
+    this.root.findChildByName("gapminder-dialogs").on("close", function (evt, params) {
+      _this.setButtonActive(params.id, false);
+    });
+
+    var button_expand = (this.model.ui.dialogs || {}).sidebar || [];
+
+    // // if button_expand has been passed in with boolean param or array must check and covert to array
+    // if (button_expand){
+    //   this.model.ui.dialogs.sidebar = (button_expand === true) ? this.model.ui.buttons : button_expand;
+    // }
+
+    // if (button_expand && button_expand.length !== 0) {
+    //     d3.select(this.root.element).classed("vzb-dialog-expand-true", true);
+    // }
+
+    var button_list = [].concat(this.model.ui.buttons);
+
+    // (button_expand||[]).forEach(function(button) {
+    //   if (button_list.indexOf(button) === -1) {
+    //     button_list.push(button);
+    //   }
+    // });
+
+    this.model.ui.buttons = button_list;
+
+    //add buttons and render components
+    this._addButtons(button_list, button_expand);
+
+    //store body overflow
+    this._prev_body_overflow = document.body.style.overflow;
+
+    this.setBubbleTrails();
+    this.setBubbleLock();
+    this.setInpercent();
+    this.setPresentationMode();
+
+    this._toggleButtons();
+  },
+  proceedClick: function proceedClick(id) {
+    var _this = this;
+    var btn = _this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+    var classes = btn.attr("class");
+    var btn_config = _this._available_buttons[id];
+
+    if (btn_config && btn_config.func) {
+      btn_config.func(id);
+    } else {
+      var btn_active = classes.indexOf(class_active) === -1;
+
+      btn.classed(class_active, btn_active);
+      var evt = {};
+      evt["id"] = id;
+      evt["active"] = btn_active;
+      _this.trigger("click", evt);
+    }
+  },
+  validatePopupButtons: function validatePopupButtons(buttons, dialogs) {
+    var _this = this;
+
+    var popupDialogs = dialogs.popup;
+    var popupButtons = buttons.filter(function (d) {
+      return _this._available_buttons[d] && !_this._available_buttons[d].func;
+    });
+    for (var i = 0, j = popupButtons.length; i < j; i++) {
+      if (popupDialogs.indexOf(popupButtons[i]) == -1) {
+        return utils.error('Buttonlist: bad buttons config: "' + popupButtons[i] + '" is missing in popups list');
+      }
+    }
+    return false; //all good
+  },
+
+
+  /*
+   * reset buttons show state
+   */
+  _showAllButtons: function _showAllButtons() {
+    // show all existing buttons
+    var _this = this;
+    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
+    buttons.each(function (d, i) {
+      var button = d3.select(this);
+      button.style("display", "");
+    });
+  },
+
+
+  /*
+  * determine which buttons are shown on the buttonlist
+  */
+  _toggleButtons: function _toggleButtons() {
+    var _this = this;
+    var parent = this.parent.element.node ? this.parent.element : d3.select(this.parent.element);
+
+    //HERE
+    var button_expand = (this.model.ui.dialogs || {}).sidebar || [];
+    _this._showAllButtons();
+
+    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
+
+    var container = this.element.node().getBoundingClientRect();
+
+    var not_required = [];
+    var required = [];
+
+    var button_width = 80;
+    var button_height = 80;
+    var container_width = this.element.node().getBoundingClientRect().width;
+    var container_height = this.element.node().getBoundingClientRect().height;
+    var buttons_width = 0;
+    var buttons_height = 0;
+
+    buttons.each(function (d, i) {
+      var button_data = d;
+      var button = d3.select(this);
+      var expandable = button_expand.indexOf(button_data.id) !== -1;
+      var button_margin = { top: parseInt(button.style("margin-top")), right: parseInt(button.style("margin-right")), left: parseInt(button.style("margin-left")), bottom: parseInt(button.style("margin-bottom")) };
+      button_width = button.node().getBoundingClientRect().width + button_margin.right + button_margin.left;
+      button_height = button.node().getBoundingClientRect().height + button_margin.top + button_margin.bottom;
+
+      if (!button.classed(class_hidden)) {
+        if (!expandable || _this.getLayoutProfile() !== "large") {
+          buttons_width += button_width;
+          buttons_height += button_height;
+          //sort buttons between required and not required buttons.
+          // Not required buttons will only be shown if there is space available
+          if (button_data.required) {
+            required.push(button);
+          } else {
+            not_required.push(button);
+          }
+        } else {
+          button.style("display", "none");
+        }
+      }
+    });
+    var width_diff = buttons_width - container_width;
+    var height_diff = buttons_height - container_height;
+    var number_of_buttons = 1;
+
+    //check if container is landscape or portrait
+    // if portrait small or large with expand, use width
+    if (parent.classed("vzb-large") && parent.classed("vzb-dialog-expand-true") || parent.classed("vzb-small") && parent.classed("vzb-portrait")) {
+      //check if the width_diff is small. If it is, add to the container
+      // width, to allow more buttons in a way that is still usable
+      if (width_diff > 0 && width_diff <= 10) {
+        container_width += width_diff;
+      }
+      number_of_buttons = Math.floor(container_width / button_width) - required.length;
+      if (number_of_buttons < 0) {
+        number_of_buttons = 0;
+      }
+      // else, use height
+    } else {
+      //check if the width_diff is small. If it is, add to the container
+      // width, to allow more buttons in a way that is still usable
+      if (height_diff > 0 && height_diff <= 10) {
+        container_height += height_diff;
+      }
+      number_of_buttons = Math.floor(container_height / button_height) - required.length;
+      if (number_of_buttons < 0) {
+        number_of_buttons = 0;
+      }
+    }
+    //change the display property of non required buttons, from right to
+    // left
+    not_required.reverse();
+    var hiddenButtons = [];
+    for (var i = 0, j = not_required.length - number_of_buttons; i < j; i++) {
+      not_required[i].style("display", "none");
+      hiddenButtons.push(not_required[i].attr("data-btn"));
+    }
+
+    var evt = {};
+    evt["hiddenButtons"] = hiddenButtons;
+    _this.trigger("toggle", evt);
+  },
+
+
+  /*
+   * adds buttons configuration to the components and template_data
+   * @param {Array} button_list list of buttons to be added
+   */
+  _addButtons: function _addButtons(button_list, button_expand) {
+    var _this = this;
+    this._components_config = [];
+    var details_btns = [];
+    if (!button_list.length) return;
+    //add a component for each button
+    for (var i = 0; i < button_list.length; i++) {
+
+      var btn = button_list[i];
+      var btn_config = this._available_buttons[btn];
+
+      //add template data
+      var d = btn_config ? btn : "_default";
+      var details_btn = utils.clone(this._available_buttons[d]);
+      if (d == "_default") {
+        details_btn.title = "buttons/" + btn;
+      }
+      details_btn.id = btn;
+      details_btn.icon = iconset[details_btn.icon];
+      details_btns.push(details_btn);
+    }
+
+    var t = this.getTranslationFunction(true);
+
+    this.element.selectAll("button").data(details_btns).enter().append("button").attr("class", function (d) {
+      var cls = "vzb-buttonlist-btn";
+      if (button_expand.length > 0) {
+        if (button_expand.indexOf(d.id) > -1) {
+          cls += " vzb-dialog-side-btn";
+        }
+      }
+
+      return cls;
+    }).attr("data-btn", function (d) {
+      return d.id;
+    }).html(function (btn) {
+      return "<span class='vzb-buttonlist-btn-icon fa'>" + btn.icon + "</span><span class='vzb-buttonlist-btn-title'>" + t(btn.title) + "</span>";
+    });
+
+    var buttons = this.element.selectAll(".vzb-buttonlist-btn");
+
+    //clicking the button
+    buttons.on("click", function () {
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      var id = d3.select(this).attr("data-btn");
+      _this.proceedClick(id);
+    });
+  },
+  scrollToEnd: function scrollToEnd() {
+    var target = 0;
+    var parent = d3.select(".vzb-tool");
+
+    if (parent.classed("vzb-portrait") && parent.classed("vzb-small")) {
+      if (this.model.state.marker.select.length > 0) target = this.element.node().scrollWidth;
+      this.element.node().scrollLeft = target;
+    } else {
+      if (this.model.state.marker.select.length > 0) target = this.element.node().scrollHeight;
+      this.element.node().scrollTop = target;
+    }
+  },
+
+
+  /*
+   * RESIZE:
+   * Executed whenever the container is resized
+   * Ideally, it contains only operations related to size
+   */
+  resize: function resize() {
+    //TODO: what to do when resizing?
+    if (!this.element.selectAll) return utils.warn("buttonlist resize() aborted because element is not yet defined");
+
+    //toggle presentaion off is switch to 'small' profile
+    if (this.getLayoutProfile() === "small" && this.model.ui.presentation) {
+      this.togglePresentationMode();
+    }
+
+    this._toggleButtons();
+  },
+  setButtonActive: function setButtonActive(id, boolActive) {
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+
+    btn.classed(class_active, boolActive);
+  },
+  toggleBubbleTrails: function toggleBubbleTrails() {
+    this.model.ui.chart.trails = !this.model.ui.chart.trails;
+    this.setBubbleTrails();
+  },
+  setBubbleTrails: function setBubbleTrails() {
+    var trails = (this.model.ui.chart || {}).trails;
+    if (!trails && trails !== false) return;
+    var id = "trails";
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+    if (!btn.node()) return utils.warn("setBubbleTrails: no button '" + id + "' found in DOM. doing nothing");
+
+    btn.classed(class_active_locked, trails);
+    btn.classed(class_hidden, this.model.state.marker.select.length == 0);
+  },
+  toggleBubbleLock: function toggleBubbleLock(id) {
+    var active = (this.model.ui.chart || {}).lockActive;
+
+    if (this.model.state.marker.select.length == 0 && !active) return;
+
+    var locked = this.model.ui.chart.lockNonSelected;
+    var time = this.model.state.time;
+    locked = locked ? 0 : time.formatDate(time.value);
+    this.model.ui.chart.lockNonSelected = locked;
+
+    this.setBubbleLock();
+  },
+  setBubbleLock: function setBubbleLock() {
+    var locked = (this.model.ui.chart || {}).lockNonSelected;
+    var active = (this.model.ui.chart || {}).lockActive;
+    var unavailable = (this.model.ui.chart || {}).lockUnavailable || false;
+    if (!locked && locked !== 0) return;
+
+    if (locked !== 0 && this.model.state.marker.select.length === 0 && !active) {
+      locked = this.model.ui.chart.lockNonSelected = 0;
+    }
+
+    var id = "lock";
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+    if (!btn.node()) return utils.warn("setBubbleLock: no button '" + id + "' found in DOM. doing nothing");
+
+    var translator = this.model.locale.getTFunction();
+
+    //btn.classed(class_unavailable, this.model.state.marker.select.length == 0 && !active);
+    btn.classed(class_unavailable, unavailable);
+    if (typeof active === "undefined") {
+      btn.classed(class_hidden, this.model.state.marker.select.length == 0);
+    } else {
+      btn.classed(class_hidden, !active);
+    }
+
+    btn.classed(class_active_locked, locked);
+
+    btn.select(".vzb-buttonlist-btn-icon").html(iconset[locked ? "lock" : "unlock"]);
+
+    btn.select(".vzb-buttonlist-btn-title>span").text(locked ? locked : translator("buttons/lock")).attr("data-vzb-translate", locked ? null : "buttons/lock");
+  },
+  toggleInpercent: function toggleInpercent() {
+    this.model.ui.chart.inpercent = !this.model.ui.chart.inpercent;
+    this.setInpercent();
+  },
+  setInpercent: function setInpercent() {
+    if (typeof (this.model.ui.chart || {}).inpercent === "undefined") return;
+    var id = "inpercent";
+    var translator = this.model.locale.getTFunction();
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+
+    btn.classed(class_active_locked, this.model.ui.chart.inpercent);
+  },
+  togglePresentationMode: function togglePresentationMode() {
+    this.model.ui.presentation = !this.model.ui.presentation;
+    this.setPresentationMode();
+  },
+  setPresentationMode: function setPresentationMode() {
+    var id = "presentation";
+    var translator = this.model.locale.getTFunction();
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+
+    btn.classed(class_active_locked, this.model.ui.presentation);
+  },
+  toggleFullScreen: function toggleFullScreen(id, emulateClick) {
+
+    if (!window) return;
+
+    var component = this;
+    var pholder = component.placeholder;
+    var pholder_found = false;
+    var btn = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']");
+    var fs = !this.model.ui.fullscreen;
+    var body_overflow = fs ? "hidden" : this._prev_body_overflow;
+
+    while (!(pholder_found = utils.hasClass(pholder, "vzb-placeholder"))) {
+      component = component.parent;
+      pholder = component.placeholder;
+    }
+
+    //TODO: figure out a way to avoid fullscreen resize delay in firefox
+    if (fs) {
+      this.resizeInExitHandler = false;
+      launchIntoFullscreen(pholder);
+      subscribeFullscreenChangeEvent.call(this, this.toggleFullScreen.bind(this, id, true));
+    } else {
+      this.resizeInExitHandler = !emulateClick;
+      exitFullscreen.call(this);
+    }
+    utils.classed(pholder, class_vzb_fullscreen, fs);
+    if (typeof container !== "undefined") {
+      utils.classed(container, class_container_fullscreen, fs);
+    }
+
+    this.model.ui.fullscreen = fs;
+    var translator = this.model.locale.getTFunction();
+    btn.classed(class_active_locked, fs);
+
+    btn.select(".vzb-buttonlist-btn-icon").html(iconset[fs ? "unexpand" : "expand"]);
+
+    btn.select(".vzb-buttonlist-btn-title>span").text(translator("buttons/" + (fs ? "unexpand" : "expand"))).attr("data-vzb-translate", "buttons/" + (fs ? "unexpand" : "expand"));
+
+    //restore body overflow
+    document.body.style.overflow = body_overflow;
+
+    if (!this.resizeInExitHandler) this.root.ui.resizeHandler();
+
+    //force window resize event
+    // utils.defer(function() {
+    //   event = window.document.createEvent("HTMLEvents");
+    //   event.initEvent("resize", true, true);
+    //   event.eventName = "resize";
+    //   window.dispatchEvent(event);
+    // });
+  }
+});
+
+function isFullscreen() {
+  if (!window) return false;
+  if (window.document.webkitIsFullScreen !== undefined) return window.document.webkitIsFullScreen;
+  if (window.document.mozFullScreen !== undefined) return window.document.mozFullScreen;
+  if (window.document.msFullscreenElement !== undefined) return window.document.msFullscreenElement;
+
+  return false;
+}
+
+function exitHandler(emulateClickFunc) {
+  if (!isFullscreen()) {
+    removeFullscreenChangeEvent.call(this);
+    if (!this.resizeInExitHandler) {
+      emulateClickFunc();
+    } else {
+      this.root.ui.resizeHandler();
+    }
+  }
+}
+
+function subscribeFullscreenChangeEvent(exitFunc) {
+  if (!window) return;
+  var doc = window.document;
+
+  this.exitFullscreenHandler = exitHandler.bind(this, exitFunc);
+  doc.addEventListener("webkitfullscreenchange", this.exitFullscreenHandler, false);
+  doc.addEventListener("mozfullscreenchange", this.exitFullscreenHandler, false);
+  doc.addEventListener("fullscreenchange", this.exitFullscreenHandler, false);
+  doc.addEventListener("MSFullscreenChange", this.exitFullscreenHandler, false);
+}
+
+function removeFullscreenChangeEvent() {
+  var doc = window.document;
+
+  doc.removeEventListener("webkitfullscreenchange", this.exitFullscreenHandler);
+  doc.removeEventListener("mozfullscreenchange", this.exitFullscreenHandler);
+  doc.removeEventListener("fullscreenchange", this.exitFullscreenHandler);
+  doc.removeEventListener("MSFullscreenChange", this.exitFullscreenHandler);
+}
+
+function launchIntoFullscreen(elem) {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+  } else if (elem.mozRequestFullScreen) {
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen && allowWebkitFullscreenAPI()) {
+    elem.webkitRequestFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen && allowWebkitFullscreenAPI()) {
+    document.webkitExitFullscreen();
+  } else {
+    removeFullscreenChangeEvent.call(this);
+    this.resizeInExitHandler = false;
+  }
+}
+
+function allowWebkitFullscreenAPI() {
+  return !(navigator.vendor && navigator.vendor.indexOf("Apple") > -1 && navigator.userAgent && !navigator.userAgent.match("CriOS"));
+}
+
+exports.default = ButtonList;
+
+/***/ }),
+/* 161 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _buttonlist = __webpack_require__(160);
+
+var _buttonlist2 = _interopRequireDefault(_buttonlist);
+
+var _iconset = __webpack_require__(21);
+
+var iconset = _interopRequireWildcard(_iconset);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI OPTIONSBUTTONLIST
+ * Reusable optionsbuttonlist component
+ */
+
+//default existing buttons
+var class_active = "vzb-active";
+// var class_active_locked = "vzb-active-locked";
+// var class_expand_dialog = "vzb-dialog-side";
+// var class_hide_btn = "vzb-dialog-side-btn";
+// var class_unavailable = "vzb-unavailable";
+// var class_vzb_fullscreen = "vzb-force-fullscreen";
+// var class_container_fullscreen = "vzb-container-fullscreen";
+
+var OptionsButtonList = _buttonlist2.default.extend({
+
+  /**
+   * Initializes the buttonlist
+   * @param config component configuration
+   * @param context component context (parent)
+   */
+  init: function init(config, context) {
+
+    //set properties
+    var _this = this;
+    this.name = "gapminder-optionsbuttonlist";
+
+    this._super(config, context);
+  },
+  readyOnce: function readyOnce() {
+    var _this = this;
+    Object.keys(this._available_buttons).forEach(function (buttonId) {
+      var button = _this._available_buttons[buttonId];
+      button.required = !button.required;
+    });
+
+    this.buttonListComp = this.root.findChildByName("gapminder-buttonlist");
+
+    this.buttonListComp.on("click", function (evt, button) {
+      var btn = _this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + button.id + "']");
+      btn.classed(class_active, button.active);
+    });
+
+    this.buttonListComp.on("toggle", function (evt, params) {
+      var btn = _this.element.selectAll(".vzb-buttonlist-btn");
+      var visibleButton = 0;
+      btn.each(function (d) {
+        var button = d3.select(this);
+        var isHidden = params.hiddenButtons.indexOf(d.id) == -1;
+        button.style("display", isHidden ? "none" : "");
+        if (!isHidden) visibleButton++;
+      });
+    });
+
+    this._super();
+  },
+  proceedClick: function proceedClick(id) {
+    var _this = this;
+    this.buttonListComp.proceedClick(id);
+    var btn_data = this.element.selectAll(".vzb-buttonlist-btn[data-btn='" + id + "']").datum();
+    if (btn_data.func) {
+      setTimeout(function () {
+        _this.root.findChildByName("gapminder-dialogs").closeAllDialogs();
+      }, 200);
+    }
+  },
+  _toggleButtons: function _toggleButtons() {
+    //
+  }
+});
+
+exports.default = OptionsButtonList;
+
+/***/ }),
+/* 162 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+var _component = __webpack_require__(5);
+
+var _component2 = _interopRequireDefault(_component);
+
+var _d = __webpack_require__(163);
+
+var _d2 = _interopRequireDefault(_d);
+
+var _d3 = __webpack_require__(110);
+
+var _d4 = _interopRequireDefault(_d3);
+
+var _iconset = __webpack_require__(21);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/*!
+ * VIZABI BUBBLE COLOR LEGEND COMPONENT
+ */
+
+var ColorLegend = _component2.default.extend({
+  init: function init(config, context) {
+    var _this = this;
+    this.template = '<div class="vzb-cl-outer"></div>';
+    this.name = "colorlegend";
+
+    this.model_expects = [{
+      name: "time",
+      type: "time"
+    }, {
+      name: "entities",
+      type: "entities"
+    }, {
+      name: "marker",
+      type: "marker"
+    }, {
+      name: "color",
+      type: "color"
+    }, {
+      name: "locale",
+      type: "locale"
+    }, {
+      name: "ui",
+      type: "ui"
+    }];
+
+    this.model_binds = {
+      "change:color.scaleType": function changeColorScaleType(evt, path) {
+        if (!_this._readyOnce || _this.colorModel.isDiscrete()) return;
+        _this.updateView();
+      },
+      "change:color.palette": function changeColorPalette(evt, path) {
+        if (!_this._readyOnce || _this.colorModel.isDiscrete() && !_this.frame) return;
+        _this.updateView();
+      },
+      "change:marker.highlight": function changeMarkerHighlight(evt, values) {
+        if (!_this.colorModel.isDiscrete()) return;
+
+        _this.model.marker.getFrame(_this.model.time.value, function (frame) {
+          if (frame) {
+            var _hlEntities = _this.model.marker.getHighlighted(_this.KEY);
+            _this.updateGroupsOpacity(_hlEntities.map(function (d) {
+              return frame[_this.colorModel._name][d];
+            }));
+          } else {
+            _this.updateGroupsOpacity();
+          }
+        });
+      },
+      "change:time.start": function changeTimeStart(evt, original) {
+        if (!_this._readyOnce || _this.model.time.splash) return;
+        if (_this.colorModel.which == _this.model.time.dim) {
+          _this.ready();
+        }
+      },
+      "change:time.end": function changeTimeEnd(evt, original) {
+        if (!_this._readyOnce || _this.model.time.splash) return;
+        if (_this.colorModel.which == _this.model.time.dim) {
+          _this.ready();
+        }
+      },
+      "translate:locale": function translateLocale() {
+        _this._translateSelectDialog(_this.model.locale.getTFunction());
+        _this.colorPicker.translate(_this.model.locale.getTFunction());
+      }
+    };
+
+    //contructor is the same as any component
+    this._super(config, context);
+  },
+  readyOnce: function readyOnce() {
+    var _this = this;
+    this.element = d3.select(this.element);
+
+    //make color in options scrollable
+    d3.select(this.placeholder.parentNode).classed("vzb-dialog-scrollable", true);
+
+    this.colorModel = this.model.color;
+    this.colorlegendMarker = this.colorModel.getColorlegendMarker();
+    if (this.colorlegendMarker) {
+      this.colorlegendMarker.on("ready", function () {
+        _this.ready();
+      });
+    }
+    this.listColorsEl = this.element.append("div").attr("class", "vzb-cl-holder").append("div").attr("class", "vzb-cl-colorlist");
+
+    this.rainbowEl = this.listColorsEl.append("div").attr("class", "vzb-cl-rainbow");
+    this.rainbowCanvasEl = this.rainbowEl.append("canvas");
+    this.minimapEl = this.listColorsEl.append("div").attr("class", "vzb-cl-minimap");
+    this.rainbowLegendEl = this.listColorsEl.append("div").attr("class", "vzb-cl-rainbow-legend");
+    this.rainbowLegendSVG = this.rainbowLegendEl.append("svg");
+    this.rainbowLegendG = this.rainbowLegendSVG.append("g");
+    this.rainbowLegend = null;
+
+    this.labelScaleEl = this.listColorsEl.append("div").attr("class", "vzb-cl-labelscale");
+    this.labelScaleSVG = this.labelScaleEl.append("svg");
+    this.labelScaleG = this.labelScaleSVG.append("g");
+    this.subtitleDiv = this.listColorsEl.append("div").attr("class", "vzb-cl-subtitle");
+    this.subtitleText = this.subtitleDiv.append("span").attr("class", "vzb-cl-subtitle-text");
+
+    this.minimapSVG = this.minimapEl.append("svg");
+    this.minimapG = this.minimapSVG.append("g");
+
+    this.colorPicker = new _d2.default(utils.isArray(this.root.element) ? this.root.element : d3.select(this.root.element));
+
+    this.colorPicker.translate(this.model.locale.getTFunction());
+    this._initSelectDialog();
+  },
+  _initSelectDialog: function _initSelectDialog() {
+    this.moreOptionsHint = this.listColorsEl.append("span").classed("vzb-cl-more-hint vzb-hidden", true);
+
+    this.selectDialog = this.listColorsEl.append("div").classed("vzb-cl-select-dialog vzb-hidden", true);
+    this._initSelectDialogItems();
+    this._translateSelectDialog(this.model.locale.getTFunction());
+  },
+  _initSelectDialogItems: function _initSelectDialogItems() {
+    var _this2 = this;
+
+    this.selectDialogTitle = this.selectDialog.append("div").classed("vzb-cl-select-dialog-title", true);
+
+    this.selectDialog.append("div").classed("vzb-cl-select-dialog-close", true).html(_iconset.close).on("click", function () {
+      return _this2._closeSelectDialog();
+    });
+
+    this.selectAllButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item", true);
+
+    this.removeElseButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item", true);
+
+    this.editColorButton = this.selectDialog.append("div").classed("vzb-cl-select-dialog-item vzb-cl-select-dialog-item-moreoptions", true);
+
+    this.editColorButtonTooltip = this.editColorButton.append("div").classed("vzb-cl-select-dialog-item-tooltip", true);
+  },
+  _translateSelectDialog: function _translateSelectDialog(t) {
+    this.moreOptionsHint.text(t("hints/color/more"));
+    this.selectAllButton.text("✅ " + t("dialogs/color/select-all"));
+    this.removeElseButton.text("🗑️ " + t("dialogs/color/remove-else"));
+    this.editColorButton.text("🎨 " + t("dialogs/color/edit-color"));
+    this.editColorButtonTooltip.text("Dataset author doesn't want you to change this");
+  },
+  _closeSelectDialog: function _closeSelectDialog() {
+    this.selectDialog.classed("vzb-hidden", true);
+  },
+  _bindSelectDialogItems: function _bindSelectDialogItems() {
+    var _this3 = this;
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var index = args[1],
+        indicators = args[2];
+
+    this.selectDialogTitle.text(indicators[index].textContent);
+
+    this.selectAllButton.on("click", function () {
+      var _interact;
+
+      (_interact = _this3._interact()).clickToSelect.apply(_interact, args);
+      _this3._closeSelectDialog();
+    });
+
+    this.removeElseButton.on("click", function () {
+      var _interact2;
+
+      (_interact2 = _this3._interact()).clickToShow.apply(_interact2, args);
+      _this3._closeSelectDialog();
+    });
+
+    this.editColorButton.on("click", function () {
+      var _interact3;
+
+      (_interact3 = _this3._interact()).clickToChangeColor.apply(_interact3, args);
+      _this3._closeSelectDialog();
+    });
+  },
+  ready: function ready() {
+    var _this = this;
+
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
+    this.KEY = this.KEYS.join(",");
+    this.colorlegendDim = this.KEY;
+    this.canShowMap = false;
+
+    if (this.colorModel.isDiscrete() && this.colorModel.use !== "constant" && this.colorlegendMarker) {
+      if (!this.colorlegendMarker._ready) return;
+
+      this.markerKeys = _this.model.marker.getKeys();
+      this.KEY = _this.colorModel.getDataKeys()[0];
+
+      this.colorlegendDim = this.colorModel.getColorlegendEntities().getDimension();
+
+      this.colorlegendMarker.getFrame(this.model.time.value, function (frame) {
+        if (!frame) return utils.warn("colorlegend received empty frame in ready()");
+        _this.frame = frame;
+        _this.canShowMap = utils.keys((_this.frame || {}).hook_geoshape || {}).length;
+
+        _this.colorlegendKeys = _this.colorlegendMarker.getKeys(_this.colorlegendDim);
+
+        _this.colorlegendKeys.forEach(function (d) {
+          if (!((_this.frame || {}).hook_geoshape || {})[d[_this.colorlegendDim]]) _this.canShowMap = false;
+        });
+        _this.updateView();
+        _this.updateGroupsOpacity();
+      });
+      return;
+    }
+
+    _this.updateView();
+    _this.updateGroupsOpacity();
+  },
+  updateView: function updateView() {
+    var _this5 = this;
+
+    if (!this.element.selectAll) return utils.warn("colorlegend resize() aborted because element is not yet defined");
+
+    var _this = this;
+    var KEY = this.KEY;
+
+    var palette = this.colorModel.getPalette();
+    var canShowMap = this.canShowMap;
+
+    var colorlegendKeys = this.colorlegendKeys || [];
+
+    var colorOptions = this.listColorsEl.selectAll(".vzb-cl-option");
+
+    //Hide and show elements of the color legend
+    //Hide color legend entries if showing minimap or if color hook is a constant
+    //or if using a discrete palette that would map to all entities on the chart and therefore will be too long
+    //in the latter case we should show colors in the "find" list instead
+    var hideColorOptions = canShowMap || this.colorModel.which == "_default" || this.colorlegendMarker && this.colorlegendDim == this.KEY && colorlegendKeys.length > 10 && utils.comparePlainObjects(this.colorModel.getColorlegendEntities().getFilter(), this.model.entities.getFilter());
+
+    colorOptions.classed("vzb-hidden", hideColorOptions);
+
+    this._updateSelectDialog();
+
+    //Hide rainbow element if showing minimap or if color is discrete
+    this.rainbowEl.classed("vzb-hidden", this.colorModel.isDiscrete());
+    this.labelScaleEl.classed("vzb-hidden", this.colorModel.isDiscrete());
+    this.rainbowLegendEl.classed("vzb-hidden", this.colorModel.isDiscrete());
+    //Hide minimap if no data to draw it
+    this.minimapEl.classed("vzb-hidden", !canShowMap || !this.colorModel.isDiscrete());
+
+    this.subtitleDiv.classed("vzb-hidden", true);
+    var cScale = this.colorModel.getScale();
+
+    if (!this.colorModel.isDiscrete()) {
+
+      var gradientWidth = this.rainbowEl.node().getBoundingClientRect().width;
+      var paletteKeys = Object.keys(palette).map(parseFloat);
+
+      var domain = void 0;
+      var range = void 0;
+      var formatter = this.colorModel.getTickFormatter();
+      var fitIntoScale = null;
+
+      var paletteLabels = this.colorModel.paletteLabels;
+
+      if (paletteLabels) {
+
+        fitIntoScale = "optimistic";
+
+        domain = paletteLabels.map(function (val) {
+          return parseFloat(val);
+        });
+        var paletteMax = d3.max(domain);
+        range = domain.map(function (val) {
+          return val / paletteMax * gradientWidth;
+        });
+      } else {
+
+        domain = cScale.domain();
+        var _paletteMax = d3.max(paletteKeys);
+        range = paletteKeys.map(function (val) {
+          return val / _paletteMax * gradientWidth;
+        });
+      }
+
+      var labelScaleType = d3.min(domain) <= 0 && d3.max(domain) >= 0 && this.colorModel.scaleType === "log" ? "genericLog" : this.colorModel.scaleType;
+
+      var labelScale = d3["scale" + utils.capitalize(labelScaleType === "time" ? "linear" : labelScaleType)]().domain(domain).range(range);
+
+      var marginLeft = parseInt(this.rainbowEl.style("left"), 10) || 0;
+      var marginRight = parseInt(this.rainbowEl.style("right"), 10) || marginLeft;
+
+      this.labelScaleSVG.style("width", marginLeft + gradientWidth + marginRight + "px");
+      this.labelScaleG.attr("transform", "translate(" + marginLeft + ",0)");
+      this.rainbowLegendSVG.style("width", marginLeft + gradientWidth + marginRight + "px");
+      this.rainbowLegendG.attr("transform", "translate(" + marginLeft + ", " + 7 + ")");
+      var labelsAxis = (0, _d4.default)("bottom");
+      labelsAxis.scale(labelScale)
+      //.tickFormat(formatter)
+      .tickSizeOuter(0).tickPadding(6).tickSizeMinor(3, 0).labelerOptions({
+        scaleType: this.colorModel.scaleType,
+        toolMargin: {
+          right: marginRight,
+          left: marginLeft
+        },
+        showOuter: true,
+        formatter: formatter,
+        bump: marginLeft,
+        cssFontSize: "11px",
+        fitIntoScale: fitIntoScale
+      });
+
+      this.labelScaleG.call(labelsAxis);
+
+      var colorRange = cScale.range();
+
+      var gIndicators = range.map(function (val, i) {
+        return { val: val, color: colorRange[i], paletteKey: paletteKeys[i] };
+      });
+      this.rainbowLegend = this.rainbowLegendG.selectAll("circle").data(gIndicators);
+      this.rainbowLegend.exit().remove();
+      this.rainbowLegend = this.rainbowLegend.enter().append("circle").attr("r", "6px").attr("stroke", "#000").on("click", _this._interact().clickToChangeColor).merge(this.rainbowLegend);
+
+      this.rainbowLegend.each(function (d, i) {
+        d3.select(this).attr("fill", d.color);
+        d3.select(this).attr("cx", d.val);
+      });
+
+      this.rainbowCanvasEl.attr("width", gradientWidth).attr("height", 1).style("width", gradientWidth + "px").style("height", "100%");
+
+      var context = this.rainbowCanvasEl.node().getContext("2d");
+      var image = context.createImageData(gradientWidth, 1);
+      for (var i = 0, j = -1, c; i < gradientWidth; ++i) {
+        c = d3.rgb(cScale(labelScale.invert(i)));
+        image.data[++j] = c.r;
+        image.data[++j] = c.g;
+        image.data[++j] = c.b;
+        image.data[++j] = 255;
+      }
+      context.putImageData(image, 0, 0);
+
+      var conceptProps = this.colorModel.getConceptprops();
+      var subtitle = utils.getSubtitle(conceptProps.name, conceptProps.name_short);
+
+      this.subtitleDiv.classed("vzb-hidden", subtitle == "");
+      this.subtitleText.text(subtitle);
+
+      colorOptions.classed("vzb-hidden", true);
+    } else {
+
+      //Check if geoshape is provided
+      if (!canShowMap) {
+
+        if (this.colorModel.which == "_default") {
+          colorOptions = colorOptions.data([]);
+        } else {
+          colorOptions = colorOptions.data(hideColorOptions ? [] : colorlegendKeys.length ? _this.colorlegendDim == KEY ? utils.unique(_this.markerKeys, function (key) {
+            return key[KEY];
+          }) : colorlegendKeys : Object.keys(this.colorModel.getPalette()).map(function (value) {
+            var result = {};
+            result[_this.colorlegendDim] = value;
+            return result;
+          }), function (d) {
+            return d[_this.colorlegendDim];
+          });
+        }
+
+        colorOptions.exit().remove();
+
+        colorOptions = colorOptions.enter().append("div").attr("class", "vzb-cl-option").each(function () {
+          var _this4 = this;
+
+          d3.select(this).append("div").attr("class", "vzb-cl-color-sample").on("click", function () {
+            _this4._bindSelectDialogItems.apply(_this4, arguments);
+            _this4.selectDialog.classed("vzb-hidden", false);
+          });
+          d3.select(this).append("div").attr("class", "vzb-cl-color-legend");
+        }).on("mouseover", _this._interact().mouseover).on("mouseout", _this._interact().mouseout).on("click", function () {
+          _this5._bindSelectDialogItems.apply(_this5, arguments);
+          _this5.selectDialog.classed("vzb-hidden", false);
+        }).merge(colorOptions);
+
+        colorOptions.each(function (d, index) {
+          d3.select(this).select(".vzb-cl-color-sample").style("background-color", cScale(d[_this.colorlegendDim])).style("border", "1px solid " + cScale(d[_this.colorlegendDim]));
+          //Apply names to color legend entries if color is a property
+          var label = _this.colorlegendMarker ? _this.frame.label[d[_this.colorlegendDim]] : null;
+          if (!label && label !== 0) label = d[_this.colorlegendDim];
+          d3.select(this).select(".vzb-cl-color-legend").text(label);
+        });
+      } else {
+
+        //Drawing a minimap from the hook data
+
+        var tempdivEl = this.minimapEl.append("div").attr("class", "vzb-temp");
+
+        this.minimapSVG.attr("viewBox", null);
+        this.minimapSVG.selectAll("g").remove();
+        this.minimapG = this.minimapSVG.append("g");
+        this.minimapG.selectAll("path").data(colorlegendKeys, function (d) {
+          return d[_this.colorlegendDim];
+        }).enter().append("path").on("mouseover", _this._interact().mouseover).on("mouseout", _this._interact().mouseout).on("click", function () {
+          _this5._bindSelectDialogItems.apply(_this5, arguments);
+          _this5.selectDialog.classed("vzb-hidden", false);
+        }).each(function (d) {
+          var shapeString = _this.frame.hook_geoshape[d[_this.colorlegendDim]].trim();
+
+          //check if shape string starts with svg tag -- then it's a complete svg
+          if (shapeString.slice(0, 4) == "<svg") {
+            //append svg element from string to the temporary div
+            tempdivEl.html(shapeString);
+            //replace the shape string with just the path data from svg
+            //TODO: this is not very resilient. potentially only the first path will be taken!
+            shapeString = tempdivEl.select("svg").select("path").attr("d");
+          }
+
+          d3.select(this).attr("d", shapeString).style("fill", cScale(d[_this.colorlegendDim])).append("title").text(_this.frame.label[d[_this.colorlegendDim]]);
+
+          tempdivEl.html("");
+        });
+
+        var gbbox = this.minimapG.node().getBBox();
+        this.minimapSVG.attr("viewBox", "0 0 " + gbbox.width * 1.05 + " " + gbbox.height * 1.05);
+        tempdivEl.remove();
+      }
+    }
+  },
+  _updateSelectDialog: function _updateSelectDialog() {
+    var isColorSelectable = this.colorModel.isUserSelectable();
+    this.editColorButtonTooltip.classed("vzb-hidden", isColorSelectable);
+    this.editColorButton.classed("vzb-cl-select-dialog-item-disabled", !isColorSelectable);
+
+    this.selectDialog.classed("vzb-hidden", true);
+  },
+  _highlight: function _highlight(values) {
+    utils.getProp(this, ["model", "ui", "chart", "superhighlightOnMinimapHover"]) ? this.model.marker.setSuperHighlight(values) : this.model.marker.setHighlight(values);
+  },
+  _unhighlight: function _unhighlight() {
+    utils.getProp(this, ["model", "ui", "chart", "superhighlightOnMinimapHover"]) ? this.model.marker.clearSuperHighlighted() : this.model.marker.clearHighlighted();
+  },
+  _interact: function _interact() {
+    var _this = this;
+    var KEYS = this.KEYS;
+    var KEY = this.KEY;
+    var colorlegendDim = this.colorlegendDim;
+
+    return {
+      mouseover: function mouseover(d, i) {
+        _this.moreOptionsHint.classed("vzb-hidden", false);
+        //disable interaction if so stated in concept properties
+        if (!_this.colorModel.isDiscrete()) return;
+
+        var view = d3.select(this);
+        var target = d[colorlegendDim];
+
+        var filterHash = _this.colorModel.getValidItems()
+        //filter so that only countries of the correct target remain
+        .filter(function (f) {
+          return f[_this.colorModel.which] == target;
+        }).reduce(function (result, d) {
+          result[d[KEY]] = true;
+          return result;
+        }, {});
+
+        _this._highlight(_this.markerKeys.filter(function (key) {
+          return filterHash[key[KEY]];
+        }));
+      },
+      mouseout: function mouseout(d, i) {
+        _this.moreOptionsHint.classed("vzb-hidden", true);
+        //disable interaction if so stated in concept properties
+        if (!_this.colorModel.isDiscrete()) return;
+        _this._unhighlight();
+      },
+      clickToChangeColor: function clickToChangeColor(d, i) {
+        //disable interaction if so stated in concept properties
+        if (!_this.colorModel.isUserSelectable()) return;
+        var palette = _this.colorModel.getPalette();
+        var defaultPalette = _this.colorModel.getDefaultPalette();
+        var view = d3.select(this);
+        var target = !_this.colorModel.isDiscrete() ? d.paletteKey : d[colorlegendDim];
+        _this.colorPicker.colorOld(palette[target]).colorDef(defaultPalette[target]).callback(function (value, isClick) {
+          return _this.colorModel.setColor(value, target, isClick);
+        }).fitToScreen([d3.event.pageX, d3.event.pageY]).show(true);
+      },
+      clickToShow: function clickToShow(d, i) {
+        //disable interaction if so stated in concept properties
+        if (!_this.colorModel.isDiscrete()) return;
+
+        var view = d3.select(this);
+        var target = d[colorlegendDim];
+
+        var oldShow = _this.model.entities.show[colorlegendDim] && _this.model.entities.show[colorlegendDim]["$in"] ? utils.clone(_this.model.entities.show[colorlegendDim]["$in"]) : [];
+
+        var entityIndex = oldShow.indexOf(d[colorlegendDim]);
+        if (entityIndex !== -1) {
+          oldShow.splice(entityIndex, 1);
+        } else {
+          oldShow.push(d[colorlegendDim]);
+        }
+
+        var show = {};
+        if (oldShow.length > 0) show[colorlegendDim] = { "$in": oldShow };
+
+        _this.model.entities.set({ show: show });
+      },
+      clickToSelect: function clickToSelect(d, i) {
+        //disable interaction if so stated in concept properties
+        if (!_this.colorModel.isDiscrete()) return;
+
+        var view = d3.select(this);
+        var target = d[colorlegendDim];
+
+        var filterHash = _this.colorModel.getValidItems()
+        //filter so that only countries of the correct target remain
+        .filter(function (f) {
+          return f[_this.colorModel.which] == target;
+        })
+        //fish out the "key" field, leave the rest behind
+        .reduce(function (result, d) {
+          result[d[KEY]] = true;
+          return result;
+        }, {});
+
+        var select = _this.markerKeys.filter(function (f) {
+          return filterHash[f[KEY]];
+        }).map(function (d) {
+          return utils.clone(d, KEYS);
+        });
+
+        if (select.filter(function (d) {
+          return _this.model.marker.isSelected(d);
+        }).length == select.length) {
+          _this.model.marker.clearSelected();
+        } else {
+          _this.model.marker.setSelect(select);
+        }
+      }
+    };
+  },
+  resize: function resize() {
+    if (this.frame) this.updateView();
+    this.colorPicker.resize(d3.select(".vzb-colorpicker-svg"));
+  },
+
+
+  /**
+   * Function updates the opacity of color legend elements
+   * @param   {Array} value = [] array of highlighted elements
+   */
+  updateGroupsOpacity: function updateGroupsOpacity() {
+    var highlight = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
+    var _this = this;
+
+    var clMarker = this.colorModel.getColorlegendMarker() || {};
+    var OPACITY_REGULAR = clMarker.opacityRegular || 0.8;
+    var OPACITY_DIM = clMarker.opacityHighlightDim || 0.5;
+    var OPACITY_HIGHLIGHT = 1;
+
+    var selection = _this.canShowMap ? ".vzb-cl-minimap path" : ".vzb-cl-option .vzb-cl-color-sample";
+
+    this.listColorsEl.selectAll(selection).style("opacity", function (d) {
+      if (!highlight.length) return OPACITY_REGULAR;
+      return highlight.indexOf(d[_this.colorlegendDim]) > -1 ? OPACITY_HIGHLIGHT : OPACITY_DIM;
+    });
+  }
+});
+
+exports.default = ColorLegend;
+
+/***/ }),
+/* 163 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _utils = __webpack_require__(1);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var css = {
+  INVISIBLE: "vzb-invisible",
+  COLOR_POINTER: "vzb-colorpicker-pointer",
+  COLOR_BUTTON: "vzb-colorpicker-cell",
+  COLOR_DEFAULT: "vzb-colorpicker-default",
+  COLOR_SAMPLE: "vzb-colorpicker-sample",
+  COLOR_PICKER: "vzb-colorpicker-svg",
+  COLOR_CIRCLE: "vzb-colorpicker-circle",
+  COLOR_CIRCLES: "vzb-colorpicker-circles",
+  COLOR_SEGMENT: "vzb-colorpicker-segment",
+  COLOR_BACKGR: "vzb-colorpicker-background"
+};
+
+var ColorPicker = function () {
+  function ColorPicker(container) {
+    _classCallCheck(this, ColorPicker);
+
+    this._container = container;
+    this._wrapper = this._container.select("." + css.COLOR_PICKER);
+
+    this._init();
+  }
+
+  _createClass(ColorPicker, [{
+    key: "_init",
+    value: function _init() {
+      this._initVariables();
+      this._initCircles();
+      this._style();
+      this.resize(this._svg);
+    }
+  }, {
+    key: "_initVariables",
+    value: function _initVariables() {
+      // radius of the central hole in color wheel: px
+      this._maxWidth = 280;
+      this._maxHeight = 323;
+
+      this._colorOld = "#000";
+      this._colorDef = "#000";
+      this._colorWhite = "#f8f8f8";
+
+      // margins in % of container's width and height
+      this._margin = {
+        top: 0.1,
+        bottom: 0.1,
+        left: 0.1,
+        right: 0.1
+      };
+
+      this._initSvg();
+
+      var _getComputedStyle = getComputedStyle(this._svg.node()),
+          svgWidth = _getComputedStyle.width,
+          svgHeight = _getComputedStyle.height;
+
+      this._width = this.constructor.px2num(svgWidth);
+      this._height = this.constructor.px2num(svgHeight);
+      this._maxRadius = this._width / 2 * (1 - this._margin.left - this._margin.right);
+
+      // tuning defaults
+      this._nCellsH = 15;
+      // number of cells by hues (angular)
+      this._minH = 0;
+      // which hue do we start from: 0 to 1 instead of 0 to 365
+      this._nCellsL = 4;
+      // number of cells by lightness (radial)
+      this._minL = 0.5;
+      // which lightness to start from: 0 to 1. Recommended .3...0.5
+      this._satConstant = 0.7;
+      // constant saturation for color wheel: 0 to 1. Recommended .7...0.8
+      this._outerL_display = 0.4;
+      // exceptional saturation of the outer circle. the one displayed 0 to 1
+      this._outerL_meaning = 0.3;
+      // exceptional saturation of the outer circle. the one actually meant 0 to 1
+      this._firstAngleSat = 0;
+      // exceptional saturation at first angular segment. Set 0 to have shades of grey
+      this._minRadius = 15;
+      this._arc = d3.arc();
+
+      this._pie = d3.pie().sort(null).value(function (d) {
+        return 1;
+      });
+      this._colorPointer = null;
+      this._showColorPicker = false;
+      this._sampleRect = null;
+      this._sampleText = null;
+      this._callback = function (value) {
+        return console.info("Color picker callback example. Setting color to " + value);
+      };
+      this._colorData = this._generateColorData();
+    }
+  }, {
+    key: "_generateColorData",
+    value: function _generateColorData() {
+      var _minL = this._minL,
+          _minH = this._minH,
+          _nCellsL = this._nCellsL,
+          _nCellsH = this._nCellsH,
+          _firstAngleSat = this._firstAngleSat,
+          _satConstant = this._satConstant,
+          _outerL_display = this._outerL_display,
+          _outerL_meaning = this._outerL_meaning;
+
+
+      var result = [];
+      // loop across circles
+      for (var l = 0; l < _nCellsL; l++) {
+        var lightness = _minL + (1 - _minL) / _nCellsL * l;
+        // new circle of cells
+        result.push([]);
+        // loop across angles
+        for (var h = 0; h <= _nCellsH; h++) {
+          var hue = _minH + (1 - _minH) / _nCellsH * h;
+          // new cell
+          result[l].push({
+            display: this.constructor.hsl2rgb(hue, h === 0 ? _firstAngleSat : _satConstant, l === 0 ? _outerL_display : lightness),
+
+            meaning: this.constructor.hsl2rgb(hue, h === 0 ? _firstAngleSat : _satConstant, l === 0 ? _outerL_meaning : lightness)
+          });
+        }
+      }
+
+      return result;
+    }
+  }, {
+    key: "_initSvg",
+    value: function _initSvg() {
+      var _this = this;
+
+      this._wrapper = this._container.append("div").style("position", "absolute").style("top", "0").style("left", "0").style("width", "100%").style("max-width", this._maxWidth + "px").style("height", "100%").style("max-height", this._maxHeight + "px").style("z-index", 9999).attr("class", css.COLOR_PICKER + " vzb-dialog-shadow").classed(css.INVISIBLE, !this._showColorPicker).on("mouseout", function () {
+        return _this._cellHover(_this._colorOld);
+      });
+
+      this._svg = this._wrapper.append("svg").style("width", "100%").style("height", "100%");
+    }
+  }, {
+    key: "_initCircles",
+    value: function _initCircles() {
+      var _this2 = this;
+
+      var _svg = this._svg,
+          _maxHeight = this._maxHeight,
+          _width = this._width,
+          _height = this._height,
+          _margin = this._margin,
+          _colorData = this._colorData,
+          _nCellsL = this._nCellsL,
+          _minRadius = this._minRadius,
+          _maxRadius = this._maxRadius,
+          _colorWhite = this._colorWhite;
+
+
+      _svg.append("rect").attr("width", _width).attr("height", _maxHeight).attr("class", css.COLOR_BACKGR).on("mouseover", function () {
+        return _this2._cellHover(_this2._colorOld);
+      }).on("click", function () {
+        d3.event.stopPropagation();
+        _this2._changeColor(_this2._colorOld);
+        _this2.show(false);
+      });
+
+      var tx = _maxRadius + _width * _margin.left;
+      var ty = _maxRadius + _height * _margin.top;
+      var circles = _svg.append("g").attr("class", css.COLOR_CIRCLES).attr("transform", "translate(" + tx + ", " + ty + ")");
+
+      _svg.append("rect").attr("class", css.COLOR_SAMPLE).attr("width", _width / 2).attr("height", _height * _margin.top / 2);
+
+      this._sampleRect = _svg.append("rect").attr("class", css.COLOR_SAMPLE).attr("width", _width / 2).attr("x", _width / 2).attr("height", _height * _margin.top / 2);
+
+      _svg.append("text").attr("x", _width * _margin.left).attr("y", _height * _margin.top / 2).attr("dy", "1.3em").attr("class", css.COLOR_SAMPLE).style("text-anchor", "start");
+
+      this._sampleText = _svg.append("text").attr("x", _width * (1 - _margin.right)).attr("y", _height * _margin.top / 2).attr("dy", "1.3em").attr("class", css.COLOR_SAMPLE).style("text-anchor", "end");
+
+      _svg.append("text").attr("x", _width * 0.1).attr("y", _height * (1 - _margin.bottom)).attr("dy", "1.2em").attr("class", "vzb-default-label").style("text-anchor", "start").text("default");
+
+      _svg.append("circle").attr("class", css.COLOR_DEFAULT + " " + css.COLOR_BUTTON).attr("r", _width * _margin.left / 2).attr("cx", _width * _margin.left * 1.5).attr("cy", _height * (1 - _margin.bottom * 1.5)).on("mouseover", function () {
+        d3.select(this).style("stroke", "#444");
+        self._cellHover(self._colorDef);
+      }).on("mouseout", function () {
+        d3.select(this).style("stroke", "none");
+      });
+
+      var self = this;
+      circles.selectAll("." + css.COLOR_CIRCLE).data(_colorData).enter().append("g").attr("class", css.COLOR_CIRCLE).each(function (circleData, index) {
+        self._arc.outerRadius(_minRadius + (_maxRadius - _minRadius) / _nCellsL * (_nCellsL - index)).innerRadius(_minRadius + (_maxRadius - _minRadius) / _nCellsL * (_nCellsL - index - 1));
+
+        var segment = d3.select(this).selectAll("." + css.COLOR_SEGMENT).data(self._pie(circleData)).enter().append("g").attr("class", css.COLOR_SEGMENT);
+
+        segment.append("path").attr("class", css.COLOR_BUTTON).attr("d", self._arc).style("fill", function (d) {
+          return d.data.display;
+        }).style("stroke", function (d) {
+          return d.data.display;
+        }).on("mouseover", function (d) {
+          self._cellHover(d.data.meaning, this);
+        }).on("mouseout", function () {
+          return self._cellUnhover();
+        });
+      });
+
+      circles.append("circle").attr("r", _minRadius).attr("fill", _colorWhite).attr("class", css.COLOR_BUTTON).on("mouseover", function () {
+        d3.select(this).style("stroke", "#555");
+        self._cellHover(_colorWhite);
+      }).on("mouseout", function () {
+        d3.select(this).style("stroke", "none");
+      });
+
+      this._colorPointer = circles.append("path").attr("class", css.COLOR_POINTER + " " + css.INVISIBLE);
+
+      _svg.selectAll("." + css.COLOR_BUTTON).on("click", function (d) {
+        d3.event.stopPropagation();
+        _this2._changeColor(d ? d.data.meaning : _this2._colorDef, true);
+        _this2.show(false);
+      });
+    }
+  }, {
+    key: "_style",
+    value: function _style() {
+      var _svg = this._svg,
+          _colorWhite = this._colorWhite;
+
+
+      _svg.select("." + css.COLOR_BACKGR).style("fill", "white");
+
+      _svg.select("." + css.COLOR_POINTER).style("stroke-width", 2).style("stroke", _colorWhite).style("pointer-events", "none").style("fill", "none");
+
+      _svg.selectAll("." + css.COLOR_BUTTON).style("cursor", "pointer");
+
+      _svg.selectAll("text").style("pointer-events", "none").style("fill", "#D9D9D9").style("font-size", "0.7em").style("text-transform", "uppercase");
+
+      _svg.selectAll("circle." + css.COLOR_BUTTON).style("stroke-width", 2);
+
+      _svg.selectAll("rect." + css.COLOR_SAMPLE).style("pointer-events", "none");
+    }
+  }, {
+    key: "_cellHover",
+    value: function _cellHover(value, view) {
+      // show color pointer if the view is set (a cell of colorwheel)
+      if (view != null) this._colorPointer.classed(css.INVISIBLE, false).attr("d", d3.select(view).attr("d"));
+
+      this._sampleRect.style("fill", value);
+      this._sampleText.text(value);
+
+      var isTouch = (0, _utils.isTouchDevice)();
+
+      this._changeColor(value, isTouch);
+      isTouch && this.show(false);
+    }
+  }, {
+    key: "_changeColor",
+    value: function _changeColor(color) {
+      var isClick = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      this._callback(color, isClick);
+    }
+  }, {
+    key: "_cellUnhover",
+    value: function _cellUnhover() {
+      this._colorPointer.classed(css.INVISIBLE, true);
+    }
+  }, {
+    key: "resize",
+    value: function resize(arg) {
+      if (!arguments.length) return;
+
+      if (typeof arg !== "undefined") {
+        var _margin = this._margin;
+
+        var svg = arg;
+
+        var _getComputedStyle2 = getComputedStyle(svg.node()),
+            svgWidth = _getComputedStyle2.width,
+            svgHeight = _getComputedStyle2.height;
+
+        var width = this.constructor.px2num(svgWidth);
+        var height = this.constructor.px2num(svgHeight);
+
+        var maxRadius = width / 2 * (1 - _margin.left - _margin.right);
+        var selectedColor = svg.select("." + css.COLOR_DEFAULT);
+        var defaultLabel = svg.select(".vzb-default-label");
+        var circles = svg.select("." + css.COLOR_CIRCLES);
+
+        var hPos = maxRadius + height * _margin.top;
+        var hPosCenter = (1 + _margin.top * 0.5) * height * 0.5;
+
+        var tx = maxRadius + width * _margin.left;
+        var ty = hPos > hPosCenter ? hPosCenter : hPos;
+        circles.attr("transform", "translate(" + tx + ", " + ty + ")");
+
+        selectedColor.attr("cx", width * _margin.left * 1.5).attr("cy", height * (1 - _margin.bottom * 1.5));
+
+        defaultLabel.attr("x", width * 0.1).attr("y", height * (1 - _margin.bottom));
+      }
+
+      return this.fitToScreen();
+    }
+  }, {
+    key: "fitToScreen",
+    value: function fitToScreen(arg) {
+      var screen = this._container.node().getBoundingClientRect();
+      var xPos = void 0,
+          yPos = void 0;
+
+      var _getComputedStyle3 = getComputedStyle(this._wrapper.node()),
+          wrapperWidth = _getComputedStyle3.width,
+          wrapperHeight = _getComputedStyle3.height,
+          wrapperRight = _getComputedStyle3.right,
+          wrapperTop = _getComputedStyle3.top;
+
+      var width = this.constructor.px2num(wrapperWidth);
+      var height = this.constructor.px2num(wrapperHeight);
+
+      if (!arg) {
+        xPos = screen.width - this.constructor.px2num(wrapperRight) - width;
+        yPos = this.constructor.px2num(wrapperTop);
+      } else {
+        xPos = arg[0] - screen.left;
+        yPos = arg[1] - screen.top;
+      }
+
+      var styles = { left: "" };
+      if (screen.width * 0.8 <= width) {
+        styles.right = (screen.width - width) * 0.5 + "px";
+      } else if (xPos + width > screen.width) {
+        styles.right = Math.min(screen.width * 0.1, 20) + "px";
+      } else {
+        styles.right = screen.width - xPos - width + "px";
+      }
+
+      if (styles.right) {
+        this._wrapper.style("right", styles.right);
+      }
+
+      if (screen.height * 0.8 <= height) {
+        styles.top = (screen.height - height) * 0.5 + "px";
+      } else if (yPos + height * 1.2 > screen.height) {
+        styles.top = screen.height * 0.9 - height + "px";
+      } else {
+        styles.top = yPos + "px";
+      }
+
+      if (styles.top) {
+        this._wrapper.style("top", styles.top);
+      }
+
+      this._wrapper.style("left", styles.left);
+
+      return this;
+    }
+  }, {
+    key: "show",
+    value: function show(arg) {
+      if (!arguments.length) {
+        return this._showColorPicker;
+      }
+
+      if (this._svg == null) {
+        console.warn("Color picker is missing SVG element. Was init sequence performed?");
+      }
+
+      this._showColorPicker = arg == "toggle" ? !this._showColorPicker : arg;
+
+      if (!this._showColorPicker) {
+        this._callback = function () {
+          return void 0;
+        };
+      }
+
+      this._wrapper.classed(css.INVISIBLE, !this._showColorPicker);
+    }
+  }, {
+    key: "_getOrSet",
+    value: function _getOrSet(property, value) {
+      property = "_" + property;
+
+      if (arguments.length > 1) {
+        this[property] = value;
+        return this;
+      }
+
+      return this[property];
+    }
+  }, {
+    key: "nCellsH",
+    value: function nCellsH() {
+      return this._getOrSet.apply(this, ["nCellsH"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "minH",
+    value: function minH() {
+      return this._getOrSet.apply(this, ["minH"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "nCellsL",
+    value: function nCellsL() {
+      return this._getOrSet.apply(this, ["nCellsL"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "minL",
+    value: function minL() {
+      return this._getOrSet.apply(this, ["minL"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "outerL_display",
+    value: function outerL_display() {
+      return this._getOrSet.apply(this, ["outerL_display"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "outerL_meaning",
+    value: function outerL_meaning() {
+      return this._getOrSet.apply(this, ["outerL_meaning"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "satConstant",
+    value: function satConstant() {
+      return this._getOrSet.apply(this, ["satConstant"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "firstAngleSat",
+    value: function firstAngleSat() {
+      return this._getOrSet.apply(this, ["firstAngleSat"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "minRadius",
+    value: function minRadius() {
+      return this._getOrSet.apply(this, ["minRadius"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "margin",
+    value: function margin() {
+      return this._getOrSet.apply(this, ["margin"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "callback",
+    value: function callback() {
+      return this._getOrSet.apply(this, ["callback"].concat(Array.prototype.slice.call(arguments)));
+    }
+  }, {
+    key: "colorDef",
+    value: function colorDef(arg) {
+      if (!arguments.length) return this._colorDef;
+
+      if (typeof arg !== "undefined") {
+        this._colorDef = arg;
+      }
+
+      if (this._svg == null) {
+        console.warn("Color picker is missing SVG element. Was init sequence performed?");
+      }
+
+      this._svg.select("." + css.COLOR_DEFAULT).style("fill", this._colorDef);
+
+      return this;
+    }
+  }, {
+    key: "translate",
+    value: function translate(translator) {
+      if (typeof translator === "function") {
+        this._svg.select(".vzb-default-label").text(translator("colorpicker/default"));
+      }
+
+      return this;
+    }
+  }, {
+    key: "colorOld",
+    value: function colorOld(arg) {
+      if (!arguments.length) {
+        return this._colorOld;
+      }
+
+      this._colorOld = arg;
+
+      if (this._svg == null) {
+        console.warn("Color picker is missing SVG element. Was init sequence performed?");
+      }
+
+      this._svg.select("rect." + css.COLOR_SAMPLE).style("fill", this._colorOld);
+      this._svg.select("text." + css.COLOR_SAMPLE).text(this._colorOld);
+
+      return this;
+    }
+  }], [{
+    key: "hsl2rgb",
+    value: function hsl2rgb(h, s, l) {
+      var r = void 0,
+          g = void 0,
+          b = void 0;
+      if (s == 0) {
+        r = g = b = l; // achromatic
+      } else {
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = this.hue2rgb(p, q, h + 1 / 3);
+        g = this.hue2rgb(p, q, h);
+        b = this.hue2rgb(p, q, h - 1 / 3);
+      }
+
+      return "#" + Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
+    }
+  }, {
+    key: "hue2rgb",
+    value: function hue2rgb(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    }
+  }, {
+    key: "px2num",
+    value: function px2num(px) {
+      return parseFloat(px) || 0;
+    }
+  }]);
+
+  return ColorPicker;
+}();
+
+exports.default = ColorPicker;
+
+/***/ }),
 /* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16702,15 +17092,15 @@ var _dialog = __webpack_require__(11);
 
 var _dialog2 = _interopRequireDefault(_dialog);
 
-var _globals = __webpack_require__(107);
+var _globals = __webpack_require__(109);
 
 var _globals2 = _interopRequireDefault(_globals);
 
-var _tool = __webpack_require__(142);
+var _tool = __webpack_require__(145);
 
 var _tool2 = _interopRequireDefault(_tool);
 
-var _data = __webpack_require__(106);
+var _data = __webpack_require__(107);
 
 var _data2 = _interopRequireDefault(_data);
 
@@ -16740,11 +17130,11 @@ var About = _dialog2.default.extend("about", {
 
     this.element = d3.select(this.element);
     this.element.select(".vzb-about-text0").html("This chart is made with Vizabi,");
-    this.element.select(".vzb-about-text1").html("a project by <a href='http://gapminder.org'>Gapminder Foundation</a>");
-    this.element.select(".vzb-about-version").html("<a href='https://github.com/Gapminder/vizabi/releases/tag/v" + version + "'>Version: " + version + "</a>");
+    this.element.select(".vzb-about-text1").html("a project by <a href='http://gapminder.org' target='_blank'>Gapminder Foundation</a>");
+    this.element.select(".vzb-about-version").html("<a href='https://github.com/Gapminder/vizabi/releases/tag/v" + version + "' target='_blank'>Version: " + version + "</a>");
     this.element.select(".vzb-about-updated").html("Build: " + d3.time.format("%Y-%m-%d at %H:%M")(updated));
-    this.element.select(".vzb-about-report").html("<a href='https://getsatisfaction.com/gapminder/'>Report a problem</a>");
-    this.element.select(".vzb-about-credits").html("<a href='https://github.com/Gapminder/vizabi/graphs/contributors'>Contributors</a>");
+    this.element.select(".vzb-about-report").html("<a href='https://getsatisfaction.com/gapminder/' target='_blank'>Report a problem</a>");
+    this.element.select(".vzb-about-credits").html("<a href='https://github.com/Gapminder/vizabi/graphs/contributors' target='_blank'>Contributors</a>");
 
     //versions
     var data = _data2.default;
@@ -16929,11 +17319,11 @@ var MinMaxInputs = _component2.default.extend({
         _model_binds;
 
     this.name = "gapminder-minmaxinputs";
-    this.template = __webpack_require__(418);
+    this.template = __webpack_require__(420);
 
     this.model_expects = [{
       name: "marker",
-      type: "model"
+      type: "marker"
     }, {
       name: "time",
       type: "time"
@@ -17068,7 +17458,7 @@ var _dialog = __webpack_require__(11);
 
 var _dialog2 = _interopRequireDefault(_dialog);
 
-var _colorlegend = __webpack_require__(161);
+var _colorlegend = __webpack_require__(162);
 
 var _colorlegend2 = _interopRequireDefault(_colorlegend);
 
@@ -17498,7 +17888,7 @@ var Find = _dialog2.default.extend("find", {
       this.components.push({
         component: _indicatorpicker2.default,
         placeholder: ".vzb-find-filter-selector",
-        model: ["state.time", "state.entities", "locale"]
+        model: ["state.time", "state.marker", "locale"]
       });
     }
 
@@ -17570,6 +17960,12 @@ var Find = _dialog2.default.extend("find", {
       _this.showHideSearch();
     });
 
+    d3.select(this.input_search.node().parentNode).on("reset", function () {
+      utils.defer(function () {
+        return _this.showHideSearch();
+      });
+    });
+
     this.deselect_all.on("click", function () {
       _this.deselectMarkers();
     });
@@ -17606,9 +18002,7 @@ var Find = _dialog2.default.extend("find", {
     this._super();
 
     var _this = this;
-    var KEY = this.KEY = this.model.state.entities.getDimension();
     var KEYS = this.KEYS = utils.unique(this.model.state.marker._getAllDimensions({ exceptType: "time" }));
-    this.multiDim = KEYS.length > 1;
 
     this.importantHooks = _this.model.state.marker.getImportantHooks();
     var labelNames = _this.model.state.marker.getLabelHookNames();
@@ -17617,20 +18011,13 @@ var Find = _dialog2.default.extend("find", {
     this.model.state.marker.getFrame(this.time, function (values) {
       if (!values) return;
 
-      var data = _this.multiDim ? _this.model.state.marker.getKeysMD().map(function (pointer) {
-        pointer.brokenData = false;
-        pointer.name = KEYS.map(function (key, index) {
-          return values[labelNames[index]][pointer[key]];
+      var data = _this.model.state.marker.getKeys().map(function (d) {
+        d.brokenData = false;
+        d.name = KEYS.map(function (key) {
+          return values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key];
         }).join(", ");
 
-        return pointer;
-      }) : _this.model.state.marker.getKeys().map(function (d) {
-        var pointer = {};
-        pointer[KEY] = d[KEY];
-        pointer.brokenData = false;
-        pointer.name = values.label[d[KEY]];
-
-        return pointer;
+        return d;
       });
 
       //sort data alphabetically
@@ -17673,43 +18060,26 @@ var Find = _dialog2.default.extend("find", {
   },
   redrawDataPoints: function redrawDataPoints(values) {
     var _this = this;
-    var KEY = this.KEY;
     var KEYS = this.KEYS;
 
-    if (this.multiDim) {
-      _this.items.each(function (d) {
-        var view = d3.select(this).select("label");
-        d.brokenData = false;
+    _this.items.each(function (d) {
+      var view = d3.select(this).select("label");
+      d.brokenData = false;
 
-        utils.forEach(_this.importantHooks, function (name) {
-          var hook = values[name];
-          if (!hook) return;
-          var value = utils.getValueMD(d, hook, KEYS) || false;
-          if (!value && value !== 0) {
-            d.brokenData = true;
-            return false;
-          }
-        });
-
-        var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
-        view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
+      utils.forEach(_this.importantHooks, function (name) {
+        if (_this.model.state.marker[name].use == "constant") return;
+        var hook = values[name];
+        if (!hook) return;
+        var value = hook[utils.getKey(d, KEYS)];
+        if (!value && value !== 0) {
+          d.brokenData = true;
+          return false;
+        }
       });
-    } else {
-      _this.items.each(function (d) {
-        var view = d3.select(this).select("label");
 
-        d.brokenData = false;
-        utils.forEach(values, function (hook, name) {
-          //TODO: remove the hack with hardcoded hook names (see discussion in #1389)
-          if (name !== "color" && name !== "size_label" && _this.model.state.marker[name].use !== "constant" && !hook[d[KEY]] && hook[d[KEY]] !== 0) {
-            d.brokenData = true;
-          }
-        });
-
-        var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
-        view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
-      });
-    }
+      var nameIfEllipsis = this.offsetWidth < this.scrollWidth ? d.name : "";
+      view.classed("vzb-find-item-brokendata", d.brokenData).attr("title", nameIfEllipsis + (d.brokenData ? (nameIfEllipsis ? " | " : "") + _this.model.state.time.formatDate(_this.time) + ": " + _this.translator("hints/nodata") : ""));
+    });
   },
   selectDataPoints: function selectDataPoints() {
     var _this = this;
@@ -17855,7 +18225,7 @@ var _dialog = __webpack_require__(11);
 
 var _dialog2 = _interopRequireDefault(_dialog);
 
-var _sizeslider = __webpack_require__(158);
+var _sizeslider = __webpack_require__(159);
 
 var _sizeslider2 = _interopRequireDefault(_sizeslider);
 
@@ -17937,7 +18307,7 @@ var _dialog = __webpack_require__(11);
 
 var _dialog2 = _interopRequireDefault(_dialog);
 
-var _optionsbuttonlist = __webpack_require__(160);
+var _optionsbuttonlist = __webpack_require__(161);
 
 var _optionsbuttonlist2 = _interopRequireDefault(_optionsbuttonlist);
 
@@ -18243,7 +18613,7 @@ var Show = _dialog2.default.extend("show", {
       this.components = [{
         component: _indicatorpicker2.default,
         placeholder: ".vzb-show-filter-selector",
-        model: ["state.time", "state.entities", "locale"]
+        model: ["state.time", "state.marker", "locale"]
       }];
     }
 
@@ -18272,6 +18642,12 @@ var Show = _dialog2.default.extend("show", {
     var _this = this;
     this.input_search.on("input", function () {
       _this.showHideSearch();
+    });
+
+    d3.select(this.input_search.node().parentNode).on("reset", function () {
+      utils.defer(function () {
+        return _this.showHideSearch();
+      });
     });
 
     this.deselect_all.on("click", function () {
@@ -18650,7 +19026,7 @@ var _dialog = __webpack_require__(11);
 
 var _dialog2 = _interopRequireDefault(_dialog);
 
-var _bubblesize = __webpack_require__(157);
+var _bubblesize = __webpack_require__(158);
 
 var _bubblesize2 = _interopRequireDefault(_bubblesize);
 
@@ -18675,8 +19051,20 @@ var Size = _dialog2.default.extend("size", {
    */
   init: function init(config, parent) {
     this.name = "size";
+    var _this = this;
 
     // in dialog, this.model_expects = ["state", "ui", "locale"];
+
+    this.model_binds = {
+      "change:state.marker.size.which": function changeStateMarkerSizeWhich(evt) {
+        if (!_this._readyOnce) return;
+        _this.updateSubtitle();
+      },
+      "translate:locale": function translateLocale() {
+        if (!_this._readyOnce) return;
+        _this.updateSubtitle();
+      }
+    };
 
     this.components = [{
       component: _indicatorpicker2.default,
@@ -18699,6 +19087,16 @@ var Size = _dialog2.default.extend("size", {
     }
 
     this._super(config, parent);
+  },
+  readyOnce: function readyOnce() {
+    this._super();
+    this.updateSubtitle();
+  },
+  updateSubtitle: function updateSubtitle() {
+    var conceptProps = this.model.state.marker.size.getConceptprops();
+    var subtitle = utils.getSubtitle(conceptProps.name, conceptProps.name_short);
+
+    this.element.select(".vzb-dialog-subtitle").text(subtitle);
   }
 });
 
@@ -19091,8 +19489,8 @@ var DraggableList = _component2.default.extend({
 
     this.items.exit().remove();
 
-    this.items = this.items.enter().append("div").append("li").each(function () {
-      var view = d3.select(this);
+    this.items = this.items.enter().append("div").each(function () {
+      var view = d3.select(this).append("li");
 
       view.append("span").classed("label-circle", true);
 
@@ -19694,7 +20092,7 @@ var _vizabi = __webpack_require__(388);
 
 var _vizabi2 = _interopRequireDefault(_vizabi);
 
-__webpack_require__(433);
+__webpack_require__(435);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -19735,7 +20133,7 @@ define(String.prototype, "padRight", "".padEnd);
 "pop,reverse,shift,keys,values,entries,indexOf,every,some,forEach,map,filter,find,findIndex,includes,join,slice,concat,push,splice,unshift,sort,lastIndexOf,reduce,reduceRight,copyWithin,fill".split(",").forEach(function (key) {
   [][key] && define(Array, key, Function.call.bind([][key]));
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(77)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(78)))
 
 /***/ }),
 /* 187 */
@@ -19840,18 +20238,18 @@ __webpack_require__(288);
 __webpack_require__(289);
 __webpack_require__(290);
 __webpack_require__(291);
-__webpack_require__(99);
+__webpack_require__(100);
 __webpack_require__(292);
 __webpack_require__(293);
-__webpack_require__(126);
+__webpack_require__(129);
 __webpack_require__(294);
 __webpack_require__(295);
 __webpack_require__(296);
 __webpack_require__(297);
 __webpack_require__(298);
-__webpack_require__(129);
-__webpack_require__(131);
 __webpack_require__(132);
+__webpack_require__(134);
+__webpack_require__(135);
 __webpack_require__(299);
 __webpack_require__(300);
 __webpack_require__(301);
@@ -19952,14 +20350,14 @@ var has = __webpack_require__(14);
 var DESCRIPTORS = __webpack_require__(8);
 var $export = __webpack_require__(0);
 var redefine = __webpack_require__(16);
-var META = __webpack_require__(34).KEY;
+var META = __webpack_require__(35).KEY;
 var $fails = __webpack_require__(4);
 var shared = __webpack_require__(61);
 var setToStringTag = __webpack_require__(51);
 var uid = __webpack_require__(39);
 var wks = __webpack_require__(7);
-var wksExt = __webpack_require__(109);
-var wksDefine = __webpack_require__(79);
+var wksExt = __webpack_require__(112);
+var wksDefine = __webpack_require__(80);
 var enumKeys = __webpack_require__(189);
 var isArray = __webpack_require__(64);
 var anObject = __webpack_require__(2);
@@ -19967,7 +20365,7 @@ var toIObject = __webpack_require__(18);
 var toPrimitive = __webpack_require__(26);
 var createDesc = __webpack_require__(38);
 var _create = __webpack_require__(43);
-var gOPNExt = __webpack_require__(112);
+var gOPNExt = __webpack_require__(115);
 var $GOPD = __webpack_require__(19);
 var $DP = __webpack_require__(9);
 var $keys = __webpack_require__(41);
@@ -20226,7 +20624,7 @@ $export($export.S + $export.F * !__webpack_require__(8), 'Object', { definePrope
 
 var $export = __webpack_require__(0);
 // 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
-$export($export.S + $export.F * !__webpack_require__(8), 'Object', { defineProperties: __webpack_require__(111) });
+$export($export.S + $export.F * !__webpack_require__(8), 'Object', { defineProperties: __webpack_require__(114) });
 
 
 /***/ }),
@@ -20280,7 +20678,7 @@ __webpack_require__(29)('keys', function () {
 
 // 19.1.2.7 Object.getOwnPropertyNames(O)
 __webpack_require__(29)('getOwnPropertyNames', function () {
-  return __webpack_require__(112).f;
+  return __webpack_require__(115).f;
 });
 
 
@@ -20290,7 +20688,7 @@ __webpack_require__(29)('getOwnPropertyNames', function () {
 
 // 19.1.2.5 Object.freeze(O)
 var isObject = __webpack_require__(6);
-var meta = __webpack_require__(34).onFreeze;
+var meta = __webpack_require__(35).onFreeze;
 
 __webpack_require__(29)('freeze', function ($freeze) {
   return function freeze(it) {
@@ -20305,7 +20703,7 @@ __webpack_require__(29)('freeze', function ($freeze) {
 
 // 19.1.2.17 Object.seal(O)
 var isObject = __webpack_require__(6);
-var meta = __webpack_require__(34).onFreeze;
+var meta = __webpack_require__(35).onFreeze;
 
 __webpack_require__(29)('seal', function ($seal) {
   return function seal(it) {
@@ -20320,7 +20718,7 @@ __webpack_require__(29)('seal', function ($seal) {
 
 // 19.1.2.15 Object.preventExtensions(O)
 var isObject = __webpack_require__(6);
-var meta = __webpack_require__(34).onFreeze;
+var meta = __webpack_require__(35).onFreeze;
 
 __webpack_require__(29)('preventExtensions', function ($preventExtensions) {
   return function preventExtensions(it) {
@@ -20378,7 +20776,7 @@ __webpack_require__(29)('isExtensible', function ($isExtensible) {
 // 19.1.3.1 Object.assign(target, source)
 var $export = __webpack_require__(0);
 
-$export($export.S + $export.F, 'Object', { assign: __webpack_require__(113) });
+$export($export.S + $export.F, 'Object', { assign: __webpack_require__(116) });
 
 
 /***/ }),
@@ -20407,7 +20805,7 @@ module.exports = Object.is || function is(x, y) {
 
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = __webpack_require__(0);
-$export($export.S, 'Object', { setPrototypeOf: __webpack_require__(83).set });
+$export($export.S, 'Object', { setPrototypeOf: __webpack_require__(84).set });
 
 
 /***/ }),
@@ -20434,7 +20832,7 @@ if (test + '' != '[object z]') {
 // 19.2.3.2 / 15.3.4.5 Function.prototype.bind(thisArg, args...)
 var $export = __webpack_require__(0);
 
-$export($export.P, 'Function', { bind: __webpack_require__(114) });
+$export($export.P, 'Function', { bind: __webpack_require__(117) });
 
 
 /***/ }),
@@ -20484,7 +20882,7 @@ if (!(HAS_INSTANCE in FunctionProto)) __webpack_require__(9).f(FunctionProto, HA
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
-var $parseInt = __webpack_require__(116);
+var $parseInt = __webpack_require__(119);
 // 18.2.5 parseInt(string, radix)
 $export($export.G + $export.F * (parseInt != $parseInt), { parseInt: $parseInt });
 
@@ -20494,7 +20892,7 @@ $export($export.G + $export.F * (parseInt != $parseInt), { parseInt: $parseInt }
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
-var $parseFloat = __webpack_require__(117);
+var $parseFloat = __webpack_require__(120);
 // 18.2.4 parseFloat(string)
 $export($export.G + $export.F * (parseFloat != $parseFloat), { parseFloat: $parseFloat });
 
@@ -20508,7 +20906,7 @@ $export($export.G + $export.F * (parseFloat != $parseFloat), { parseFloat: $pars
 var global = __webpack_require__(3);
 var has = __webpack_require__(14);
 var cof = __webpack_require__(23);
-var inheritIfRequired = __webpack_require__(85);
+var inheritIfRequired = __webpack_require__(86);
 var toPrimitive = __webpack_require__(26);
 var fails = __webpack_require__(4);
 var gOPN = __webpack_require__(44).f;
@@ -20583,8 +20981,8 @@ if (!$Number(' 0o1') || !$Number('0b1') || $Number('+0x1')) {
 
 var $export = __webpack_require__(0);
 var toInteger = __webpack_require__(28);
-var aNumberValue = __webpack_require__(118);
-var repeat = __webpack_require__(86);
+var aNumberValue = __webpack_require__(121);
+var repeat = __webpack_require__(87);
 var $toFixed = 1.0.toFixed;
 var floor = Math.floor;
 var data = [0, 0, 0, 0, 0, 0];
@@ -20704,7 +21102,7 @@ $export($export.P + $export.F * (!!$toFixed && (
 
 var $export = __webpack_require__(0);
 var $fails = __webpack_require__(4);
-var aNumberValue = __webpack_require__(118);
+var aNumberValue = __webpack_require__(121);
 var $toPrecision = 1.0.toPrecision;
 
 $export($export.P + $export.F * ($fails(function () {
@@ -20753,7 +21151,7 @@ $export($export.S, 'Number', {
 // 20.1.2.3 Number.isInteger(number)
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Number', { isInteger: __webpack_require__(119) });
+$export($export.S, 'Number', { isInteger: __webpack_require__(122) });
 
 
 /***/ }),
@@ -20777,7 +21175,7 @@ $export($export.S, 'Number', {
 
 // 20.1.2.5 Number.isSafeInteger(number)
 var $export = __webpack_require__(0);
-var isInteger = __webpack_require__(119);
+var isInteger = __webpack_require__(122);
 var abs = Math.abs;
 
 $export($export.S, 'Number', {
@@ -20812,7 +21210,7 @@ $export($export.S, 'Number', { MIN_SAFE_INTEGER: -0x1fffffffffffff });
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
-var $parseFloat = __webpack_require__(117);
+var $parseFloat = __webpack_require__(120);
 // 20.1.2.12 Number.parseFloat(string)
 $export($export.S + $export.F * (Number.parseFloat != $parseFloat), 'Number', { parseFloat: $parseFloat });
 
@@ -20822,7 +21220,7 @@ $export($export.S + $export.F * (Number.parseFloat != $parseFloat), 'Number', { 
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
-var $parseInt = __webpack_require__(116);
+var $parseInt = __webpack_require__(119);
 // 20.1.2.13 Number.parseInt(string, radix)
 $export($export.S + $export.F * (Number.parseInt != $parseInt), 'Number', { parseInt: $parseInt });
 
@@ -20833,7 +21231,7 @@ $export($export.S + $export.F * (Number.parseInt != $parseInt), 'Number', { pars
 
 // 20.2.2.3 Math.acosh(x)
 var $export = __webpack_require__(0);
-var log1p = __webpack_require__(120);
+var log1p = __webpack_require__(123);
 var sqrt = Math.sqrt;
 var $acosh = Math.acosh;
 
@@ -20889,7 +21287,7 @@ $export($export.S + $export.F * !($atanh && 1 / $atanh(-0) < 0), 'Math', {
 
 // 20.2.2.9 Math.cbrt(x)
 var $export = __webpack_require__(0);
-var sign = __webpack_require__(87);
+var sign = __webpack_require__(88);
 
 $export($export.S, 'Math', {
   cbrt: function cbrt(x) {
@@ -20933,7 +21331,7 @@ $export($export.S, 'Math', {
 
 // 20.2.2.14 Math.expm1(x)
 var $export = __webpack_require__(0);
-var $expm1 = __webpack_require__(88);
+var $expm1 = __webpack_require__(89);
 
 $export($export.S + $export.F * ($expm1 != Math.expm1), 'Math', { expm1: $expm1 });
 
@@ -20945,7 +21343,7 @@ $export($export.S + $export.F * ($expm1 != Math.expm1), 'Math', { expm1: $expm1 
 // 20.2.2.16 Math.fround(x)
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Math', { fround: __webpack_require__(121) });
+$export($export.S, 'Math', { fround: __webpack_require__(124) });
 
 
 /***/ }),
@@ -21023,7 +21421,7 @@ $export($export.S, 'Math', {
 // 20.2.2.20 Math.log1p(x)
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Math', { log1p: __webpack_require__(120) });
+$export($export.S, 'Math', { log1p: __webpack_require__(123) });
 
 
 /***/ }),
@@ -21047,7 +21445,7 @@ $export($export.S, 'Math', {
 // 20.2.2.28 Math.sign(x)
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Math', { sign: __webpack_require__(87) });
+$export($export.S, 'Math', { sign: __webpack_require__(88) });
 
 
 /***/ }),
@@ -21056,7 +21454,7 @@ $export($export.S, 'Math', { sign: __webpack_require__(87) });
 
 // 20.2.2.30 Math.sinh(x)
 var $export = __webpack_require__(0);
-var expm1 = __webpack_require__(88);
+var expm1 = __webpack_require__(89);
 var exp = Math.exp;
 
 // V8 near Chromium 38 has a problem with very small numbers
@@ -21077,7 +21475,7 @@ $export($export.S + $export.F * __webpack_require__(4)(function () {
 
 // 20.2.2.33 Math.tanh(x)
 var $export = __webpack_require__(0);
-var expm1 = __webpack_require__(88);
+var expm1 = __webpack_require__(89);
 var exp = Math.exp;
 
 $export($export.S, 'Math', {
@@ -21176,10 +21574,10 @@ __webpack_require__(52)('trim', function ($trim) {
 
 "use strict";
 
-var $at = __webpack_require__(89)(true);
+var $at = __webpack_require__(90)(true);
 
 // 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(90)(String, 'String', function (iterated) {
+__webpack_require__(91)(String, 'String', function (iterated) {
   this._t = String(iterated); // target
   this._i = 0;                // next index
 // 21.1.5.2.1 %StringIteratorPrototype%.next()
@@ -21201,7 +21599,7 @@ __webpack_require__(90)(String, 'String', function (iterated) {
 "use strict";
 
 var $export = __webpack_require__(0);
-var $at = __webpack_require__(89)(false);
+var $at = __webpack_require__(90)(false);
 $export($export.P, 'String', {
   // 21.1.3.3 String.prototype.codePointAt(pos)
   codePointAt: function codePointAt(pos) {
@@ -21219,11 +21617,11 @@ $export($export.P, 'String', {
 
 var $export = __webpack_require__(0);
 var toLength = __webpack_require__(10);
-var context = __webpack_require__(92);
+var context = __webpack_require__(93);
 var ENDS_WITH = 'endsWith';
 var $endsWith = ''[ENDS_WITH];
 
-$export($export.P + $export.F * __webpack_require__(93)(ENDS_WITH), 'String', {
+$export($export.P + $export.F * __webpack_require__(94)(ENDS_WITH), 'String', {
   endsWith: function endsWith(searchString /* , endPosition = @length */) {
     var that = context(this, searchString, ENDS_WITH);
     var endPosition = arguments.length > 1 ? arguments[1] : undefined;
@@ -21245,10 +21643,10 @@ $export($export.P + $export.F * __webpack_require__(93)(ENDS_WITH), 'String', {
 // 21.1.3.7 String.prototype.includes(searchString, position = 0)
 
 var $export = __webpack_require__(0);
-var context = __webpack_require__(92);
+var context = __webpack_require__(93);
 var INCLUDES = 'includes';
 
-$export($export.P + $export.F * __webpack_require__(93)(INCLUDES), 'String', {
+$export($export.P + $export.F * __webpack_require__(94)(INCLUDES), 'String', {
   includes: function includes(searchString /* , position = 0 */) {
     return !!~context(this, searchString, INCLUDES)
       .indexOf(searchString, arguments.length > 1 ? arguments[1] : undefined);
@@ -21264,7 +21662,7 @@ var $export = __webpack_require__(0);
 
 $export($export.P, 'String', {
   // 21.1.3.13 String.prototype.repeat(count)
-  repeat: __webpack_require__(86)
+  repeat: __webpack_require__(87)
 });
 
 
@@ -21277,11 +21675,11 @@ $export($export.P, 'String', {
 
 var $export = __webpack_require__(0);
 var toLength = __webpack_require__(10);
-var context = __webpack_require__(92);
+var context = __webpack_require__(93);
 var STARTS_WITH = 'startsWith';
 var $startsWith = ''[STARTS_WITH];
 
-$export($export.P + $export.F * __webpack_require__(93)(STARTS_WITH), 'String', {
+$export($export.P + $export.F * __webpack_require__(94)(STARTS_WITH), 'String', {
   startsWith: function startsWith(searchString /* , position = 0 */) {
     var that = context(this, searchString, STARTS_WITH);
     var index = toLength(Math.min(arguments.length > 1 ? arguments[1] : undefined, that.length));
@@ -21618,11 +22016,11 @@ $export($export.S, 'Array', { isArray: __webpack_require__(64) });
 var ctx = __webpack_require__(22);
 var $export = __webpack_require__(0);
 var toObject = __webpack_require__(12);
-var call = __webpack_require__(122);
-var isArrayIter = __webpack_require__(94);
+var call = __webpack_require__(125);
+var isArrayIter = __webpack_require__(95);
 var toLength = __webpack_require__(10);
-var createProperty = __webpack_require__(95);
-var getIterFn = __webpack_require__(96);
+var createProperty = __webpack_require__(96);
+var getIterFn = __webpack_require__(97);
 
 $export($export.S + $export.F * !__webpack_require__(66)(function (iter) { Array.from(iter); }), 'Array', {
   // 22.1.2.1 Array.from(arrayLike, mapfn = undefined, thisArg = undefined)
@@ -21660,7 +22058,7 @@ $export($export.S + $export.F * !__webpack_require__(66)(function (iter) { Array
 "use strict";
 
 var $export = __webpack_require__(0);
-var createProperty = __webpack_require__(95);
+var createProperty = __webpack_require__(96);
 
 // WebKit Array.of isn't generic
 $export($export.S + $export.F * __webpack_require__(4)(function () {
@@ -21705,7 +22103,7 @@ $export($export.P + $export.F * (__webpack_require__(56) != Object || !__webpack
 "use strict";
 
 var $export = __webpack_require__(0);
-var html = __webpack_require__(82);
+var html = __webpack_require__(83);
 var cof = __webpack_require__(23);
 var toAbsoluteIndex = __webpack_require__(42);
 var toLength = __webpack_require__(10);
@@ -21878,7 +22276,7 @@ $export($export.P + $export.F * !__webpack_require__(24)([].every, true), 'Array
 "use strict";
 
 var $export = __webpack_require__(0);
-var $reduce = __webpack_require__(123);
+var $reduce = __webpack_require__(126);
 
 $export($export.P + $export.F * !__webpack_require__(24)([].reduce, true), 'Array', {
   // 22.1.3.18 / 15.4.4.21 Array.prototype.reduce(callbackfn [, initialValue])
@@ -21895,7 +22293,7 @@ $export($export.P + $export.F * !__webpack_require__(24)([].reduce, true), 'Arra
 "use strict";
 
 var $export = __webpack_require__(0);
-var $reduce = __webpack_require__(123);
+var $reduce = __webpack_require__(126);
 
 $export($export.P + $export.F * !__webpack_require__(24)([].reduceRight, true), 'Array', {
   // 22.1.3.19 / 15.4.4.22 Array.prototype.reduceRight(callbackfn [, initialValue])
@@ -21963,9 +22361,9 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !__webpack_require__(24)($nati
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 var $export = __webpack_require__(0);
 
-$export($export.P, 'Array', { copyWithin: __webpack_require__(124) });
+$export($export.P, 'Array', { copyWithin: __webpack_require__(127) });
 
-__webpack_require__(35)('copyWithin');
+__webpack_require__(36)('copyWithin');
 
 
 /***/ }),
@@ -21975,9 +22373,9 @@ __webpack_require__(35)('copyWithin');
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 var $export = __webpack_require__(0);
 
-$export($export.P, 'Array', { fill: __webpack_require__(98) });
+$export($export.P, 'Array', { fill: __webpack_require__(99) });
 
-__webpack_require__(35)('fill');
+__webpack_require__(36)('fill');
 
 
 /***/ }),
@@ -21998,7 +22396,7 @@ $export($export.P + $export.F * forced, 'Array', {
     return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
   }
 });
-__webpack_require__(35)(KEY);
+__webpack_require__(36)(KEY);
 
 
 /***/ }),
@@ -22019,7 +22417,7 @@ $export($export.P + $export.F * forced, 'Array', {
     return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
   }
 });
-__webpack_require__(35)(KEY);
+__webpack_require__(36)(KEY);
 
 
 /***/ }),
@@ -22034,7 +22432,7 @@ __webpack_require__(45)('Array');
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(3);
-var inheritIfRequired = __webpack_require__(85);
+var inheritIfRequired = __webpack_require__(86);
 var dP = __webpack_require__(9).f;
 var gOPN = __webpack_require__(44).f;
 var isRegExp = __webpack_require__(65);
@@ -22084,7 +22482,7 @@ __webpack_require__(45)('RegExp');
 
 "use strict";
 
-__webpack_require__(126);
+__webpack_require__(129);
 var anObject = __webpack_require__(2);
 var $flags = __webpack_require__(67);
 var DESCRIPTORS = __webpack_require__(8);
@@ -22253,11 +22651,11 @@ var aFunction = __webpack_require__(13);
 var anInstance = __webpack_require__(46);
 var forOf = __webpack_require__(47);
 var speciesConstructor = __webpack_require__(69);
-var task = __webpack_require__(100).set;
-var microtask = __webpack_require__(101)();
-var newPromiseCapabilityModule = __webpack_require__(102);
-var perform = __webpack_require__(127);
-var promiseResolve = __webpack_require__(128);
+var task = __webpack_require__(101).set;
+var microtask = __webpack_require__(102)();
+var newPromiseCapabilityModule = __webpack_require__(103);
+var perform = __webpack_require__(130);
+var promiseResolve = __webpack_require__(131);
 var PROMISE = 'Promise';
 var TypeError = global.TypeError;
 var process = global.process;
@@ -22530,7 +22928,7 @@ $export($export.S + $export.F * !(USE_NATIVE && __webpack_require__(66)(function
 
 "use strict";
 
-var weak = __webpack_require__(133);
+var weak = __webpack_require__(136);
 var validate = __webpack_require__(54);
 var WEAK_SET = 'WeakSet';
 
@@ -22553,7 +22951,7 @@ __webpack_require__(70)(WEAK_SET, function (get) {
 
 var $export = __webpack_require__(0);
 var $typed = __webpack_require__(71);
-var buffer = __webpack_require__(103);
+var buffer = __webpack_require__(104);
 var anObject = __webpack_require__(2);
 var toAbsoluteIndex = __webpack_require__(42);
 var toLength = __webpack_require__(10);
@@ -22604,7 +23002,7 @@ __webpack_require__(45)(ARRAY_BUFFER);
 
 var $export = __webpack_require__(0);
 $export($export.G + $export.W + $export.F * !__webpack_require__(71).ABV, {
-  DataView: __webpack_require__(103).DataView
+  DataView: __webpack_require__(104).DataView
 });
 
 
@@ -22612,7 +23010,7 @@ $export($export.G + $export.W + $export.F * !__webpack_require__(71).ABV, {
 /* 302 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Int8', 1, function (init) {
+__webpack_require__(33)('Int8', 1, function (init) {
   return function Int8Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22623,7 +23021,7 @@ __webpack_require__(32)('Int8', 1, function (init) {
 /* 303 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Uint8', 1, function (init) {
+__webpack_require__(33)('Uint8', 1, function (init) {
   return function Uint8Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22634,7 +23032,7 @@ __webpack_require__(32)('Uint8', 1, function (init) {
 /* 304 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Uint8', 1, function (init) {
+__webpack_require__(33)('Uint8', 1, function (init) {
   return function Uint8ClampedArray(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22645,7 +23043,7 @@ __webpack_require__(32)('Uint8', 1, function (init) {
 /* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Int16', 2, function (init) {
+__webpack_require__(33)('Int16', 2, function (init) {
   return function Int16Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22656,7 +23054,7 @@ __webpack_require__(32)('Int16', 2, function (init) {
 /* 306 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Uint16', 2, function (init) {
+__webpack_require__(33)('Uint16', 2, function (init) {
   return function Uint16Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22667,7 +23065,7 @@ __webpack_require__(32)('Uint16', 2, function (init) {
 /* 307 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Int32', 4, function (init) {
+__webpack_require__(33)('Int32', 4, function (init) {
   return function Int32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22678,7 +23076,7 @@ __webpack_require__(32)('Int32', 4, function (init) {
 /* 308 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Uint32', 4, function (init) {
+__webpack_require__(33)('Uint32', 4, function (init) {
   return function Uint32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22689,7 +23087,7 @@ __webpack_require__(32)('Uint32', 4, function (init) {
 /* 309 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Float32', 4, function (init) {
+__webpack_require__(33)('Float32', 4, function (init) {
   return function Float32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22700,7 +23098,7 @@ __webpack_require__(32)('Float32', 4, function (init) {
 /* 310 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(32)('Float64', 8, function (init) {
+__webpack_require__(33)('Float64', 8, function (init) {
   return function Float64Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
@@ -22740,7 +23138,7 @@ var aFunction = __webpack_require__(13);
 var anObject = __webpack_require__(2);
 var isObject = __webpack_require__(6);
 var fails = __webpack_require__(4);
-var bind = __webpack_require__(114);
+var bind = __webpack_require__(117);
 var rConstruct = (__webpack_require__(3).Reflect || {}).construct;
 
 // MS Edge supports only 2 arguments and argumentsList argument is optional
@@ -22844,7 +23242,7 @@ var Enumerate = function (iterated) {
   var key;
   for (key in iterated) keys.push(key);
 };
-__webpack_require__(91)(Enumerate, 'Object', function () {
+__webpack_require__(92)(Enumerate, 'Object', function () {
   var that = this;
   var keys = that._k;
   var key;
@@ -22958,7 +23356,7 @@ $export($export.S, 'Reflect', {
 // 26.1.11 Reflect.ownKeys(target)
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Reflect', { ownKeys: __webpack_require__(135) });
+$export($export.S, 'Reflect', { ownKeys: __webpack_require__(138) });
 
 
 /***/ }),
@@ -23026,7 +23424,7 @@ $export($export.S, 'Reflect', { set: set });
 
 // 26.1.14 Reflect.setPrototypeOf(target, proto)
 var $export = __webpack_require__(0);
-var setProto = __webpack_require__(83);
+var setProto = __webpack_require__(84);
 
 if (setProto) $export($export.S, 'Reflect', {
   setPrototypeOf: function setPrototypeOf(target, proto) {
@@ -23057,7 +23455,7 @@ $export($export.P, 'Array', {
   }
 });
 
-__webpack_require__(35)('includes');
+__webpack_require__(36)('includes');
 
 
 /***/ }),
@@ -23068,11 +23466,11 @@ __webpack_require__(35)('includes');
 
 // https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
 var $export = __webpack_require__(0);
-var flattenIntoArray = __webpack_require__(136);
+var flattenIntoArray = __webpack_require__(139);
 var toObject = __webpack_require__(12);
 var toLength = __webpack_require__(10);
 var aFunction = __webpack_require__(13);
-var arraySpeciesCreate = __webpack_require__(97);
+var arraySpeciesCreate = __webpack_require__(98);
 
 $export($export.P, 'Array', {
   flatMap: function flatMap(callbackfn /* , thisArg */) {
@@ -23086,7 +23484,7 @@ $export($export.P, 'Array', {
   }
 });
 
-__webpack_require__(35)('flatMap');
+__webpack_require__(36)('flatMap');
 
 
 /***/ }),
@@ -23097,11 +23495,11 @@ __webpack_require__(35)('flatMap');
 
 // https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatten
 var $export = __webpack_require__(0);
-var flattenIntoArray = __webpack_require__(136);
+var flattenIntoArray = __webpack_require__(139);
 var toObject = __webpack_require__(12);
 var toLength = __webpack_require__(10);
 var toInteger = __webpack_require__(28);
-var arraySpeciesCreate = __webpack_require__(97);
+var arraySpeciesCreate = __webpack_require__(98);
 
 $export($export.P, 'Array', {
   flatten: function flatten(/* depthArg = 1 */) {
@@ -23114,7 +23512,7 @@ $export($export.P, 'Array', {
   }
 });
 
-__webpack_require__(35)('flatten');
+__webpack_require__(36)('flatten');
 
 
 /***/ }),
@@ -23125,7 +23523,7 @@ __webpack_require__(35)('flatten');
 
 // https://github.com/mathiasbynens/String.prototype.at
 var $export = __webpack_require__(0);
-var $at = __webpack_require__(89)(true);
+var $at = __webpack_require__(90)(true);
 
 $export($export.P, 'String', {
   at: function at(pos) {
@@ -23142,7 +23540,7 @@ $export($export.P, 'String', {
 
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = __webpack_require__(0);
-var $pad = __webpack_require__(137);
+var $pad = __webpack_require__(140);
 
 $export($export.P, 'String', {
   padStart: function padStart(maxLength /* , fillString = ' ' */) {
@@ -23159,7 +23557,7 @@ $export($export.P, 'String', {
 
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = __webpack_require__(0);
-var $pad = __webpack_require__(137);
+var $pad = __webpack_require__(140);
 
 $export($export.P, 'String', {
   padEnd: function padEnd(maxLength /* , fillString = ' ' */) {
@@ -23215,7 +23613,7 @@ var $RegExpStringIterator = function (regexp, string) {
   this._s = string;
 };
 
-__webpack_require__(91)($RegExpStringIterator, 'RegExp String', function next() {
+__webpack_require__(92)($RegExpStringIterator, 'RegExp String', function next() {
   var match = this._r.exec(this._s);
   return { value: match, done: match === null };
 });
@@ -23237,14 +23635,14 @@ $export($export.P, 'String', {
 /* 334 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(79)('asyncIterator');
+__webpack_require__(80)('asyncIterator');
 
 
 /***/ }),
 /* 335 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(79)('observable');
+__webpack_require__(80)('observable');
 
 
 /***/ }),
@@ -23253,10 +23651,10 @@ __webpack_require__(79)('observable');
 
 // https://github.com/tc39/proposal-object-getownpropertydescriptors
 var $export = __webpack_require__(0);
-var ownKeys = __webpack_require__(135);
+var ownKeys = __webpack_require__(138);
 var toIObject = __webpack_require__(18);
 var gOPD = __webpack_require__(19);
-var createProperty = __webpack_require__(95);
+var createProperty = __webpack_require__(96);
 
 $export($export.S, 'Object', {
   getOwnPropertyDescriptors: function getOwnPropertyDescriptors(object) {
@@ -23281,7 +23679,7 @@ $export($export.S, 'Object', {
 
 // https://github.com/tc39/proposal-object-values-entries
 var $export = __webpack_require__(0);
-var $values = __webpack_require__(138)(false);
+var $values = __webpack_require__(141)(false);
 
 $export($export.S, 'Object', {
   values: function values(it) {
@@ -23296,7 +23694,7 @@ $export($export.S, 'Object', {
 
 // https://github.com/tc39/proposal-object-values-entries
 var $export = __webpack_require__(0);
-var $entries = __webpack_require__(138)(true);
+var $entries = __webpack_require__(141)(true);
 
 $export($export.S, 'Object', {
   entries: function entries(it) {
@@ -23400,7 +23798,7 @@ __webpack_require__(8) && $export($export.P + __webpack_require__(72), 'Object',
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export = __webpack_require__(0);
 
-$export($export.P + $export.R, 'Map', { toJSON: __webpack_require__(139)('Map') });
+$export($export.P + $export.R, 'Map', { toJSON: __webpack_require__(142)('Map') });
 
 
 /***/ }),
@@ -23410,7 +23808,7 @@ $export($export.P + $export.R, 'Map', { toJSON: __webpack_require__(139)('Map') 
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export = __webpack_require__(0);
 
-$export($export.P + $export.R, 'Set', { toJSON: __webpack_require__(139)('Set') });
+$export($export.P + $export.R, 'Set', { toJSON: __webpack_require__(142)('Set') });
 
 
 /***/ }),
@@ -23557,8 +23955,8 @@ $export($export.S, 'Math', {
 
 // https://rwaldron.github.io/proposal-math-extensions/
 var $export = __webpack_require__(0);
-var scale = __webpack_require__(141);
-var fround = __webpack_require__(121);
+var scale = __webpack_require__(144);
+var fround = __webpack_require__(124);
 
 $export($export.S, 'Math', {
   fscale: function fscale(x, inLow, inHigh, outLow, outHigh) {
@@ -23655,7 +24053,7 @@ $export($export.S, 'Math', {
 // https://rwaldron.github.io/proposal-math-extensions/
 var $export = __webpack_require__(0);
 
-$export($export.S, 'Math', { scale: __webpack_require__(141) });
+$export($export.S, 'Math', { scale: __webpack_require__(144) });
 
 
 /***/ }),
@@ -23704,7 +24102,7 @@ var $export = __webpack_require__(0);
 var core = __webpack_require__(25);
 var global = __webpack_require__(3);
 var speciesConstructor = __webpack_require__(69);
-var promiseResolve = __webpack_require__(128);
+var promiseResolve = __webpack_require__(131);
 
 $export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
   var C = speciesConstructor(this, core.Promise || global.Promise);
@@ -23728,8 +24126,8 @@ $export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
 
 // https://github.com/tc39/proposal-promise-try
 var $export = __webpack_require__(0);
-var newPromiseCapability = __webpack_require__(102);
-var perform = __webpack_require__(127);
+var newPromiseCapability = __webpack_require__(103);
+var perform = __webpack_require__(130);
 
 $export($export.S, 'Promise', { 'try': function (callbackfn) {
   var promiseCapability = newPromiseCapability.f(this);
@@ -23743,7 +24141,7 @@ $export($export.S, 'Promise', { 'try': function (callbackfn) {
 /* 370 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var toMetaKey = metadata.key;
 var ordinaryDefineOwnMetadata = metadata.set;
@@ -23757,7 +24155,7 @@ metadata.exp({ defineMetadata: function defineMetadata(metadataKey, metadataValu
 /* 371 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var toMetaKey = metadata.key;
 var getOrCreateMetadataMap = metadata.map;
@@ -23778,7 +24176,7 @@ metadata.exp({ deleteMetadata: function deleteMetadata(metadataKey, target /* , 
 /* 372 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var getPrototypeOf = __webpack_require__(20);
 var ordinaryHasOwnMetadata = metadata.has;
@@ -23801,9 +24199,9 @@ metadata.exp({ getMetadata: function getMetadata(metadataKey, target /* , target
 /* 373 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Set = __webpack_require__(131);
-var from = __webpack_require__(140);
-var metadata = __webpack_require__(33);
+var Set = __webpack_require__(134);
+var from = __webpack_require__(143);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var getPrototypeOf = __webpack_require__(20);
 var ordinaryOwnMetadataKeys = metadata.keys;
@@ -23826,7 +24224,7 @@ metadata.exp({ getMetadataKeys: function getMetadataKeys(target /* , targetKey *
 /* 374 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var ordinaryGetOwnMetadata = metadata.get;
 var toMetaKey = metadata.key;
@@ -23841,7 +24239,7 @@ metadata.exp({ getOwnMetadata: function getOwnMetadata(metadataKey, target /* , 
 /* 375 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var ordinaryOwnMetadataKeys = metadata.keys;
 var toMetaKey = metadata.key;
@@ -23855,7 +24253,7 @@ metadata.exp({ getOwnMetadataKeys: function getOwnMetadataKeys(target /* , targe
 /* 376 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var getPrototypeOf = __webpack_require__(20);
 var ordinaryHasOwnMetadata = metadata.has;
@@ -23877,7 +24275,7 @@ metadata.exp({ hasMetadata: function hasMetadata(metadataKey, target /* , target
 /* 377 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var metadata = __webpack_require__(33);
+var metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var ordinaryHasOwnMetadata = metadata.has;
 var toMetaKey = metadata.key;
@@ -23892,7 +24290,7 @@ metadata.exp({ hasOwnMetadata: function hasOwnMetadata(metadataKey, target /* , 
 /* 378 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var $metadata = __webpack_require__(33);
+var $metadata = __webpack_require__(34);
 var anObject = __webpack_require__(2);
 var aFunction = __webpack_require__(13);
 var toMetaKey = $metadata.key;
@@ -23915,7 +24313,7 @@ $metadata.exp({ metadata: function metadata(metadataKey, metadataValue) {
 
 // https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-09/sept-25.md#510-globalasap-for-enqueuing-a-microtask
 var $export = __webpack_require__(0);
-var microtask = __webpack_require__(101)();
+var microtask = __webpack_require__(102)();
 var process = __webpack_require__(3).process;
 var isNode = __webpack_require__(23)(process) == 'process';
 
@@ -23937,7 +24335,7 @@ $export($export.G, {
 var $export = __webpack_require__(0);
 var global = __webpack_require__(3);
 var core = __webpack_require__(25);
-var microtask = __webpack_require__(101)();
+var microtask = __webpack_require__(102)();
 var OBSERVABLE = __webpack_require__(7)('observable');
 var aFunction = __webpack_require__(13);
 var anObject = __webpack_require__(2);
@@ -24164,7 +24562,7 @@ $export($export.G + $export.B + $export.F * MSIE, {
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
-var $task = __webpack_require__(100);
+var $task = __webpack_require__(101);
 $export($export.G + $export.B, {
   setImmediate: $task.set,
   clearImmediate: $task.clear
@@ -24175,7 +24573,7 @@ $export($export.G + $export.B, {
 /* 383 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var $iterators = __webpack_require__(99);
+var $iterators = __webpack_require__(100);
 var getKeys = __webpack_require__(41);
 var redefine = __webpack_require__(16);
 var global = __webpack_require__(3);
@@ -24976,7 +25374,7 @@ for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++
   typeof self === "object" ? self : this
 );
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(77)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(78)))
 
 /***/ }),
 /* 385 */
@@ -25022,7 +25420,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _requireAll = __webpack_require__(104);
+var _requireAll = __webpack_require__(105);
 
 var _requireAll2 = _interopRequireDefault(_requireAll);
 
@@ -25030,7 +25428,7 @@ var _utils = __webpack_require__(1);
 
 var utils = _interopRequireWildcard(_utils);
 
-var _tool = __webpack_require__(142);
+var _tool = __webpack_require__(145);
 
 var _tool2 = _interopRequireDefault(_tool);
 
@@ -25054,7 +25452,7 @@ var _events = __webpack_require__(50);
 
 var _events2 = _interopRequireDefault(_events);
 
-var _globals = __webpack_require__(107);
+var _globals = __webpack_require__(109);
 
 var _globals2 = _interopRequireDefault(_globals);
 
@@ -25062,11 +25460,11 @@ var _iconset = __webpack_require__(21);
 
 var iconset = _interopRequireWildcard(_iconset);
 
-var _d = __webpack_require__(154);
+var _d = __webpack_require__(155);
 
 var _d2 = _interopRequireDefault(_d);
 
-var _d3 = __webpack_require__(155);
+var _d3 = __webpack_require__(156);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -25101,23 +25499,23 @@ Vzb.clearInstances = function (id) {
 };
 
 //available readers = all
-var readers = (0, _requireAll2.default)(__webpack_require__(393));
+var readers = (0, _requireAll2.default)(__webpack_require__(395));
 
 //register available readers
 utils.forEach(readers, function (reader, name) {
   _reader2.default.register(name, reader);
 });
 
-var components = (0, _requireAll2.default)(__webpack_require__(397), 1);
+var components = (0, _requireAll2.default)(__webpack_require__(399), 1);
 
 //register available components
 utils.forEach(components, function (component, name) {
   _component2.default.register(name, component);
 });
 
-(0, _requireAll2.default)(__webpack_require__(424));
+(0, _requireAll2.default)(__webpack_require__(426));
 
-Vzb.helpers = (0, _requireAll2.default)(__webpack_require__(425));
+Vzb.helpers = (0, _requireAll2.default)(__webpack_require__(427));
 Vzb.iconset = iconset;
 
 //d3 addons
@@ -25308,36 +25706,36 @@ exports.default = Intervals;
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./axis": 105,
-	"./axis.js": 105,
-	"./color": 143,
-	"./color.js": 143,
-	"./data": 106,
-	"./data.js": 106,
+	"./axis": 106,
+	"./axis.js": 106,
+	"./color": 146,
+	"./color.js": 146,
+	"./data": 107,
+	"./data.js": 107,
 	"./dataconnected": 55,
 	"./dataconnected.js": 55,
-	"./entities": 144,
-	"./entities.js": 144,
-	"./group": 145,
-	"./group.js": 145,
-	"./hook": 36,
-	"./hook.js": 36,
-	"./label": 146,
-	"./label.js": 146,
-	"./locale": 147,
-	"./locale.js": 147,
-	"./marker": 148,
-	"./marker.js": 148,
-	"./side": 149,
-	"./side.js": 149,
-	"./size": 150,
-	"./size.js": 150,
-	"./stack": 151,
-	"./stack.js": 151,
-	"./time": 152,
-	"./time.js": 152,
-	"./ui": 153,
-	"./ui.js": 153
+	"./entities": 108,
+	"./entities.js": 108,
+	"./group": 147,
+	"./group.js": 147,
+	"./hook": 32,
+	"./hook.js": 32,
+	"./label": 148,
+	"./label.js": 148,
+	"./locale": 149,
+	"./locale.js": 149,
+	"./marker": 76,
+	"./marker.js": 76,
+	"./side": 150,
+	"./side.js": 150,
+	"./size": 151,
+	"./size.js": 151,
+	"./stack": 152,
+	"./stack.js": 152,
+	"./time": 153,
+	"./time.js": 153,
+	"./ui": 154,
+	"./ui.js": 154
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -25385,8 +25783,16 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _getQueryId(query, path) {
-  return utils.hashCode([query.select.key, query.where, query.join, query.dataset, query.version, query.language, path]);
+function _getQueryId(query, path, lastModified, readerName) {
+  return utils.hashCode([query.select.key, query.where, query.from, query.join, query.dataset, query.version, query.language, path, lastModified, readerName]);
+}
+
+function getCacheKey(dataId, frames, keys) {
+  var result = frames[0] + " - " + frames[frames.length - 1] + " (" + frames.length + ")";
+  if (keys) {
+    result = result + "_" + keys.join();
+  }
+  return result;
 }
 
 var Storage = exports.Storage = function () {
@@ -25411,7 +25817,7 @@ var Storage = exports.Storage = function () {
     key: "loadFromReader",
     value: function loadFromReader(query, parsers, readerObject) {
       var _this = this;
-      var queryMergeId = _getQueryId(query, readerObject._basepath);
+      var queryMergeId = _getQueryId(query, readerObject._basepath, readerObject._lastModified, readerObject._name);
 
       if (!this.queries[queryMergeId]) {
         this.queries[queryMergeId] = this.queryQueue(readerObject, queryMergeId);
@@ -25420,10 +25826,10 @@ var Storage = exports.Storage = function () {
     }
   }, {
     key: "getDataId",
-    value: function getDataId(query, readerObject) {
-      var queryMergeId = _getQueryId(query, readerObject._basepath);
+    value: function getDataId(query, readerObject, parsers) {
+      var queryMergeId = _getQueryId(query, readerObject._basepath, readerObject._lastModified, readerObject._name);
       if (this.queries[queryMergeId]) {
-        return this.queries[queryMergeId].getDataId(query);
+        return this.queries[queryMergeId].getDataId(query, parsers);
       }
       return false;
     }
@@ -25431,6 +25837,11 @@ var Storage = exports.Storage = function () {
     key: "queryQueue",
     value: function queryQueue(readerObject, queryMergeId) {
       var _context = this;
+      var _parsersCompare = function _parsersCompare(readerParsers, queryParcers) {
+        return Object.keys(queryParcers).filter(function (p) {
+          return queryParcers[p] !== readerParsers[p];
+        }).length == 0 && (Object.keys(readerParsers).length == 0 || Object.keys(queryParcers).length != 0);
+      };
       return new function () {
         this.readerObject = readerObject;
         this.queries = [];
@@ -25450,7 +25861,7 @@ var Storage = exports.Storage = function () {
 
               if (query.select.value.filter(function (x) {
                 return reader.query.select.value.indexOf(x) == -1;
-              }).length == 0) {
+              }).length == 0 && _parsersCompare(reader.parsers, parsers)) {
                 //check if this query have all needed values
                 return {
                   v: reader.defer.promise
@@ -25482,7 +25893,7 @@ var Storage = exports.Storage = function () {
             this.query = query;
             this.parsers = parsers;
           } else {
-            this.query.select.value = utils.unique(this.query.select.value.concat(query.select.value));
+            this.query.select.value = this.query.select.value ? utils.unique(this.query.select.value.concat(query.select.value)) : [];
             utils.extend(this.parsers, parsers);
           }
           utils.debounce(function () {
@@ -25505,7 +25916,7 @@ var Storage = exports.Storage = function () {
           }
         };
 
-        this.getDataId = function (query) {
+        this.getDataId = function (query, parsers) {
           var _iteratorNormalCompletion2 = true;
           var _didIteratorError2 = false;
           var _iteratorError2 = undefined;
@@ -25514,9 +25925,9 @@ var Storage = exports.Storage = function () {
             var _loop2 = function _loop2() {
               var reader = _step2.value;
 
-              if (query.select.value.filter(function (x) {
+              if ((!query.select.value || query.select.value.filter(function (x) {
                 return reader.query.select.value.indexOf(x) == -1;
-              }).length == 0 && reader.dataId) {
+              }).length == 0) && _parsersCompare(reader.parsers, parsers) && reader.dataId) {
                 //check if this query have all needed values
                 return {
                   v: reader.dataId
@@ -25549,6 +25960,8 @@ var Storage = exports.Storage = function () {
 
         this.reader = function (query, parsers, defer) {
           var _queue = this;
+          // && !(_queue.readerObject.compatibility || {}).aggregateValues
+          var _query = query.grouping ? utils.clone(query, null, ["grouping"]) : query;
           return new function () {
             var _this3 = this;
 
@@ -25556,10 +25969,10 @@ var Storage = exports.Storage = function () {
             this.query = query;
             this.parsers = parsers;
             this.dataId = null;
-            _queue.readerObject.read(this.query, this.parsers).then(function (response) {
+            _queue.readerObject.read(_query, this.parsers).then(function (response) {
               //success reading
               _this3.checkQueryResponse(query, response);
-              _this3.dataId = utils.hashCode([query, _queue.readerObject._basepath]);
+              _this3.dataId = utils.hashCode([_query, _queue.readerObject._basepath]);
               _context._collection[_this3.dataId] = {};
               _context._collectionPromises[_this3.dataId] = {};
               var col = _context._collection[_this3.dataId];
@@ -25605,9 +26018,79 @@ var Storage = exports.Storage = function () {
       }();
     }
   }, {
-    key: "setGrouping",
-    value: function setGrouping(dataId, grouping) {
-      this._collection[dataId].grouping = grouping;
+    key: "aggregateData",
+    value: function aggregateData(dataId, query, readerObject, conceptProps) {
+      if (Object.keys(query.grouping).every(function (key) {
+        return query.grouping[key]["grouping"] === 1;
+      })) {
+        return Promise.resolve(dataId);
+      }
+
+      var queryMergeId = _getQueryId(query, readerObject._basepath, readerObject._lastModified, readerObject._name);
+      var dataIdAggr = utils.hashCode([query, readerObject._basepath]);
+
+      if (!this._collection[dataIdAggr] || this._collection[dataIdAggr]._queryMergeId !== queryMergeId) {
+        var grouping = query.grouping = query.grouping;
+        var queryKeys = query.select.key;
+        var queryMeasures = query.select.value.filter(function (value) {
+          return conceptProps[value]["concept_type"] === "measure";
+        });
+
+        var order = query.from === "datapoints" ? queryKeys.concat(query.animatable) : queryKeys.slice(0);
+
+        var groupKeys = Object.keys(grouping || {}).filter(function (key) {
+          return order.indexOf(key) !== -1 && queryKeys.indexOf(key) !== -1 && grouping[key]["grouping"] > 1;
+        });
+        var groupKeyCalcs = groupKeys.reduce(function (calcs, key) {
+          return function (group) {
+            calcs[key] = function (d) {
+              return ~~(+d / group) * group;
+            };
+            return calcs;
+          }(grouping[key]["grouping"]);
+        }, {});
+
+        var nest = d3.nest();
+        for (var i = 0; i < order.length; i++) {
+          nest = nest.key(function (k, groupKeyCalc) {
+            return groupKeyCalc ? function (d) {
+              return groupKeyCalc(d[k]);
+            } : function (d) {
+              return d[k];
+            };
+          }(order[i], groupKeyCalcs[order[i]]));
+        }
+
+        if (groupKeys.length) {
+          nest = nest.rollup(function (values) {
+            var obj = Object.assign({}, values[0]);
+            groupKeys.forEach(function (key) {
+              return obj[key] = groupKeyCalcs[key](obj[key]);
+            });
+            queryMeasures.forEach(function (measure) {
+              return obj[measure] = d3.sum(values, function (d) {
+                return +d[measure];
+              });
+            });
+            return [obj];
+          });
+        }
+
+        this._collection[dataIdAggr] = {};
+        this._collectionPromises[dataIdAggr] = {};
+        var col = this._collection[dataIdAggr];
+        col.data = utils.nestArrayToValues(nest.entries(this._collection[dataId]["data"]));
+        col.valid = {};
+        col.nested = {};
+        col.unique = {};
+        col.limits = {};
+        col.frames = {};
+        col.haveNoDataPointsPerKey = {};
+        col.query = query;
+        col._queryMergeId = queryMergeId;
+      }
+
+      return Promise.resolve(dataIdAggr);
     }
   }, {
     key: "getData",
@@ -25724,21 +26207,33 @@ var Storage = exports.Storage = function () {
       // Nests are objects of key-value pairs
       // Example:
       //
-      // order = ["geo", "time"];
+      // order = ["geo", "gender", "time"];
       //
       // original_data = [
-      //   { geo: "afg", time: 1800, gdp: 23424, lex: 23}
-      //   { geo: "afg", time: 1801, gdp: 23424, lex: null}
-      //   { geo: "chn", time: 1800, gdp: 23587424, lex: 46}
-      //   { geo: "chn", time: 1801, gdp: null, lex: null}
+      //   { geo: "afg", gender: "male", time: 1800, gdp: 23424, lex: 23}
+      //   { geo: "afg", gender: "female", time: 1800, gdp: 23424, lex: 23}
+      //   { geo: "afg", gender: "male", time: 1801, gdp: 23424, lex: null}
+      //   { geo: "afg", gender: "female", time: 1801, gdp: 23424, lex: null}
+      //   { geo: "chn", gender: "male", time: 1800, gdp: 23587424, lex: 46}
+      //   { geo: "chn", gender: "female", time: 1800, gdp: 23587424, lex: 46}
+      //   { geo: "chn", gender: "male", time: 1801, gdp: null, lex: null}
+      //   { geo: "chn", gender: "female", time: 1801, gdp: null, lex: null}
       // ];
       //
       // nested_data = {
-      //   afg: {
+      //   ["afg","male"]: {
       //     1800: {gdp: 23424, lex: 23},
       //     1801: {gdp: 23424, lex: null}
       //   }
-      //   chn: {
+      //   ["afg","female"]: {
+      //     1800: {gdp: 23424, lex: 23},
+      //     1801: {gdp: 23424, lex: null}
+      //   }
+      //   ["chn","male"]: {
+      //     1800: {gdp: 23587424, lex: 46 },
+      //     1801: {gdp: null, lex: null }
+      //   }
+      //   ["chn","female"]: {
       //     1800: {gdp: 23587424, lex: 46 },
       //     1801: {gdp: null, lex: null }
       //   }
@@ -25753,13 +26248,13 @@ var Storage = exports.Storage = function () {
         }(order[i]));
       }
 
-      return utils.nestArrayToObj(nest.entries(this._collection[dataId]["data"]));
+      return utils.nestArrayToObjWithFlatKeys(nest.entries(this._collection[dataId]["data"]));
     }
   }, {
     key: "getFrames",
     value: function getFrames(dataId, framesArray, keys, conceptprops) {
       var _this = this;
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       if (!this._collectionPromises[dataId][whatId]) {
         this._collectionPromises[dataId][whatId] = {
           queue: this.framesQueue(framesArray, whatId),
@@ -25784,7 +26279,7 @@ var Storage = exports.Storage = function () {
     key: "getFrame",
     value: function getFrame(dataId, framesArray, neededFrame, keys) {
       var _this = this;
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       return new Promise(function (resolve, reject) {
         if (_this._collection[dataId]["frames"][whatId] && _this._collection[dataId]["frames"][whatId][neededFrame]) {
           resolve(_this._collection[dataId]["frames"][whatId]);
@@ -25798,7 +26293,7 @@ var Storage = exports.Storage = function () {
   }, {
     key: "listenFrame",
     value: function listenFrame(dataId, framesArray, keys, cb) {
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       this._collectionPromises[dataId][whatId]["queue"].defaultCallbacks.push(function (time) {
         cb(dataId, time);
       });
@@ -25987,7 +26482,7 @@ var Storage = exports.Storage = function () {
      * @param {String} whatId hash code for cache
      * @param {Array} framesArray -- array of keyframes across animatable
      * @param {Array} keys -- array of keys
-     * @param {Array} indicatorsDB 
+     * @param {Array} indicatorsDB
      * @returns {Object} regularised dataset, nested by [animatable, column, key]
      */
 
@@ -26016,27 +26511,21 @@ var Storage = exports.Storage = function () {
         if (TIME && KEY.indexOf(TIME) != -1) KEY.splice(KEY.indexOf(TIME), 1);
 
         var filtered = {};
-        var k = void 0,
-            items = void 0,
+        var items = void 0,
             itemsIndex = void 0,
             oneFrame = void 0,
             method = void 0,
             use = void 0,
             next = void 0;
 
-        var entitiesByKey = {};
-        if (KEY.length > 1) {
-          for (k = 1; k < KEY.length; k++) {
-            var _nested = _this.getData(dataId, "nested", [KEY[k]].concat([TIME]));
-            entitiesByKey[KEY[k]] = Object.keys(_nested);
-          }
-        }
-
         // We _nest_ the flat dataset in two levels: first by “key” (example: geo), then by “animatable” (example: year)
         // See the _getNested function for more details
-        var nested = _this.getData(dataId, "nested", KEY.concat([TIME]));
-        keys = keys ? keys : Object.keys(nested);
-        entitiesByKey[KEY[0]] = keys;
+        var nested = _this.getData(dataId, "nested", KEY.concat([TIME]), indicatorsDB);
+        var nestedKeys = Object.keys(nested);
+        keys = keys ? keys : nestedKeys.map(function (k) {
+          return JSON.parse(k).join(",");
+        });
+
         // Get the list of columns that are in the dataset, exclude key column and animatable column
         // Example: [“lex”, “gdp”, “u5mr"]
         var query = _this._collection[dataId].query;
@@ -26045,35 +26534,23 @@ var Storage = exports.Storage = function () {
         });
 
         var cLength = columns.length;
+
         var key = void 0,
+            nestedKey = void 0,
+            k = void 0,
+            column = void 0,
             c = void 0;
 
-        var lastIndex = KEY.length - 1;
-        function createFiltered(parent, index) {
-          var keys = entitiesByKey[KEY[index]];
-          for (var i = 0, j = keys.length; i < j; i++) {
-            parent[keys[i]] = {};
-            if (index == lastIndex) {
-              for (c = 0; c < cLength; c++) {
-                parent[keys[i]][columns[c]] = null;
-              }
-            } else {
-              var nextIndex = index + 1;
-              createFiltered(parent[keys[i]], nextIndex);
-            }
+        for (k = 0; k < keys.length; k++) {
+          filtered[keys[k]] = {};
+          for (c = 0; c < cLength; c++) {
+            filtered[keys[k]][columns[c]] = null;
           }
         }
 
-        createFiltered(filtered, 0);
-
         for (c = 0; c < cLength; c++) {
           _this._collection[dataId].haveNoDataPointsPerKey[columns[c]] = {};
-        }
-        var _ref = _this._collection[dataId].grouping || {},
-            groupKey = _ref.key,
-            groupValue = _ref.grouping;
-
-        var buildFrame = function buildFrame(frameName, entitiesByKey, KEY, dataId, callback) {
+        }var buildFrame = function buildFrame(frameName, keys, dataId, callback) {
           var frame = {};
           if (query.from !== "datapoints") {
             // we populate the regular set with a single value (unpack properties into constant time series)
@@ -26087,128 +26564,81 @@ var Storage = exports.Storage = function () {
                 //check data for properties with missed data. If founded then write key to haveNoDataPointsPerKey with
                 //count of broken datapoints
                 if (d[columns[c]] == null) {
-                  _this._collection[dataId].haveNoDataPointsPerKey[columns[c]][d[KEY[0]]] = dataset.length;
+                  _this._collection[dataId].haveNoDataPointsPerKey[columns[c]][JSON.stringify([d[KEY[0]]])] = dataset.length;
                 }
               }
             }
           } else {
-            var _iterateKeys = function _iterateKeys(lastKeyObject, nested, filtered, index) {
-              var _lastKeyObject = {};
-              var keys = entitiesByKey[KEY[index]];
-              for (var _i = 0, j = keys.length, _key; _i < j; _i++) {
-                _key = keys[_i];
-                if (nested[_key]) {
-                  if (index == lastIndex) {
-                    for (c = 0; c < cLength; c++) {
-                      lastKeyObject[c][_key] = _mapValue(columns[c], nested[_key], filtered[_key]);
-                    }
-                  } else {
-                    for (c = 0; c < cLength; c++) {
-                      _lastKeyObject[c] = lastKeyObject[c][_key] = {};
-                    }
-                    _iterateKeys(_lastKeyObject, nested[_key], filtered[_key], index + 1);
-                  }
-                }
-              }
-            };
-
-            var _iterateKeysWithGrouping = function _iterateKeysWithGrouping(lastKeyObject, nested, filtered, index) {
-              var _lastKeyObject = {};
-              var keys = entitiesByKey[KEY[index]];
-              var grouping = KEY[index] === groupKey;
-              for (var _i2 = 0, j = keys.length, _key2, gKey; _i2 < j; _i2++) {
-                _key2 = keys[_i2];
-                gKey = grouping ? ~~(+_key2 / groupValue) * groupValue : _key2;
-                if (index == lastIndex) {
-                  var value = void 0;
-                  for (c = 0; c < cLength; c++) {
-                    value = _mapValue(columns[c], nested[_key2], filtered[_key2]);
-                    if (value !== null) {
-                      lastKeyObject[c][gKey] = (lastKeyObject[c][gKey] || 0) + value;
-                    } else if (lastKeyObject[c][gKey] === undefined) {
-                      lastKeyObject[c][gKey] = value;
-                    }
-                  }
-                } else {
-                  for (c = 0; c < cLength; c++) {
-                    _lastKeyObject[c] = lastKeyObject[c][gKey] = lastKeyObject[c][gKey] || {};
-                  }
-                  _iterateKeysWithGrouping(_lastKeyObject, nested[_key2], filtered[_key2], index + 1);
-                }
-              }
-            };
-
-            var _mapValue = function _mapValue(column, nested, filtered) {
-
-              //If there are some points in the array with valid numbers, then
-              //interpolate the missing point and save it to the “clean regular set”
-              method = indicatorsDB[column] ? indicatorsDB[column].interpolation : null;
-              use = indicatorsDB[column] ? indicatorsDB[column].use : "indicator";
-
-              // Inside of this 3-level loop is the following:
-              if (nested && nested[frameName] && (nested[frameName][0][column] || nested[frameName][0][column] === 0)) {
-
-                // Check if the piece of data for [this key][this frame][this column] exists
-                // and is valid. If so, then save it into a “clean regular set”
-                return nested[frameName][0][column];
-              }
-
-              // the piece of data is not available and the interpolation is set to "none"
-              if (method === "none") return null;
-
-              // If the piece of data doesn’t exist or is invalid, then we need to inter- or extapolate it
-
-              // Let’s take a slice of the nested set, corresponding to the current key nested[key]
-              // As you remember it has the data nested further by frames.
-              // At every frame the data in the current column might or might not exist.
-              // Thus, let’s filter out all the frames which don’t have the data for the current column.
-              // Let’s cache it because we will most likely encounter another gap in the same column for the same key
-              items = filtered[column];
-              if (items === null) {
-                var givenFrames = Object.keys(nested);
-                items = new Array(givenFrames.length);
-                itemsIndex = 0;
-
-                for (var z = 0, length = givenFrames.length; z < length; z++) {
-                  oneFrame = nested[givenFrames[z]];
-                  if (oneFrame[0][column] || oneFrame[0][column] === 0) items[itemsIndex++] = oneFrame[0];
-                }
-
-                //trim the length of the array
-                items.length = itemsIndex;
-
-                if (itemsIndex === 0) {
-                  filtered[column] = [];
-                } else {
-                  filtered[column] = items;
-                }
-
-                if (items.length == 0) _this._collection[dataId].haveNoDataPointsPerKey[column][key] = items.length;
-              }
-
-              // Now we are left with a fewer frames in the filtered array. Let's check its length.
-              //If the array is empty, then the entire column is missing for the key
-              //So we let the key have missing values in this column for all frames
-              if (items && items.length > 0) {
-                next = null;
-                return utils.interpolatePoint(items, use, column, next, TIME, frameName, method);
-              }
-            };
-
             // If there is a time field in query.where clause, then we are dealing with indicators in this request
 
             // Put together a template for cached filtered sets (see below what's needed)
 
             // Now we run a 3-level loop: across frames, then across keys, then and across data columns (lex, gdp)
 
-            var firstKeyObject = {};
             for (c = 0; c < cLength; c++) {
-              firstKeyObject[c] = frame[columns[c]] = {};
-            }if (groupKey) {
-              _iterateKeysWithGrouping(firstKeyObject, nested, filtered, 0);
-            } else {
-              _iterateKeys(firstKeyObject, nested, filtered, 0);
-            }
+              frame[columns[c]] = {};
+            }for (k = 0; k < keys.length; k++) {
+              key = keys[k];
+              nestedKey = nestedKeys[k];
+
+              for (c = 0; c < cLength; c++) {
+                column = columns[c];
+
+                //If there are some points in the array with valid numbers, then
+                //interpolate the missing point and save it to the “clean regular set”
+                method = indicatorsDB[column] ? indicatorsDB[column].interpolation : null;
+
+                // Inside of this 3-level loop is the following:
+                if (nested[nestedKey] && nested[nestedKey][frameName] && (nested[nestedKey][frameName][0][column] || nested[nestedKey][frameName][0][column] === 0)) {
+
+                  // Check if the piece of data for [this key][this frame][this column] exists
+                  // and is valid. If so, then save it into a “clean regular set”
+                  frame[column][key] = nested[nestedKey][frameName][0][column];
+                } else if (method === "none") {
+
+                  // the piece of data is not available and the interpolation is set to "none"
+                  frame[column][key] = null;
+                } else {
+                  // If the piece of data doesn’t exist or is invalid, then we need to inter- or extapolate it
+
+                  // Let’s take a slice of the nested set, corresponding to the current key nested[key]
+                  // As you remember it has the data nested further by frames.
+                  // At every frame the data in the current column might or might not exist.
+                  // Thus, let’s filter out all the frames which don’t have the data for the current column.
+                  // Let’s cache it because we will most likely encounter another gap in the same column for the same key
+                  items = filtered[key][column];
+                  if (items === null) {
+                    var givenFrames = Object.keys(nested[nestedKey]);
+                    items = new Array(givenFrames.length);
+                    itemsIndex = 0;
+
+                    for (var z = 0, length = givenFrames.length; z < length; z++) {
+                      oneFrame = nested[nestedKey][givenFrames[z]];
+                      if (oneFrame[0][column] || oneFrame[0][column] === 0) items[itemsIndex++] = oneFrame[0];
+                    }
+
+                    //trim the length of the array
+                    items.length = itemsIndex;
+
+                    if (itemsIndex === 0) {
+                      filtered[key][column] = [];
+                    } else {
+                      filtered[key][column] = items;
+                    }
+
+                    if (items.length == 0) _this._collection[dataId].haveNoDataPointsPerKey[column][nestedKey] = items.length;
+                  }
+
+                  // Now we are left with a fewer frames in the filtered array. Let's check its length.
+                  //If the array is empty, then the entire column is missing for the key
+                  //So we let the key have missing values in this column for all frames
+                  if (items && items.length > 0) {
+                    next = null;
+                    frame[column][key] = utils.interpolatePoint(items, use, column, next, TIME, frameName, method);
+                  }
+                }
+              } //loop across columns
+            } //loop across keys
           }
 
           // save the calcualted frame to global datamanager cache
@@ -26225,7 +26655,7 @@ var Storage = exports.Storage = function () {
           _this._collectionPromises[dataId][whatId]["queue"].getNext().then(function (nextFrame) {
             if (nextFrame) {
               utils.defer(function () {
-                buildFrame(nextFrame, entitiesByKey, KEY, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
+                buildFrame(nextFrame, keys, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
               });
             } else {
               //this goes to marker.js as a "response"
@@ -26235,23 +26665,10 @@ var Storage = exports.Storage = function () {
         };
         _this._collectionPromises[dataId][whatId]["queue"].getNext().then(function (nextFrame) {
           if (nextFrame) {
-            buildFrame(nextFrame, entitiesByKey, KEY, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
+            buildFrame(nextFrame, keys, dataId, _this._collectionPromises[dataId][whatId]["queue"].frameComplete);
           }
         });
       });
-    }
-  }, {
-    key: "_getCacheKey",
-    value: function _getCacheKey(dataId, frames, keys) {
-      var result = frames[0] + " - " + frames[frames.length - 1];
-      var grouping = this._collection[dataId]["grouping"];
-      if (grouping) {
-        result = result + "_grouping(" + grouping.key + ":" + grouping.grouping + ")";
-      }
-      if (keys) {
-        result = result + "_" + keys.join();
-      }
-      return result;
     }
   }]);
 
@@ -26264,10 +26681,285 @@ var DataStorage = exports.DataStorage = new Storage();
 /* 393 */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+/* Factory pattern for object creation as in
+ * https://medium.com/javascript-scene/javascript-factory-functions-vs-constructor-functions-vs-classes-2f22ceddf33e
+ * https://medium.com/javascript-scene/common-misconceptions-about-inheritance-in-javascript-d5d9bab29b0a
+ *
+ * We may want to have one DimensionManager singleton object for Vizabi. That way entities can be shared throughout instances.
+ */
+
+var DimensionManagerPrototype = {
+
+  model: null,
+  dimensionModels: new Map(),
+
+  updateDimensionModels: function updateDimensionModels() {
+    var _this = this;
+
+    this.dimensionModels.clear();
+    utils.forEach(this.model.state._data, function (model, name) {
+      if (typeof model.dim === "undefined") return;
+      _this.dimensionModels.set(name, model);
+    });
+  },
+  getDimensionModelsForSpace: function getDimensionModelsForSpace(oldSpace, newSpaceDimensions) {
+    var _this2 = this;
+
+    this.updateDimensionModels();
+
+    // match new space to entities
+    // assumption:
+    // - no overlapping dimensionModels between markers or changing dimension models is fine
+    // - one entities model per dimension
+    // - only one time model (state.time)
+    var oldSpaceEntities = Object.keys(oldSpace).filter(function (dim) {
+      return oldSpace[dim]._type == "entities";
+    });
+    var newSpace = newSpaceDimensions.map(function (dim, index) {
+
+      /**
+       * HEURISTIC 1: use old space and map new space on those entities (works only for same-dimensional)
+       */
+      var modelName = void 0;
+      if (_this2.model.dataManager.isConceptType(dim, "time")) {
+        modelName = "time";
+        oldSpace[modelName].dim = dim;
+      } else {
+        modelName = oldSpaceEntities.pop();
+        if (typeof modelName != "undefined") {
+          // entities model found
+          oldSpace[modelName].setDimension(dim);
+        } else {
+          // no more entities models left
+          modelName = "entities_" + dim;
+          var _newEntities = _defineProperty({}, modelName, Object.assign(Entities.getClassDefaults(), { dim: dim }));
+          _this2.model.state.set(_newEntities);
+        }
+      }
+      return modelName;
+
+      /**
+       * HEURISTIC 2 (unused/untested): Look for entities models which already have dimensions, use time or create new entities model
+       */
+
+      // check if there is a entities model with this dimension, if so return it
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = _this2.dimensionModels.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _step$value = _slicedToArray(_step.value, 2),
+              name = _step$value[0],
+              dimensionModel = _step$value[1];
+
+          if (dimensionModel.dim == dim) {
+            return name;
+          }
+        }
+
+        // if time, change the one time model
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      if (_this2.model.dataManager.isConceptType(dim, "time")) {
+        // we expect only one time model and update this (baaad, but state.time is still hardcoded in quite some places)
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = _this2.dimensionModels.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var _step2$value = _slicedToArray(_step2.value, 2),
+                name = _step2$value[0],
+                dimensionModel = _step2$value[1];
+
+            if (dimensionModel.type == "time") {
+              dimensionModel.dim = dim;
+              return name;
+            }
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }
+
+      // for others, create entities model for new dimension
+      var newEntities = _defineProperty({}, "entities_" + dim, Object.assign(Entities.getClassDefaults(), { dim: dim }));
+      _this2.model.state.set(newEntities);
+      return "entities_" + dim;
+    });
+
+    return newSpace;
+  }
+};
+
+function DimensionManager(model) {
+  var dimMan = Object.create(DimensionManagerPrototype);
+  dimMan.model = model;
+  return dimMan;
+}
+
+exports.default = DimensionManager;
+
+/***/ }),
+/* 394 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _utils = __webpack_require__(1);
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var DataManagerPrototype = {
+
+  model: null,
+  dataModels: new Map(),
+
+  getDataModels: function getDataModels() {
+    this.updateDataModels();
+    return this.dataModels;
+  },
+  updateDataModels: function updateDataModels() {
+    var _this = this;
+
+    this.dataModels.clear();
+    utils.forEach(this.model._data, function (model, name) {
+      if (model._type != "data") return;
+      _this.dataModels.set(name, model);
+    });
+  },
+
+
+  // heuristic: if concept is typed as such in one of the datasources, it's of that type
+  isConceptType: function isConceptType(conceptID, concept_type) {
+    this.updateDataModels();
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = this.dataModels.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var dataModel = _step.value;
+
+        if (dataModel.conceptDictionary[conceptID] && dataModel.conceptDictionary[conceptID].concept_type == concept_type) return true;
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return false;
+  },
+
+
+  // assumption: all datasources have identical concept properties if they are set
+  getConceptProperty: function getConceptProperty(conceptID, property) {
+    this.updateDataModels();
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = this.dataModels.values()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var dataModel = _step2.value;
+
+        var concept = dataModel.getConceptprops(conceptID);
+        if (concept && concept[property]) return concept[property];
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    return "Concept not found";
+  }
+};
+
+function DataManager(model) {
+  var dimMan = Object.create(DataManagerPrototype);
+  dimMan.model = model;
+  return dimMan;
+}
+
+exports.default = DataManager;
+
+/***/ }),
+/* 395 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var map = {
-	"./csv-time_in_columns/csv-time_in_columns.js": 394,
-	"./csv/csv.js": 156,
-	"./inline/inline.js": 396
+	"./csv-time_in_columns/csv-time_in_columns.js": 396,
+	"./csv/csv.js": 157,
+	"./inline/inline.js": 398
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -26283,10 +26975,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 393;
+webpackContext.id = 395;
 
 /***/ }),
-/* 394 */
+/* 396 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26298,7 +26990,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var _csv = __webpack_require__(156);
+var _csv = __webpack_require__(157);
 
 var _csv2 = _interopRequireDefault(_csv);
 
@@ -26310,35 +27002,39 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var CSVTimeInColumnsReader = _csv2.default.extend({
 
+  MISSED_INDICATOR_NAME: "indicator",
+
   _name: "csv-time_in_columns",
 
   init: function init(readerInfo) {
     this._super(readerInfo);
     this.timeKey = "time";
+
+    Object.assign(this.ERRORS, {
+      REPEATED_KEYS: "reader/error/repeatedKeys"
+    });
   },
-  load: function load() {
+  load: function load(parsers) {
     var _this = this;
 
     return this._super().then(function (_ref) {
       var rows = _ref.rows,
           columns = _ref.columns;
 
-      var indicatorKey = columns[_this.keySize];
+      var missedIndicator = parsers[_this.timeKey] && !!parsers[_this.timeKey](columns[_this.keySize]);
+      if (missedIndicator) (0, _utils.warn)("Indicator column is missed.");
+      var indicatorKey = missedIndicator ? _this.MISSED_INDICATOR_NAME : columns[_this.keySize];
 
-      var concepts = rows.reduce(function (result, row) {
-        Object.keys(row).forEach(function (concept) {
-          concept = concept === indicatorKey ? row[indicatorKey] : concept;
-
-          if (String(Number(concept)) !== String(concept) && !result.includes(concept)) {
-            result.push(concept);
-          }
-        });
-
+      var concepts = columns.slice(0, _this.keySize).concat(missedIndicator ? (0, _utils.capitalize)(_this.MISSED_INDICATOR_NAME) : rows.reduce(function (result, row) {
+        var concept = row[indicatorKey];
+        if (!result.includes(concept) && concept) {
+          result.push(concept);
+        }
         return result;
-      }, []);
-      concepts.splice(1, 0, _this.timeKey);
+      }, []));
+      concepts.splice(_this.keySize, 0, _this.timeKey);
 
-      var indicators = concepts.slice(2);
+      var indicators = concepts.slice(_this.keySize + 1);
 
       var _concepts = _slicedToArray(concepts, 1),
           entityDomain = _concepts[0];
@@ -26351,6 +27047,12 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
           });
 
           if (resultRows.length) {
+            if (resultRows[0][row[indicatorKey]] !== null) {
+              throw _this.error(_this.ERRORS.REPEATED_KEYS, undefined, {
+                indicator: row[indicatorKey],
+                key: row[entityDomain]
+              });
+            }
             resultRows.forEach(function (resultRow) {
               resultRow[row[indicatorKey]] = row[resultRow[_this.timeKey]];
             });
@@ -26362,7 +27064,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
                 var domainAndTime = (_domainAndTime = {}, _defineProperty(_domainAndTime, entityDomain, row[entityDomain]), _defineProperty(_domainAndTime, _this.timeKey, key), _domainAndTime);
 
                 var indicatorsObject = indicators.reduce(function (result, indicator) {
-                  result[indicator] = row[indicatorKey] === indicator ? row[key] : null;
+                  result[indicator] = missedIndicator || row[indicatorKey] === indicator ? row[key] : null;
                   return result;
                 }, {});
 
@@ -26378,14 +27080,14 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.26.0-1", build: 1504768056362 }
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
 
 });
 
 exports.default = CSVTimeInColumnsReader;
 
 /***/ }),
-/* 395 */
+/* 397 */
 /***/ (function(module, exports) {
 
 (function() {
@@ -26466,7 +27168,7 @@ exports.default = CSVTimeInColumnsReader;
 
 
 /***/ }),
-/* 396 */
+/* 398 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26497,31 +27199,31 @@ var InlineReader = _reader2.default.extend({
   load: function load() {
     return Promise.resolve({
       columns: Object.keys(this._data[0]),
-      data: this._data
+      rows: this._data
     });
   },
 
 
-  versionInfo: { version: "0.26.0-1", build: 1504768056362 }
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
 
 });
 
 exports.default = InlineReader;
 
 /***/ }),
-/* 397 */
+/* 399 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./brushslider/brushslider.js": 76,
-	"./brushslider/bubblesize/bubblesize.js": 157,
+	"./brushslider/brushslider.js": 77,
+	"./brushslider/bubblesize/bubblesize.js": 158,
 	"./brushslider/singlehandleslider/singlehandleslider.js": 59,
-	"./brushslider/sizeslider/sizeslider.js": 158,
-	"./buttonlist/buttonlist.js": 159,
-	"./buttonlist/optionsbuttonlist/optionsbuttonlist.js": 160,
-	"./colorlegend/colorlegend.js": 161,
-	"./datanotes/datanotes.js": 399,
-	"./datawarning/datawarning.js": 400,
+	"./brushslider/sizeslider/sizeslider.js": 159,
+	"./buttonlist/buttonlist.js": 160,
+	"./buttonlist/optionsbuttonlist/optionsbuttonlist.js": 161,
+	"./colorlegend/colorlegend.js": 162,
+	"./datanotes/datanotes.js": 401,
+	"./datawarning/datawarning.js": 402,
 	"./dialogs/_dialog.js": 11,
 	"./dialogs/about/about.js": 164,
 	"./dialogs/axes/axes.js": 165,
@@ -26544,9 +27246,9 @@ var map = {
 	"./indicatorpicker/indicatorpicker.js": 37,
 	"./minmaxinputs/minmaxinputs.js": 166,
 	"./simplecheckbox/simplecheckbox.js": 60,
-	"./steppedspeedslider/steppedspeedslider.js": 419,
-	"./timeslider/timeslider.js": 421,
-	"./treemenu/treemenu.js": 423,
+	"./steppedspeedslider/steppedspeedslider.js": 421,
+	"./timeslider/timeslider.js": 423,
+	"./treemenu/treemenu.js": 425,
 	"./zoombuttonlist/zoombuttonlist.js": 184
 };
 function webpackContext(req) {
@@ -26563,16 +27265,16 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 397;
+webpackContext.id = 399;
 
 /***/ }),
-/* 398 */
+/* 400 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"vzb-slider-holder\">\n\t<svg class=\"vzb-slider-svg\">\n\t\t<g class=\"vzb-slider-wrap\">\n\t\t\t<g class=\"vzb-slider\">\n\t\t\t</g>\n\t\t</g>\n\t</svg>\n</div>\n";
 
 /***/ }),
-/* 399 */
+/* 401 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26604,7 +27306,7 @@ var DataNotes = _component2.default.extend({
 
     this.model_expects = [{
       name: "marker",
-      type: "model"
+      type: "marker"
     }, {
       name: "locale",
       type: "locale"
@@ -26681,7 +27383,7 @@ var DataNotes = _component2.default.extend({
     var hook = this.model.marker[this.hookName];
     var concept = hook.getConceptprops();
 
-    this.element.select(".vzb-data-notes-body").classed("vzb-hidden", !concept.description).text(concept.description || "");
+    this.element.select(".vzb-data-notes-body").classed("vzb-hidden", !concept.description).text(utils.replaceNumberSpacesToNonBreak(concept.description) || "");
 
     this.element.select(".vzb-data-notes-link").classed("vzb-hidden", !concept.sourceLink);
 
@@ -26750,7 +27452,7 @@ var DataNotes = _component2.default.extend({
 exports.default = DataNotes;
 
 /***/ }),
-/* 400 */
+/* 402 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26851,26 +27553,26 @@ var DataWarning = _component2.default.extend({
 exports.default = DataWarning;
 
 /***/ }),
-/* 401 */
+/* 403 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./about/about.html": 402,
-	"./axes/axes.html": 403,
-	"./colors/colors.html": 404,
-	"./find/find.html": 405,
-	"./grouping/grouping.html": 406,
-	"./label/label.html": 407,
-	"./moreoptions/moreoptions.html": 408,
-	"./opacity/opacity.html": 409,
-	"./presentation/presentation.html": 410,
-	"./show/show.html": 411,
-	"./side/side.html": 412,
-	"./size/size.html": 413,
-	"./speed/speed.html": 414,
-	"./stack/stack.html": 415,
-	"./timedisplay/timedisplay.html": 416,
-	"./zoom/zoom.html": 417
+	"./about/about.html": 404,
+	"./axes/axes.html": 405,
+	"./colors/colors.html": 406,
+	"./find/find.html": 407,
+	"./grouping/grouping.html": 408,
+	"./label/label.html": 409,
+	"./moreoptions/moreoptions.html": 410,
+	"./opacity/opacity.html": 411,
+	"./presentation/presentation.html": 412,
+	"./show/show.html": 413,
+	"./side/side.html": 414,
+	"./size/size.html": 415,
+	"./speed/speed.html": 416,
+	"./stack/stack.html": 417,
+	"./timedisplay/timedisplay.html": 418,
+	"./zoom/zoom.html": 419
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -26886,112 +27588,112 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 401;
-
-/***/ }),
-/* 402 */
-/***/ (function(module, exports) {
-
-module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/about\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-about-text0\"></p>\n      <p class=\"vzb-about-text1\"></p>\n      <br/>\n      <p class=\"vzb-about-version\"></p>\n      <p class=\"vzb-about-updated\"></p>\n      <br/>\n      <p class=\"vzb-about-report\"></p>\n      <br/>\n      <p class=\"vzb-about-credits\"></p>\n      <br/>\n      <p class=\"vzb-about-tool\"></p>\n      <br/>\n      <p class=\"vzb-about-datasets\"><span>Datasets:</span></p>\n      <br/>\n      <p class=\"vzb-about-readers\"><span>Readers:</span></p>\n  </div>\n      \n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n      \n\n</div>\n";
-
-/***/ }),
-/* 403 */
-/***/ (function(module, exports) {
-
-module.exports = "<div class='vzb-dialog-modal'>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"axes\" data-click=\"pinDialog\"></span>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"axes\" data-click=\"dragDialog\"></span>\n    <div class=\"vzb-dialog-title\"><%=t (\"buttons/axes\") %></div>\n    <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-dialog-sublabel\"> <%=t (\"buttons/axis_x\") %> <span class=\"vzb-xaxis-selector\"></span> </p>\n      <div class=\"vzb-xaxis-minmax vzb-dialog-paragraph\"></div>\n      <p class=\"vzb-dialog-sublabel\"> <%=t (\"buttons/axis_y\") %> <span class=\"vzb-yaxis-selector\"></span> </p>\n      <div class=\"vzb-yaxis-minmax vzb-dialog-paragraph\"></div>\n    </div>\n    <div class=\"vzb-dialog-buttons\">\n      <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\"><%=t ( \"buttons/ok\") %></div>\n    </div>\n</div>";
+webpackContext.id = 403;
 
 /***/ }),
 /* 404 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"colors\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"colors\" data-click=\"dragDialog\"></span>\n  \n  <div class=\"vzb-dialog-title\">\n      <%=t (\"buttons/colors\") %>\n      <span class=\"vzb-caxis-selector\"></span>\n  </div>\n  \n  \n  \n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class=\"vzb-clegend-container\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/about\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-about-text0\"></p>\n      <p class=\"vzb-about-text1\"></p>\n      <br/>\n      <p class=\"vzb-about-version\"></p>\n      <p class=\"vzb-about-updated\"></p>\n      <br/>\n      <p class=\"vzb-about-report\"></p>\n      <br/>\n      <p class=\"vzb-about-credits\"></p>\n      <br/>\n      <p class=\"vzb-about-tool\"></p>\n      <br/>\n      <p class=\"vzb-about-datasets\"><span>Datasets:</span></p>\n      <br/>\n      <p class=\"vzb-about-readers\"><span>Readers:</span></p>\n  </div>\n      \n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n      \n\n</div>\n";
 
 /***/ }),
 /* 405 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"find\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"find\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"dialogs/find\") %>\n    <span class=\"vzb-find-filter-selector\"></span>\n    <span class=\"vzb-dialog-content vzb-find-filter\">\n      <input class=\"vzb-find-search\" type=\"search\"/>\n    </span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed vzb-dialog-scrollable\">\n    <div class=\"vzb-find-list\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-bubbleopacity vzb-dialog-control\"></div>\n    <div class=\"vzb-dialog-button vzb-find-deselect\">\n      <%=t (\"buttons/deselect\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"axes\" data-click=\"pinDialog\"></span>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"axes\" data-click=\"dragDialog\"></span>\n    <div class=\"vzb-dialog-title\"><%=t (\"buttons/axes\") %></div>\n    <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-dialog-sublabel\"> <%=t (\"buttons/axis_x\") %> <span class=\"vzb-xaxis-selector\"></span> </p>\n      <div class=\"vzb-xaxis-minmax vzb-dialog-paragraph\"></div>\n      <p class=\"vzb-dialog-sublabel\"> <%=t (\"buttons/axis_y\") %> <span class=\"vzb-yaxis-selector\"></span> </p>\n      <div class=\"vzb-yaxis-minmax vzb-dialog-paragraph\"></div>\n    </div>\n    <div class=\"vzb-dialog-buttons\">\n      <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\"><%=t ( \"buttons/ok\") %></div>\n    </div>\n</div>";
 
 /***/ }),
 /* 406 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/grouping\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-groups\"></div>\n    <div class=\"vzb-dialog-placeholder\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"colors\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"colors\" data-click=\"dragDialog\"></span>\n  \n  <div class=\"vzb-dialog-title\">\n      <%=t (\"buttons/colors\") %>\n      <span class=\"vzb-caxis-selector\"></span>\n  </div>\n  \n  \n  \n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class=\"vzb-clegend-container\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 407 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"label\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"label\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/label\") %>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <span class=\"vzb-saxis-selector\"></span>\n    <div class=\"vzb-dialog-sizeslider\"></div>\n    <div class=\"vzb-removelabelbox-switch\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"find\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"find\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"dialogs/find\") %>\n    <span class=\"vzb-find-filter-selector\"></span>\n    <span class=\"vzb-dialog-content vzb-find-filter\">\n      <form>\n        <input class=\"vzb-find-search\" type=\"search\" required/>\n        <button class=\"vzb-cancel-button\" type=\"reset\"/>\n      </form>\n    </span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed vzb-dialog-scrollable\">\n    <div class=\"vzb-find-list\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-bubbleopacity vzb-dialog-control\"></div>\n    <div class=\"vzb-dialog-button vzb-find-deselect\">\n      <%=t (\"buttons/deselect\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 408 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"moreoptions\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"moreoptions\" data-click=\"dragDialog\"></span>\n\n\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/more_options\") %>\n  </div>\n\n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class='vzb-dialog-options-buttonlist'>\n    </div>\n    <div class=\"vzb-accordion\">\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>";
+module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/grouping\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-groups\"></div>\n    <div class=\"vzb-dialog-placeholder\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n</div>\n";
 
 /***/ }),
 /* 409 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/opacity\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-dialog-sublabel\">\n        <%=t (\"buttons/opacityRegular\") %>\n      </p>\n      <div class=\"vzb-dialog-bubbleopacity-regular\"></div>\n\n      <p class=\"vzb-dialog-sublabel\">\n        <%=t (\"buttons/opacityNonselect\") %>\n      </p>\n      <div class=\"vzb-dialog-bubbleopacity-selectdim\"></div>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"label\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"label\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/label\") %>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <span class=\"vzb-saxis-selector\"></span>\n    <div class=\"vzb-dialog-sizeslider\"></div>\n    <div class=\"vzb-removelabelbox-switch\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 410 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"dialogs/presentation\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <div class=\"vzb-presentationmode-switch\"></div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"moreoptions\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"moreoptions\" data-click=\"dragDialog\"></span>\n\n\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/more_options\") %>\n  </div>\n\n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class='vzb-dialog-options-buttonlist'>\n    </div>\n    <div class=\"vzb-accordion\">\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>";
 
 /***/ }),
 /* 411 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"show\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"show\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/show\") %>\n    <span class=\"vzb-show-filter-selector\"></span>\n    <span class=\"vzb-dialog-content vzb-show-filter\">\n      <input class=\"vzb-show-search\" type=\"search\"/>\n    </span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed vzb-dialog-scrollable\">\n    <p class=\"vzb-dialog-sublabel\"> <%=t (\"hints/mount/onlyshowthefollowing\") %> </p>\n    <div class=\"vzb-show-list\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-button vzb-show-deselect\">\n      <%=t (\"buttons/reset\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/opacity\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <p class=\"vzb-dialog-sublabel\">\n        <%=t (\"buttons/opacityRegular\") %>\n      </p>\n      <div class=\"vzb-dialog-bubbleopacity-regular\"></div>\n\n      <p class=\"vzb-dialog-sublabel\">\n        <%=t (\"buttons/opacityNonselect\") %>\n      </p>\n      <div class=\"vzb-dialog-bubbleopacity-selectdim\"></div>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 412 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"side\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"side\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/side\") %>\n    <span class=\"vzb-side-selector\"></span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class=\"vzb-side-list vzb-side-list-left\">\n      <!-- list will be placed here -->\n    </div>\n    <div class=\"vzb-side-list vzb-side-list-right\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-button vzb-label-primary vzb-side-switch-sides\">\n      <%=t (\"buttons/leftright\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"dialogs/presentation\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n      <div class=\"vzb-presentationmode-switch\"></div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 413 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"size\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"size\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/size\") %>\n      <span class=\"vzb-saxis-selector\"></span>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-bubblesize\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"show\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"show\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/show\") %>\n    <span class=\"vzb-show-filter-selector\"></span>\n    <span class=\"vzb-dialog-content vzb-show-filter\">\n      <form>\n        <input class=\"vzb-show-search\" type=\"search\" required/>\n        <button class=\"vzb-cancel-button\" type=\"reset\"/>\n      </form>\n    </span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed vzb-dialog-scrollable\">\n    <p class=\"vzb-dialog-sublabel\"> <%=t (\"hints/mount/onlyshowthefollowing\") %> </p>\n    <div class=\"vzb-show-list\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-button vzb-show-deselect\">\n      <%=t (\"buttons/reset\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 414 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/speed\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-placeholder\"></div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"side\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"side\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\">\n    <%=t (\"buttons/side\") %>\n    <span class=\"vzb-side-selector\"></span>\n  </div>\n  \n  <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n    <div class=\"vzb-side-list vzb-side-list-left\">\n      <!-- list will be placed here -->\n    </div>\n    <div class=\"vzb-side-list vzb-side-list-right\">\n      <!-- list will be placed here -->\n    </div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div class=\"vzb-dialog-button vzb-label-primary vzb-side-switch-sides\">\n      <%=t (\"buttons/leftright\") %>\n    </div>\n\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 415 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"stack\" data-click=\"pinDialog\"></span>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"stack\" data-click=\"dragDialog\"></span>\n    <div class=\"vzb-dialog-title\"><%=t (\"buttons/stack\") %></div>\n        \n    <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n        \n        <!--p class=\"vzb-dialog-sublabel\"> <%=t ( \"hints/mount/howtostack\") %></p-->\n        <form class=\"vzb-howtostack vzb-dialog-paragraph\">\n            <label> <input type=\"radio\" name=\"stack\" value=\"none\"> <%=t (\"mount/stacking/none\") %> </label>\n            <label> <input type=\"radio\" name=\"stack\" value=\"bycolor\"> <%=t (\"mount/stacking/color\") %> </label>\n            <label> <input type=\"radio\" name=\"stack\" value=\"all\"> <%=t (\"mount/stacking/world\") %> </label>\n        </form>\n        \n        <form class=\"vzb-howtomerge vzb-dialog-paragraph\">\n            <p class=\"vzb-dialog-sublabel\"> <%=t (\"hints/mount/howtomerge\") %> </p>\n            <label> <input type=\"radio\" name=\"merge\" value=\"none\"> <%=t (\"mount/merging/none\") %> </label>\n            <label> <input type=\"radio\" name=\"merge\" value=\"grouped\"> <%=t (\"mount/merging/color\") %> </label>\n            <label> <input type=\"radio\" name=\"merge\" value=\"stacked\"> <%=t (\"mount/merging/world\") %> </label>\n        </form>\n        \n        <form class=\"vzb-manual-sorting\">\n            <p class=\"vzb-dialog-sublabel\"> <%=t (\"mount/manualSorting\") %> </p>\n            <div class=\"vzb-dialog-draggablelist vzb-dialog-control\"></div>\n        </form>\n                \n    </div>\n\n    <div class=\"vzb-dialog-buttons\">\n        <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\"><%=t (\"buttons/ok\") %></div>\n    </div>\n\n</div>";
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"size\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"size\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/size\") %>\n      <span class=\"vzb-saxis-selector\"></span>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-bubblesize\"></div>\n    <span class=\"vzb-dialog-subtitle\">teststs</span>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 416 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"vzb-dialog-modal\">\n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed\">\n    <svg>\n      <g class=\"vzb-timedisplay\"></g>\n    </svg>\n  </div>\n  <div class=\"vzb-dialog-buttons\"></div>\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n  <div class=\"vzb-dialog-title\"> \n      <%=t (\"buttons/speed\") %>\n  </div>\n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-dialog-placeholder\"></div>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 417 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"label\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"label\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n    <%=t (\"buttons/zoom\") %>\n    <div class=\"vzb-dialog-zoom-buttonlist\"></div>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-panwitharrow-switch\"></div>\n    <div class=\"vzb-zoomonscrolling-switch\"></div>\n    <div class=\"vzb-adaptminmaxzoom-switch\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+module.exports = "<div class='vzb-dialog-modal'>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"stack\" data-click=\"pinDialog\"></span>\n    <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"stack\" data-click=\"dragDialog\"></span>\n    <div class=\"vzb-dialog-title\"><%=t (\"buttons/stack\") %></div>\n        \n    <div class=\"vzb-dialog-content vzb-dialog-scrollable\">\n        \n        <!--p class=\"vzb-dialog-sublabel\"> <%=t ( \"hints/mount/howtostack\") %></p-->\n        <form class=\"vzb-howtostack vzb-dialog-paragraph\">\n            <label> <input type=\"radio\" name=\"stack\" value=\"none\"> <%=t (\"mount/stacking/none\") %> </label>\n            <label> <input type=\"radio\" name=\"stack\" value=\"bycolor\"> <%=t (\"mount/stacking/color\") %> </label>\n            <label> <input type=\"radio\" name=\"stack\" value=\"all\"> <%=t (\"mount/stacking/world\") %> </label>\n        </form>\n        \n        <form class=\"vzb-howtomerge vzb-dialog-paragraph\">\n            <p class=\"vzb-dialog-sublabel\"> <%=t (\"hints/mount/howtomerge\") %> </p>\n            <label> <input type=\"radio\" name=\"merge\" value=\"none\"> <%=t (\"mount/merging/none\") %> </label>\n            <label> <input type=\"radio\" name=\"merge\" value=\"grouped\"> <%=t (\"mount/merging/color\") %> </label>\n            <label> <input type=\"radio\" name=\"merge\" value=\"stacked\"> <%=t (\"mount/merging/world\") %> </label>\n        </form>\n        \n        <form class=\"vzb-manual-sorting\">\n            <p class=\"vzb-dialog-sublabel\"> <%=t (\"mount/manualSorting\") %> </p>\n            <div class=\"vzb-dialog-draggablelist vzb-dialog-control\"></div>\n        </form>\n                \n    </div>\n\n    <div class=\"vzb-dialog-buttons\">\n        <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\"><%=t (\"buttons/ok\") %></div>\n    </div>\n\n</div>";
 
 /***/ }),
 /* 418 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"vzb-mmi-holder\">\n\n    <span class=\"vzb-mmi-domainmin-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-domainmin\" name=\"min\">\n    <span class=\"vzb-mmi-domainmax-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-domainmax\" name=\"max\">\n\n    <br class=\"vzb-mmi-break\"/>\n\n    <span class=\"vzb-mmi-zoomedmin-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-zoomedmin\" name=\"min\">\n    <span class=\"vzb-mmi-zoomedmax-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-zoomedmax\" name=\"max\">\n    \n</div>";
+module.exports = "<div class=\"vzb-dialog-modal\">\n  <div class=\"vzb-dialog-content vzb-dialog-content-fixed\">\n    <svg>\n      <g class=\"vzb-timedisplay\"></g>\n    </svg>\n  </div>\n  <div class=\"vzb-dialog-buttons\"></div>\n</div>\n";
 
 /***/ }),
 /* 419 */
+/***/ (function(module, exports) {
+
+module.exports = "<div class='vzb-dialog-modal'>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-pin fa\" data-dialogtype=\"label\" data-click=\"pinDialog\"></span>\n  <span class=\"thumb-tack-class thumb-tack-class-ico-drag fa\" data-dialogtype=\"label\" data-click=\"dragDialog\"></span>\n  <div class=\"vzb-dialog-title\"> \n    <%=t (\"buttons/zoom\") %>\n    <div class=\"vzb-dialog-zoom-buttonlist\"></div>\n  </div>\n      \n      \n  <div class=\"vzb-dialog-content\">\n    <div class=\"vzb-panwitharrow-switch\"></div>\n    <div class=\"vzb-zoomonscrolling-switch\"></div>\n    <div class=\"vzb-adaptminmaxzoom-switch\"></div>\n  </div>\n\n  <div class=\"vzb-dialog-buttons\">\n    <div data-click=\"closeDialog\" class=\"vzb-dialog-button vzb-label-primary\">\n      <%=t (\"buttons/ok\") %>\n    </div>\n  </div>\n\n</div>\n";
+
+/***/ }),
+/* 420 */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"vzb-mmi-holder\">\n\n    <span class=\"vzb-mmi-domainmin-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-domainmin\" name=\"min\">\n    <span class=\"vzb-mmi-domainmax-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-domainmax\" name=\"max\">\n\n    <br class=\"vzb-mmi-break\"/>\n\n    <span class=\"vzb-mmi-zoomedmin-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-zoomedmin\" name=\"min\">\n    <span class=\"vzb-mmi-zoomedmax-label\"></span>\n    <input type=\"text\" class=\"vzb-mmi-zoomedmax\" name=\"max\">\n    \n</div>";
+
+/***/ }),
+/* 421 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27014,7 +27716,7 @@ var SteppedSlider = _component2.default.extend({
     var _this = this;
 
     this.name = "steppedSpeedSlider";
-    this.template = __webpack_require__(420);
+    this.template = __webpack_require__(422);
 
     this.config = Object.assign({
       triangleWidth: 10,
@@ -27139,13 +27841,13 @@ var SteppedSlider = _component2.default.extend({
 exports.default = SteppedSlider;
 
 /***/ }),
-/* 420 */
+/* 422 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"vzb-stepped-speed-slider\">\n  <svg>\n    <g class=\"vzb-stepped-speed-slider-triangle\"></g>\n    <g class=\"vzb-stepped-speed-slider-axis\"></g>\n  </svg>\n</div>\n";
 
 /***/ }),
-/* 421 */
+/* 423 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27162,6 +27864,10 @@ var utils = _interopRequireWildcard(_utils);
 var _component = __webpack_require__(5);
 
 var _component2 = _interopRequireDefault(_component);
+
+var _d = __webpack_require__(110);
+
+var _d2 = _interopRequireDefault(_d);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27185,30 +27891,30 @@ var profiles = {
       top: 7,
       right: 15,
       bottom: 10,
-      left: 15
+      left: 60
     },
     radius: 8,
-    label_spacing: 10
+    label_spacing: 5
   },
   medium: {
     margin: {
-      top: 16,
+      top: 0,
       right: 15,
       bottom: 10,
-      left: 15
+      left: 50
     },
     radius: 9,
-    label_spacing: 12
+    label_spacing: 5
   },
   large: {
     margin: {
-      top: 14,
+      top: -5,
       right: 15,
       bottom: 10,
-      left: 15
+      left: 75
     },
     radius: 11,
-    label_spacing: 14
+    label_spacing: 8
   }
 };
 
@@ -27233,18 +27939,15 @@ var TimeSlider = _component2.default.extend({
   init: function init(model, context) {
 
     this.name = "gapminder-timeslider";
-    this.template = this.template || __webpack_require__(422);
+    this.template = this.template || __webpack_require__(424);
     this.prevPosition = null;
     //define expected models/hooks for this component
     this.model_expects = [{
       name: "time",
       type: "time"
     }, {
-      name: "entities",
-      type: "entities"
-    }, {
       name: "marker",
-      type: "model"
+      type: "marker"
     }, {
       name: "ui",
       type: "ui"
@@ -27268,12 +27971,14 @@ var TimeSlider = _component2.default.extend({
         if (_this.slide) {
           //only set handle position if change is external
           if (!_this.model.time.dragging) _this._setHandle(_this.model.time.playing);
+          _this.ready();
         }
       },
       "change:time.end": function changeTimeEnd(evt, path) {
         if (_this.slide) {
           //only set handle position if change is external
           if (!_this.model.time.dragging) _this._setHandle(_this.model.time.playing);
+          _this.ready();
         }
       },
       "change:time.offset": function changeTimeOffset(evt, path) {
@@ -27302,16 +28007,32 @@ var TimeSlider = _component2.default.extend({
     // Same constructor as the superclass
     this._super(model, context);
 
+    this.profiles = utils.deepClone(profiles);
+    this.presentationProfileChanges = utils.deepClone(presentationProfileChanges);
+
+    if ((this.model.ui.chart || {}).margin) {
+      this.model.on("change:ui.chart.margin", function (evt, path) {
+        var layoutProfile = _this.getLayoutProfile();
+        if (layoutProfile !== "small") {
+          var profile = _this.profiles[layoutProfile];
+          profile.margin.left = _this.model.ui.chart.margin.left;
+        }
+        if (_this.slide) {
+          _this.updateSize();
+        }
+      });
+    }
+
     // Sort of defaults. Actually should be in ui default or bubblechart.
     // By not having "this.model.ui =" we prevent it from going to url (not defined in defaults)
     // Should be in defaults when we make components config part of external config (& every component gets own config)
     this.ui = utils.extend({
-      show_limits: false,
+      show_ticks: false,
       show_value: false,
       show_value_when_drag_play: true,
       show_button: true,
-      class_axis_aligned: false
-    }, model.ui, this.ui);
+      axis_aligned: false
+    }, model.ui.getPlainObject(), this.ui);
 
     //defaults
     this.width = 0;
@@ -27341,12 +28062,30 @@ var TimeSlider = _component2.default.extend({
     this.slide = this.element.select(".vzb-ts-slider-slide");
     this.handle = this.element.select(".vzb-ts-slider-handle");
     this.valueText = this.element.select(".vzb-ts-slider-value");
+    this.playButtons = this.element.select(".vzb-ts-btns");
+
+    this.element.select(".vzb-ts-btn-play").on("click", function () {
+      _this.model.time.play();
+    });
+
+    this.element.select(".vzb-ts-btn-pause").on("click", function () {
+      _this.model.time.pause("soft");
+    });
+
     //Scale
     this.xScale = d3.scaleUtc().clamp(true);
 
     //Axis
-    this.xAxis = d3.axisBottom().tickSize(0);
+    this.xAxis = (0, _d2.default)("bottom");
+
     //Value
+    this.valueText.classed("stroke", true);
+    if (!this.slider.style("paint-order").length) {
+      this.slider.insert("text", ".vzb-ts-slider-value").attr("class", "vzb-ts-slider-value stroke");
+
+      this.valueText.classed("stroke", false);
+    }
+    this.valueText = this.element.selectAll(".vzb-ts-slider-value");
     this.valueText.attr("text-anchor", "middle").attr("dy", "-0.7em");
 
     var brushed = _this._getBrushed();
@@ -27403,7 +28142,7 @@ var TimeSlider = _component2.default.extend({
     // special for linechart: resize timeslider to match time x-axis length
     this.parent.on("myEvent", function (evt, params) {
       var layoutProfile = _this.getLayoutProfile();
-      var profile = profiles[layoutProfile];
+      var profile = _this.profiles[layoutProfile];
 
       if (params.profile && params.profile.margin) {
         profile.margin = params.profile.margin;
@@ -27425,21 +28164,9 @@ var TimeSlider = _component2.default.extend({
   ready: function ready() {
     if (this.model.time.splash) return;
 
-    this.element.classed(class_loading, false);
-
-    var play = this.element.select(".vzb-ts-btn-play");
-    var pause = this.element.select(".vzb-ts-btn-pause");
     var _this = this;
-    var time = this.model.time;
 
-    play.on("click", function () {
-
-      _this.model.time.play();
-    });
-
-    pause.on("click", function () {
-      _this.model.time.pause("soft");
-    });
+    this.element.classed(class_loading, false);
 
     this.changeLimits();
     this.changeTime();
@@ -27476,7 +28203,7 @@ var TimeSlider = _component2.default.extend({
 
     this.model.time.pause();
 
-    this.profile = this.getActiveProfile(profiles, presentationProfileChanges);
+    this.profile = this.getActiveProfile(this.profiles, this.presentationProfileChanges);
 
     var slider_w = parseInt(this.slider_outer.style("width"), 10) || 0;
     var slider_h = parseInt(this.slider_outer.style("height"), 10) || 0;
@@ -27497,7 +28224,7 @@ var TimeSlider = _component2.default.extend({
     //.extent([[this.xScale.range()[0], 0], [this.xScale.range()[1], this.height]]));
 
     //adjust axis with scale
-    this.xAxis = this.xAxis.scale(this.xScale).tickPadding(this.profile.label_spacing);
+    this.xAxis = this.xAxis.scale(this.xScale).tickSizeInner(0).tickSizeOuter(0).tickPadding(this.profile.label_spacing).tickSizeMinor(0, 0);
 
     this.axis.attr("transform", "translate(0," + this.height / 2 + ")").call(this.xAxis);
 
@@ -27514,6 +28241,8 @@ var TimeSlider = _component2.default.extend({
     this.resizeSelectedLimiters();
     this._resizeProgressBar();
     this._setHandle();
+
+    this.playButtons.style("width", this.profile.margin.left + "px");
   },
   setSelectedLimits: function setSelectedLimits(force) {
     var _this = this;
@@ -27528,10 +28257,10 @@ var TimeSlider = _component2.default.extend({
       }, null, false /*make change non-persistent for URL and history*/);
       return;
     }
-    var KEY = _this.model.entities.getDimension();
+    var KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     var proms = [];
     utils.forEach(select, function (entity) {
-      proms.push(_this.model.marker.getEntityLimits(entity[KEY]));
+      proms.push(_this.model.marker.getEntityLimits(utils.getKey(entity, KEYS)));
     });
     Promise.all(proms).then(function (limits) {
       if (_setSelectedLimitsId != _this._setSelectedLimitsId) return;
@@ -27769,15 +28498,25 @@ var TimeSlider = _component2.default.extend({
   _optionClasses: function _optionClasses() {
     //show/hide classes
 
-    var show_limits = this.ui.show_limits;
+    var show_ticks = this.ui.show_ticks;
     var show_value = this.ui.show_value;
     var show_value_when_drag_play = this.ui.show_value_when_drag_play;
     var axis_aligned = this.ui.axis_aligned;
     var show_play = this.ui.show_button && this.model.time.playable;
 
-    if (!show_limits) {
-      this.xAxis.tickValues([]).ticks(0);
-    }
+    this.xAxis.labelerOptions({
+      scaleType: "time",
+      removeAllLabels: !show_ticks,
+      limitMaxTickNumber: 3,
+      showOuter: false,
+      toolMargin: {
+        left: 10,
+        right: 10,
+        top: 0,
+        bottom: 30
+      },
+      fitIntoScale: "optimistic"
+    });
 
     this.element.classed(class_hide_play, !show_play);
     this.element.classed(class_playing, this.model.time.playing);
@@ -27790,13 +28529,13 @@ var TimeSlider = _component2.default.extend({
 exports.default = TimeSlider;
 
 /***/ }),
-/* 422 */
+/* 424 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"vzb-timeslider vzb-ts-loading\">\n  <div class=\"vzb-ts-slider-wrapper\">\n    <svg class=\"vzb-ts-slider\">\n      <g>\n        <g class=\"vzb-ts-slider-axis\"></g>\n        <g class=\"vzb-ts-slider-progress\"></g>\n        <g class=\"vzb-ts-slider-select\"></g>\n        <circle class=\"vzb-ts-slider-handle\"></circle>\n        <text class=\"vzb-ts-slider-value\"></text>\n        <line class=\"vzb-ts-slider-slide\"></line>\n      </g>\n      </svg>\n  </div>\n\n  <!-- SVG VIZABI ICONS\n       source: https://github.com/encharm/Font-Awesome-SVG-PNG/ -->\n  <div class=\"vzb-ts-btns\">\n    <button class=\"vzb-ts-btn-loading vzb-ts-btn\">\n      <div class='vzb-loader'></div>\n    </button>\n    <button class=\"vzb-ts-btn-play vzb-ts-btn\">\n      <svg class=\"vzb-icon vzb-icon-play\" viewBox=\"3 3 42 42\"\n           xmlns=\"http://www.w3.org/2000/svg\">\n        <path xmlns=\"http://www.w3.org/2000/svg\" d=\"M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm-4 29V15l12 9-12 9z\"/>\n      </svg>\n    </button>\n    <button class=\"vzb-ts-btn-pause vzb-ts-btn\">\n      <svg class=\"vzb-icon vzb-icon-pause\" viewBox=\"3 3 42 42\"\n           xmlns=\"http://www.w3.org/2000/svg\">\n        <path xmlns=\"http://www.w3.org/2000/svg\" d=\"M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm-2 28h-4V16h4v16zm8 0h-4V16h4v16z\"/>\n      </svg>\n    </button>\n  </div>\n</div>\n";
 
 /***/ }),
-/* 423 */
+/* 425 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27817,6 +28556,14 @@ var _component2 = _interopRequireDefault(_component);
 var _class = __webpack_require__(31);
 
 var _class2 = _interopRequireDefault(_class);
+
+var _hook = __webpack_require__(32);
+
+var _hook2 = _interopRequireDefault(_hook);
+
+var _marker = __webpack_require__(76);
+
+var _marker2 = _interopRequireDefault(_marker);
 
 var _iconset = __webpack_require__(21);
 
@@ -27919,6 +28666,9 @@ var Menu = _class2.default.extend({
     }).each(function () {
       _this.addSubmenu(d3.select(this));
     });
+    if (!this.menuItems.length && this.isActive()) {
+      this.buildLeaf();
+    }
     return this;
   },
   setWidth: function setWidth(width, recursive, immediate) {
@@ -27973,11 +28723,14 @@ var Menu = _class2.default.extend({
     this.menuItems.push(new MenuItem(this, item, this.OPTIONS));
   },
   open: function open() {
+    var _this2 = this;
+
     var _this = this;
     if (!this.isActive()) {
       _this.parent.parentMenu.openSubmenuNow = true;
       this.closeNeighbors(function () {
         if (_this.direction == MENU_HORIZONTAL) {
+          if (!_this2.menuItems.length) _this.buildLeaf();
           _this._openHorizontal();
           _this.calculateMissingWidth(0);
         } else {
@@ -28188,6 +28941,15 @@ var Menu = _class2.default.extend({
 
       d3.select(treeMenuNode).transition().duration(100).tween("scrolltoptween", scrollTopTween(newScrollTop));
     }
+  },
+  buildLeaf: function buildLeaf() {
+    var leafDatum = this.entity.datum();
+
+    this.entity.selectAll("div").data([leafDatum]).enter().append("div").classed(css.leaf + " " + css.leaf_content + " vzb-dialog-scrollable", true).style("width", this.width + "px").each(function (d) {
+      var leafContent = d3.select(this);
+      leafContent.append("span").classed(css.leaf_content_item + " " + css.leaf_content_item_title, true).text(utils.replaceNumberSpacesToNonBreak(d.name) || "");
+      leafContent.append("span").classed(css.leaf_content_item + " " + css.leaf_content_item_descr, true).text(utils.replaceNumberSpacesToNonBreak(d.description) || "");
+    });
   }
 });
 
@@ -28337,8 +29099,8 @@ var TreeMenu = _component2.default.extend({
     if (this._targetModel.isHook()) {
       this._targetProp = "which";
     }
-    if (this._targetModel.isEntities()) {
-      this._targetProp = "dim";
+    if (this._targetModel instanceof _marker2.default) {
+      this._targetProp = "space";
     }
     return this;
   },
@@ -28374,10 +29136,10 @@ var TreeMenu = _component2.default.extend({
     this.name = "gapminder-treemenu";
     this.model_expects = [{
       name: "marker",
-      type: "model"
+      type: "marker"
     }, {
       name: "marker_tags",
-      type: "model"
+      type: "marker"
     }, {
       name: "time",
       type: "time"
@@ -28471,13 +29233,19 @@ var TreeMenu = _component2.default.extend({
     var _this = this;
     var ROOT = "_root";
     var DEFAULT = "_default";
-    var UNCLASSIFIED = "_unclassified";
     var ADVANCED = "advanced";
+    var dataModels = _this.model.marker._root.dataManager.getDataModels();
 
     //init the dictionary of tags
     var tags = {};
     tags[ROOT] = { id: ROOT, children: [] };
-    tags[UNCLASSIFIED] = { id: UNCLASSIFIED, type: "folder", name: this.translator("buttons/unclassified"), children: [] };
+
+    //if more than one dataset is present then make folders by dataset names
+    if (dataModels.size > 1) dataModels.forEach(function (m) {
+      var dsname = m.getDatasetName();
+      tags[dsname] = { id: dsname, type: "dataset", children: [] };
+      tags[ROOT].children.push(tags[dsname]);
+    });
 
     //populate the dictionary of tags
     tagsArray.forEach(function (tag) {
@@ -28486,7 +29254,6 @@ var TreeMenu = _component2.default.extend({
 
     //init the tag tree
     var indicatorsTree = tags[ROOT];
-    indicatorsTree.children.push(tags[UNCLASSIFIED]);
 
     //populate the tag tree
     tagsArray.forEach(function (tag) {
@@ -28499,19 +29266,27 @@ var TreeMenu = _component2.default.extend({
       }
     });
 
-    utils.forEach(this.model.marker._root._data, function (dataSource) {
-      if (dataSource._type !== "data") return;
+    var properties = this.model.marker.space.length > 1;
+    this.model.marker.getAvailableData().forEach(function (kvPair) {
+      var entry = kvPair.value;
+      //if entry's tag are empty don't include it in the menu
+      if (entry.tags == "_none") return;
+      if (!entry.tags) entry.tags = kvPair.dataSource.getDatasetName() || ROOT;
 
-      var indicatorsDB = dataSource.getConceptprops();
-      var datasetName = dataSource.getDatasetName();
-      tags[datasetName] = { id: datasetName, type: "dataset", children: [] };
-      tags[ROOT].children.push(tags[datasetName]);
+      var use = entry.concept == "_default" ? "constant" : kvPair.key.size > 1 ? "indicator" : "property";
+      var concept = { id: entry.concept, name: entry.name, name_catalog: entry.name_catalog, description: entry.description, dataSource: kvPair.dataSource._name, use: use };
 
-      utils.forEach(indicatorsDB, function (entry, id) {
-        //if entry's tag are empty don't include it in the menu
-        if (entry.tags == "_none") return;
-        if (!entry.tags) entry.tags = datasetName || UNCLASSIFIED;
-        var concept = { id: id, name: entry.name, name_catalog: entry.name_catalog, description: entry.description, dataSource: dataSource._name };
+      if (properties && kvPair.key.length == 1 && entry.concept != "_default" && entry.concept_type != "time") {
+
+        var folderName = kvPair.key[0].concept + "_properties";
+        if (!tags[folderName]) {
+          var dim = kvPair.key[0];
+          tags[folderName] = { id: folderName, name: dim.name + " properties", type: "folder", children: [] };
+          tags[ROOT].children.push(tags[folderName]);
+        }
+        tags[folderName].children.push(concept);
+      } else {
+
         entry.tags.split(",").forEach(function (tag) {
           tag = tag.trim();
           if (tags[tag]) {
@@ -28519,15 +29294,34 @@ var TreeMenu = _component2.default.extend({
           } else {
             //if entry's tag is not found in the tag dictionary
             if (!_this.consoleGroupOpen) {
-              console.groupCollapsed("Some tags were are not found, so indicators went under 'Unclassified' menu");
+              console.groupCollapsed("Some tags were not found, so indicators went under menu root");
               _this.consoleGroupOpen = true;
             }
-            utils.warn("tag '" + tag + "' for indicator '" + id + "'");
-            tags[UNCLASSIFIED].children.push(concept);
+            utils.warn("tag '" + tag + "' for indicator '" + concept.id + "'");
+            tags[ROOT].children.push(concept);
           }
         });
+      }
+    });
+
+    /**
+     * KEY-AVAILABILITY (dimensions for space-menu)
+     */
+    this.model.marker.getAvailableSpaces().forEach(function (space, str) {
+      indicatorsTree.children.push({
+        id: str,
+        name: space.map(function (dim) {
+          return dim.name;
+        }).join(", "),
+        name_catalog: space.map(function (dim) {
+          return dim.name;
+        }).join(", "),
+        description: "no description",
+        dataSource: "All data sources",
+        type: "space"
       });
     });
+
     if (_this.consoleGroupOpen) {
       console.groupEnd();
       delete _this.consoleGroupOpen;
@@ -28902,29 +29696,35 @@ var TreeMenu = _component2.default.extend({
 
           return false;
         });
-      } else if (_this._targetModel.isEntities()) {
-        var entityTypes = ["entity_domain", "entity_set"];
-        allowedIDs = utils.keys(indicatorsDB).filter(function (f) {
-          return entityTypes.indexOf(indicatorsDB[f].concept_type) > -1;
+        dataFiltered = utils.pruneTree(data, function (f) {
+          return allowedIDs.indexOf(f.id) > -1;
+        });
+      } else if (_this._targetModel instanceof _marker2.default) {
+        allowedIDs = data.children.map(function (child) {
+          return child.id;
+        });
+        dataFiltered = utils.pruneTree(data, function (f) {
+          return f.type == "space";
         });
       } else {
         allowedIDs = utils.keys(indicatorsDB);
+        dataFiltered = utils.pruneTree(data, function (f) {
+          return allowedIDs.indexOf(f.id) > -1;
+        });
       }
-
-      dataFiltered = utils.pruneTree(data, function (f) {
-        return allowedIDs.indexOf(f.id) > -1;
-      });
 
       this.dataFiltered = dataFiltered;
     }
 
     this.wrapper.select("ul").remove();
 
-    this.element.select("." + css.title).select("span").text(this.translator(_this._targetModel.isEntities() ? _this._targetModel._root._name + "/" + _this._targetModel._name : "buttons/" + (isHook ? _this._targetModel._name : targetModelType + "/" + _this._targetProp)));
+    this.element.select("." + css.title).select("span").text(this.translator(_this._targetModel instanceof _marker2.default ? _this._targetModel._root._name + "/" + _this._targetModel._name : "buttons/" + (isHook ? _this._targetModel._name : targetModelType + "/" + _this._targetProp)));
 
     this.element.select("." + css.search).attr("placeholder", this.translator("placeholder/search") + "...");
 
     this._maxChildCount = 0;
+
+    var noDescription = _this.translator("hints/nodescr");
 
     function createSubmeny(select, data, toplevel) {
       if (!data.children) return;
@@ -28948,7 +29748,7 @@ var TreeMenu = _component2.default.extend({
         //only for leaf nodes
         if (view.attr("children")) return;
         d3.event.stopPropagation();
-        _this._selectIndicator({ concept: d.id, dataSource: d.dataSource });
+        _this._selectIndicator({ concept: d.id, dataSource: d.dataSource, use: d.use });
       }).append("span").text(function (d) {
         //Let the indicator "_default" in tree menu be translated differnetly for every hook type
         var translated = d.id === "_default" ? _this.translator("indicator/_default/" + targetModelType) : d.name_catalog || d.name || d.id;
@@ -28965,32 +29765,15 @@ var TreeMenu = _component2.default.extend({
 
         //deepLeaf
         if (!d.children) {
+          if (d.id === "_default") {
+            d.name = _this.translator("indicator/_default/" + targetModelType);
+            d.description = _this.translator("description/_default/" + targetModelType);
+          }
+          if (!d.description) d.description = noDescription;
           var deepLeaf = view.append("div").attr("class", css.menuHorizontal + " " + css.list_outer + " " + css.list_item_leaf);
           deepLeaf.on("click", function (d) {
-            _this._selectIndicator({ concept: d.id, dataSource: d.dataSource });
+            _this._selectIndicator({ concept: d.id, dataSource: d.dataSource, use: d.use });
           });
-          var deepLeafContent = deepLeaf.append("div").classed(css.leaf + " " + css.leaf_content + " vzb-dialog-scrollable", true);
-          deepLeafContent.append("span").classed(css.leaf_content_item + " " + css.leaf_content_item_title, true).text(function (d) {
-            //Let the indicator "_default" in tree menu be translated differnetly for every hook type
-            var translated = d.id === "_default" ? _this.translator("indicator/_default/" + targetModelType) : d.name;
-            return translated || "";
-          });
-          var hideUnits = void 0;
-          var units = deepLeafContent.append("span").classed(css.leaf_content_item, true).text(function (d) {
-            //Let the indicator "_default" in tree menu be translated differnetly for every hook type
-            var translated = d.id === "_default" ? _this.translator("unit/_default/" + targetModelType) : d.unit;
-            hideUnits = !translated;
-            return _this.translator("hints/units") + ": " + translated || "";
-          });
-          units.classed("vzb-hidden", hideUnits);
-          var hideDescription = void 0;
-          var description = deepLeafContent.append("span").classed(css.leaf_content_item + " " + css.leaf_content_item_descr, true).text(function (d) {
-            //Let the indicator "_default" in tree menu be translated differnetly for every hook type
-            var translated = d.id === "_default" ? _this.translator("description/_default/" + targetModelType) : d.description;
-            hideDescription = !translated;
-            return hideUnits && hideDescription ? _this.translator("hints/nodescr") : translated || "";
-          });
-          description.classed("vzb-hidden", hideDescription && !hideUnits);
         }
 
         if (d.id == _this._targetModel[_this._targetProp]) {
@@ -29113,14 +29896,14 @@ var TreeMenu = _component2.default.extend({
     var mdl = this._targetModel;
     if (what == "which") mdl.setWhich(value);
     if (what == "scaleType") mdl.setScaleType(value);
-    if (what == "dim") mdl.setDimension(value);
+    if (what == "space") mdl.setSpace(value.concept.split(","));
   }
 });
 
 exports.default = TreeMenu;
 
 /***/ }),
-/* 424 */
+/* 426 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -29157,25 +29940,25 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 424;
+webpackContext.id = 426;
 
 /***/ }),
-/* 425 */
+/* 427 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./d3.axisWithLabelPicker.js": 163,
-	"./d3.collisionResolver.js": 426,
-	"./d3.colorPicker.js": 162,
+	"./d3.axisWithLabelPicker.js": 110,
+	"./d3.collisionResolver.js": 428,
+	"./d3.colorPicker.js": 163,
 	"./d3.dynamicBackground.js": 182,
-	"./d3.genericLogScale.js": 154,
-	"./d3.geoProjection.js": 427,
-	"./d3.touchEvents.js": 155,
-	"./labels.js": 428,
-	"./requireAll.js": 104,
-	"./svgexport.js": 430,
-	"./textEllipsis.js": 431,
-	"./topojson.js": 432
+	"./d3.genericLogScale.js": 155,
+	"./d3.geoProjection.js": 429,
+	"./d3.touchEvents.js": 156,
+	"./labels.js": 430,
+	"./requireAll.js": 105,
+	"./svgexport.js": 432,
+	"./textEllipsis.js": 433,
+	"./topojson.js": 434
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -29191,10 +29974,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 425;
+webpackContext.id = 427;
 
 /***/ }),
-/* 426 */
+/* 428 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29351,7 +30134,7 @@ function collisionResolver() {
 }
 
 /***/ }),
-/* 427 */
+/* 429 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31950,7 +32733,7 @@ exports.default = function () {
 };
 
 /***/ }),
-/* 428 */
+/* 430 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31968,7 +32751,7 @@ var _class = __webpack_require__(31);
 
 var _class2 = _interopRequireDefault(_class);
 
-var _css = __webpack_require__(429);
+var _css = __webpack_require__(431);
 
 var _css2 = _interopRequireDefault(_css);
 
@@ -32016,7 +32799,7 @@ var label = function label(context) {
         return f[KEY] == d[KEY];
       });
 
-      label._repositionLabels(d, i, this, resolvedX, resolvedY, resolvedX0, resolvedY0, 0, null, lineGroup);
+      label._repositionLabels(d, i, null, this, resolvedX, resolvedY, resolvedX0, resolvedY0, 0, null, lineGroup);
     }).on("end", function (d, i) {
       var KEY = _this.KEY;
       if (_this.druging) {
@@ -32028,8 +32811,8 @@ var label = function label(context) {
       }
     });
 
-    function label(container) {
-      container.call(labelDragger).each(function (d, index) {
+    function label(container, isTooltip) {
+      container.each(function (d, index) {
         var view = d3.select(this);
 
         // Ola: Clicking bubble label should not zoom to countries boundary #811
@@ -32059,54 +32842,60 @@ var label = function label(context) {
           text.classed("stroke", false);
         }
 
-        var cross = view.append("g").attr("class", _cssPrefix + "-label-x vzb-transparent");
-        utils.setIcon(cross, _iconset.close);
+        if (!isTooltip) {
+          var cross = view.append("g").attr("class", _cssPrefix + "-label-x vzb-transparent");
+          utils.setIcon(cross, _iconset.close);
 
-        cross.insert("circle", "svg");
+          cross.insert("circle", "svg");
 
-        cross.select("svg").attr("class", _cssPrefix + "-label-x-icon").attr("width", "0px").attr("height", "0px");
+          cross.select("svg").attr("class", _cssPrefix + "-label-x-icon").attr("width", "0px").attr("height", "0px");
 
-        cross.on("click", function () {
-          //default prevented is needed to distinguish click from drag
-          if (d3.event.defaultPrevented) return;
-          d3.event.stopPropagation();
-          _this.model.marker.clearHighlighted();
-          _this.model.marker.selectMarker(d);
-        });
-      }).on("mouseover", function (d) {
-        if (utils.isTouchDevice()) return;
-        _this.model.marker.highlightMarker(d);
-        var KEY = _this.KEY || _this.model.entities.getDimension();
-        // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
-        _this.entityLabels.sort(function (a, b) {
-          return a[KEY] != d[KEY] ? -1 : 1;
-        });
-        d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", false);
-      }).on("mouseout", function (d) {
-        if (utils.isTouchDevice()) return;
-        _this.model.marker.clearHighlighted();
-        d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", true);
-      }).on("click", function (d) {
-        if (!utils.isTouchDevice()) return;
-        var cross = d3.select(this).selectAll("." + _cssPrefix + "-label-x");
-        var KEY = _this.KEY || _this.model.entities.getDimension();
-        var hidden = cross.classed("vzb-transparent");
-        if (hidden) {
+          cross.on("click", function () {
+            //default prevented is needed to distinguish click from drag
+            if (d3.event.defaultPrevented) return;
+            d3.event.stopPropagation();
+            _this.model.marker.clearHighlighted();
+            _this.model.marker.selectMarker(d);
+          });
+        }
+      });
+
+      if (!isTooltip) {
+        container.call(labelDragger).on("mouseover", function (d) {
+          if (utils.isTouchDevice()) return;
+          _this.model.marker.highlightMarker(d);
+          var KEY = _this.KEY || _this.context.KEY;
           // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
           _this.entityLabels.sort(function (a, b) {
             return a[KEY] != d[KEY] ? -1 : 1;
           });
-          _this.showCloseCross(null, false);
-        }
-        cross.classed("vzb-transparent", !hidden);
-        if (!_this.options.SUPPRESS_HIGHLIGHT_DURING_PLAY || !_this.model.time.playing) {
+          d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", false);
+        }).on("mouseout", function (d) {
+          if (utils.isTouchDevice()) return;
+          _this.model.marker.clearHighlighted();
+          d3.select(this).selectAll("." + _cssPrefix + "-label-x").classed("vzb-transparent", true);
+        }).on("click", function (d) {
+          if (!utils.isTouchDevice()) return;
+          var cross = d3.select(this).selectAll("." + _cssPrefix + "-label-x");
+          var KEY = _this.KEY || _this.context.KEY;
+          var hidden = cross.classed("vzb-transparent");
           if (hidden) {
-            _this.model.marker.setHighlight(d);
-          } else {
-            _this.model.marker.clearHighlighted();
+            // hovered label should be on top of other labels: if "a" is not the hovered element "d", send "a" to the back
+            _this.entityLabels.sort(function (a, b) {
+              return a[KEY] != d[KEY] ? -1 : 1;
+            });
+            _this.showCloseCross(null, false);
           }
-        }
-      });
+          cross.classed("vzb-transparent", !hidden);
+          if (!_this.options.SUPPRESS_HIGHLIGHT_DURING_PLAY || !_this.model.time.playing) {
+            if (hidden) {
+              _this.model.marker.setHighlight(d);
+            } else {
+              _this.model.marker.clearHighlighted();
+            }
+          }
+        });
+      }
 
       return label;
     }
@@ -32116,9 +32905,9 @@ var label = function label(context) {
     };
 
     label._repositionLabels = _repositionLabels;
-    function _repositionLabels(d, i, labelContext, _X, _Y, _X0, _Y0, duration, showhide, lineGroup) {
+    function _repositionLabels(d, i, _cache, labelContext, _X, _Y, _X0, _Y0, duration, showhide, lineGroup) {
 
-      var cache = _this.cached[d[_this.KEY]];
+      var cache = _cache || _this.cached[d[_this.KEY]];
 
       var labelGroup = d3.select(labelContext);
 
@@ -32133,28 +32922,36 @@ var label = function label(context) {
       var viewWidth = _this.context.width;
       var viewHeight = _this.context.height;
       var rectBBox = cache.rectBBox;
-      var width = rectBBox.width;
       var height = rectBBox.height;
+      var offsetX = cache.rectOffsetX;
+      var offsetY = cache.rectOffsetY;
 
       //apply limits so that the label doesn't stick out of the visible field
-      if (_X - width <= 0) {
+      if (_X + rectBBox.x <= 0) {
         //check left
-        _X = width;
+        _X = -rectBBox.x;
         cache.labelX_ = (_X - _this.xScale(cache.labelX0)) / viewWidth;
-      } else if (_X + 5 > viewWidth) {
+      } else if (_X + offsetX > viewWidth) {
         //check right
-        _X = viewWidth - 5;
+        _X = viewWidth - offsetX;
         cache.labelX_ = (_X - _this.xScale(cache.labelX0)) / viewWidth;
       }
-      if (_Y - height * 0.75 <= 0) {
+      if (_Y + rectBBox.y <= 0) {
         // check top
-        _Y = height * 0.75;
+        _Y = -rectBBox.y;
         cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
-      } else if (_Y + height * 0.35 > viewHeight) {
+      } else if (_Y + offsetY > viewHeight) {
         //check bottom
-        _Y = viewHeight - height * 0.35;
+        _Y = viewHeight - offsetY;
         cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
       }
+      // if (_Y - height * 0.75 <= 0) { // check top
+      //   _Y = height * 0.75;
+      //   cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
+      // } else if (_Y + height * 0.35 > viewHeight) { //check bottom
+      //   _Y = viewHeight - height * 0.35;
+      //   cache.labelY_ = (_Y - _this.yScale(cache.labelY0)) / viewHeight;
+      // }
 
       if (duration == null) duration = _this.context.duration;
       if (cache._new) {
@@ -32299,7 +33096,8 @@ var Labels = _class2.default.extend({
     this.labelSizeTextScale = null;
   },
   ready: function ready() {
-    this.KEY = this.context.model.entities.getDimension();
+    this.KEYS = this.context.KEYS;
+    this.KEY = this.context.KEY;
     this.updateIndicators();
     this.updateLabelSizeLimits();
     //this.updateLabelsOnlyTextSize();
@@ -32329,7 +33127,8 @@ var Labels = _class2.default.extend({
       _this.updateLabelsOnlyTextSize();
     });
 
-    this.KEY = this.context.model.entities.getDimension();
+    this.KEYS = this.context.KEYS;
+    this.KEY = this.context.KEY;
 
     this.cached = {};
 
@@ -32341,6 +33140,7 @@ var Labels = _class2.default.extend({
     this.updateIndicators();
     this.updateSize();
     this.selectDataPoints();
+    this._initLabelTooltip();
   },
   config: function config(newOptions) {
     utils.extend(this.options, newOptions);
@@ -32398,13 +33198,19 @@ var Labels = _class2.default.extend({
   },
   selectDataPoints: function selectDataPoints() {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     var _cssPrefix = this.options.CSS_PREFIX;
 
-    this.entityLabels = this.labelsContainer.selectAll("." + _cssPrefix + "-entity").data(_this.model.marker.select, function (d) {
+    var select = _this.model.marker.select.map(function (d) {
+      var p = utils.clone(d, KEYS);
+      p[KEY] = utils.getKey(d, KEYS);
+      return p;
+    });
+    this.entityLabels = this.labelsContainer.selectAll("." + _cssPrefix + "-entity").data(select, function (d) {
       return d[KEY];
     });
-    this.entityLines = this.linesContainer.selectAll("g.entity-line." + _cssPrefix + "-entity").data(_this.model.marker.select, function (d) {
+    this.entityLines = this.linesContainer.selectAll("g.entity-line." + _cssPrefix + "-entity").data(select, function (d) {
       return d[KEY];
     });
 
@@ -32449,6 +33255,7 @@ var Labels = _class2.default.extend({
   },
   updateLabel: function updateLabel(d, index, cache, valueX, valueY, valueS, valueC, valueL, valueLST, duration, showhide) {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     if (d[KEY] == _this.druging) return;
 
@@ -32463,16 +33270,12 @@ var Labels = _class2.default.extend({
 
       if (cached.scaledS0 == null || cached.labelX0 == null || cached.labelY0 == null) {
         //initialize label once
-        if (valueS || valueS === 0) cached.scaledS0 = utils.areaToRadius(this.context.sScale(valueS));
-        cached.labelX0 = valueX;
-        cached.labelY0 = valueY;
-        cached.valueLST = valueLST;
-        cached.scaledC0 = valueC != null ? this.context.cScale(valueC) : this.context.COLOR_WHITEISH;
+        this._initNewCache(cached, valueX, valueY, valueS, valueC, valueLST);
       }
 
       if (cached.labelX_ == null || cached.labelY_ == null) {
         var select = utils.find(_this.model.marker.select, function (f) {
-          return f[KEY] == d[KEY];
+          return utils.getKey(f, KEYS) == d[KEY];
         });
         cached.labelOffset = select.labelOffset || [0, 0];
       }
@@ -32497,16 +33300,49 @@ var Labels = _class2.default.extend({
 
         var text = labelGroup.selectAll("." + _cssPrefix + "-label-content").text(valueL);
 
-        _this._updateLabelSize(d, index, labelGroup, valueLST, text);
+        _this._updateLabelSize(d, index, null, labelGroup, valueLST, text);
 
-        _this.positionLabel(d, index, this, duration, showhide, lineGroup);
+        _this.positionLabel(d, index, null, this, duration, showhide, lineGroup);
       });
     }
   },
-  _updateLabelSize: function _updateLabelSize(d, index, labelGroup, valueLST, text) {
+  _initNewCache: function _initNewCache(cached, valueX, valueY, valueS, valueC, valueLST) {
+    if (valueS || valueS === 0) cached.scaledS0 = utils.areaToRadius(this.context.sScale(valueS));
+    cached.labelX0 = valueX;
+    cached.labelY0 = valueY;
+    cached.valueLST = valueLST;
+    cached.scaledC0 = valueC != null ? this.context.cScale(valueC) : this.context.COLOR_WHITEISH;
+  },
+  _initLabelTooltip: function _initLabelTooltip() {
+    this.tooltipEl = this.labelsContainer.append("g").attr("class", this.options.CSS_PREFIX + "-tooltip");
+  },
+  setTooltip: function setTooltip(d, tooltipText, tooltipCache, labelValues) {
+    if (tooltipText) {
+      var position = 0;
+      var _cssPrefix = this.options.CSS_PREFIX;
+      this.tooltipEl.raise().text(null);
+      this.label(this.tooltipEl, true);
+      if (d) {
+        var cache = {};
+        this._initNewCache(cache, labelValues.valueX, labelValues.valueY, labelValues.valueS, labelValues.valueC, labelValues.valueLST);
+        this.tooltipEl.classed(this.options.CSS_PREFIX + "-tooltip", false).classed(this.options.CSS_PREFIX + "-entity", true).selectAll("." + _cssPrefix + "-label-content").text(labelValues.labelText);
+        this._updateLabelSize(d, null, cache, this.tooltipEl, labelValues.valueLST);
+        position = this.positionLabel(d, null, cache, this.tooltipEl.node(), 0, null, this.tooltipEl.select(".lineemptygroup"));
+      }
+      this.tooltipEl.classed(this.options.CSS_PREFIX + "-entity", false).classed(this.options.CSS_PREFIX + "-tooltip", true).selectAll("." + _cssPrefix + "-label-content").text(tooltipText);
+      this._updateLabelSize(d, null, tooltipCache, this.tooltipEl, null);
+      this.positionLabel(d, null, tooltipCache, this.tooltipEl.node(), 0, null, this.tooltipEl.select(".lineemptygroup"), position);
+    } else {
+      this.tooltipEl.text(null);
+    }
+  },
+  setTooltipFontSize: function setTooltipFontSize(fontSize) {
+    this.tooltipEl.style("font-size", fontSize);
+  },
+  _updateLabelSize: function _updateLabelSize(d, index, cache, labelGroup, valueLST, text) {
     var _this = this;
     var KEY = this.KEY;
-    var cached = _this.cached[d[KEY]];
+    var cached = cache || _this.cached[d[KEY]];
 
     var _cssPrefix = this.options.CSS_PREFIX;
 
@@ -32543,8 +33379,8 @@ var Labels = _class2.default.extend({
 
       //cache label bound rect for reposition
       cached.rectBBox = rect.node().getBBox();
-      //cached.moveX = 5;
-      //cached.moveY = contentBBox.height * .3;
+      cached.rectOffsetX = cached.rectBBox.width + cached.rectBBox.x;
+      cached.rectOffsetY = cached.rectBBox.height + cached.rectBBox.y;
     }
 
     var glowRect = labelGroup.select(".vzb-label-glow");
@@ -32559,15 +33395,16 @@ var Labels = _class2.default.extend({
   },
   updateLabelsOnlyTextSize: function updateLabelsOnlyTextSize() {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
 
     this.entityLabels.each(function (d, index) {
       var cached = _this.cached[d[KEY]];
-      _this._updateLabelSize(d, index, d3.select(this), _this.context.frame.size_label[d[KEY]]);
+      _this._updateLabelSize(d, index, null, d3.select(this), _this.context.frame.size_label[utils.getKey(d, KEYS)]);
       var lineGroup = _this.entityLines.filter(function (f) {
         return f[KEY] == d[KEY];
       });
-      _this.positionLabel(d, index, this, 0, null, lineGroup);
+      _this.positionLabel(d, index, null, this, 0, null, lineGroup);
     });
   },
   updateLabelOnlyPosition: function updateLabelOnlyPosition(d, index, cache) {
@@ -32583,7 +33420,7 @@ var Labels = _class2.default.extend({
     this.entityLabels.filter(function (f) {
       return f[KEY] == d[KEY];
     }).each(function (groupData) {
-      _this.positionLabel(d, index, this, 0, null, lineGroup);
+      _this.positionLabel(d, index, null, this, 0, null, lineGroup);
     });
   },
   updateLabelOnlyColor: function updateLabelOnlyColor(d, index, cache) {
@@ -32596,50 +33433,96 @@ var Labels = _class2.default.extend({
       return f[KEY] == d[KEY];
     });
 
-    _this._updateLabelSize(d, index, labelGroup, null);
+    _this._updateLabelSize(d, index, null, labelGroup, null);
   },
-  positionLabel: function positionLabel(d, index, context, duration, showhide, lineGroup) {
+  positionLabel: function positionLabel(d, index, cache, context, duration, showhide, lineGroup, position) {
     var KEY = this.KEY;
-    var cached = this.cached[d[KEY]];
+    var cached = cache || this.cached[d[KEY]];
 
+    var lockPosition = position || position === 0;
+    var hPos = (position || 0) & 1;
+    var vPos = ((position || 0) & 2) >> 1;
+    var hPosNew = 0;
+    var vPosNew = 0;
     var viewWidth = this.context.width;
     var viewHeight = this.context.height;
 
     var resolvedX0 = this.xScale(cached.labelX0);
     var resolvedY0 = this.yScale(cached.labelY0);
 
+    var offsetX = cached.rectOffsetX;
+    var offsetY = cached.rectOffsetY;
+
     if (!cached.labelOffset) cached.labelOffset = [0, 0];
-    cached.labelX_ = cached.labelOffset[0] || (-cached.scaledS0 * 0.75 - 5) / viewWidth;
-    cached.labelY_ = cached.labelOffset[1] || (-cached.scaledS0 * 0.75 - 11) / viewHeight;
+
+    cached.labelX_ = cached.labelOffset[0] || (-cached.scaledS0 * 0.75 - offsetX) / viewWidth;
+    cached.labelY_ = cached.labelOffset[1] || (-cached.scaledS0 * 0.75 - offsetY) / viewHeight;
 
     //check default label position and switch to mirror position if position
     //does not bind to visible field
-
     var resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-    if (cached.labelOffset[0] == 0) {
-      if (resolvedX - cached.rectBBox.width <= 0) {
-        //check left
-        cached.labelX_ = (cached.scaledS0 * 0.75 + cached.rectBBox.width) / viewWidth;
-        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-      } else if (resolvedX + 15 > viewWidth) {
-        //check right
-        cached.labelX_ = (viewWidth - 15 - resolvedX0) / viewWidth;
-        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
-      }
-    }
     var resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
-    if (cached.labelOffset[1] == 0) {
-      if (resolvedY - cached.rectBBox.height <= 0) {
+    if (cached.labelOffset[0] + cached.labelOffset[1] == 0) {
+      if (!lockPosition && resolvedY - cached.rectBBox.height + offsetY <= 0 || vPos) {
         // check top
-        cached.labelY_ = (cached.scaledS0 * 0.75 + cached.rectBBox.height) / viewHeight;
-        resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
-      } else if (resolvedY + 10 > viewHeight) {
-        //check bottom
-        cached.labelY_ = (viewHeight - 10 - resolvedY0) / viewHeight;
+        vPosNew = 1;
+        cached.labelY_ = (cached.scaledS0 * 0.75 + cached.rectBBox.height - offsetY) / viewHeight;
         resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
       }
+      //  else if (resolvedY + 10 > viewHeight) { //check bottom
+      //   cached.labelY_ = (viewHeight - 10 - resolvedY0) / viewHeight;
+      //   resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
+      // }
+
+      if (!lockPosition && resolvedX - cached.rectBBox.width + offsetX <= 0 || hPos) {
+        //check left
+        hPosNew = 1;
+        cached.labelX_ = (cached.scaledS0 * 0.75 + cached.rectBBox.width - offsetX) / viewWidth;
+        resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+        if (resolvedX > viewWidth) {
+          hPosNew = 0;
+          vPosNew = vPosNew == 0 && resolvedY0 - offsetY * 0.5 - cached.scaledS0 < cached.rectBBox.height ? 1 : vPosNew;
+          cached.labelY_ = vPosNew ? -offsetY * 0.5 + cached.rectBBox.height + cached.scaledS0 : -offsetY * 1.5 - cached.scaledS0;
+          cached.labelY_ /= viewHeight;
+          resolvedY = resolvedY0 + cached.labelY_ * viewHeight;
+          cached.labelX_ = (cached.rectBBox.width - offsetX - resolvedX0) / viewWidth;
+          resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+        }
+      }
+      //  else if (resolvedX + 15 > viewWidth) { //check right
+      //   cached.labelX_ = (viewWidth - 15 - resolvedX0) / viewWidth;
+      //   resolvedX = resolvedX0 + cached.labelX_ * viewWidth;
+      // }
     }
-    this.label._repositionLabels(d, index, context, resolvedX, resolvedY, resolvedX0, resolvedY0, duration, showhide, lineGroup);
+
+    if (lockPosition) {
+      var topCornerCase = false;
+      if (resolvedX - cached.rectBBox.width + offsetX <= 0) {
+        var deltaX = resolvedX0 - cached.rectBBox.width;
+        var deltaY = deltaX > 0 ? utils.cathetus(cached.scaledS0, deltaX) : cached.scaledS0;
+        resolvedY = vPosNew ? resolvedY0 + cached.rectBBox.height - offsetY * 0.5 + deltaY : resolvedY0 - offsetY * 1.5 - deltaY;
+        if (resolvedY - cached.rectBBox.height < 0) {
+          topCornerCase = true;
+        }
+      }
+      if (resolvedY - cached.rectBBox.height + offsetY <= 0) {
+        var _deltaY = resolvedY0 - cached.rectBBox.height;
+        var _deltaX = _deltaY > 0 ? utils.cathetus(cached.scaledS0, _deltaY) : cached.scaledS0;
+        resolvedX = hPosNew ? resolvedX0 + cached.rectBBox.width + _deltaX : resolvedX0 - offsetX * 2 - _deltaX;
+        if (resolvedX - cached.rectBBox.width < 0 || resolvedX > viewWidth) {
+          topCornerCase = true;
+        }
+      }
+      if (topCornerCase) {
+        vPosNew++;
+        var _deltaX2 = resolvedX0 - cached.rectBBox.width;
+        resolvedY = resolvedY0 + cached.rectBBox.height - offsetY * 0.5 + (_deltaX2 > 0 ? utils.cathetus(cached.scaledS0, _deltaX2) : cached.scaledS0);
+      }
+    }
+
+    this.label._repositionLabels(d, index, cache, context, resolvedX, resolvedY, resolvedX0, resolvedY0, duration, showhide, lineGroup);
+
+    return vPosNew * 2 + hPosNew;
   },
   updateSize: function updateSize() {
     var profiles = {
@@ -32686,7 +33569,7 @@ var Labels = _class2.default.extend({
 exports.default = Labels;
 
 /***/ }),
-/* 429 */
+/* 431 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/*! https://mths.be/cssescape v1.5.1 by @mathias | MIT license */
@@ -32796,10 +33679,10 @@ exports.default = Labels;
 
 }));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(77)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(78)))
 
 /***/ }),
-/* 430 */
+/* 432 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32956,7 +33839,7 @@ exports.default = _class2.default.extend({
 });
 
 /***/ }),
-/* 431 */
+/* 433 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32986,7 +33869,7 @@ var TextEllipsis = _class2.default.extend({
       mouseOver: function mouseOver() {
         var evt = d3.event;
         var mouse = d3.mouse(_this.context.element.node());
-        _this._setTooltip(d3.select(evt.srcElement).attr("data-text"), mouse[0], mouse[1]);
+        _this._setTooltip(d3.select(evt.target).attr("data-text"), mouse[0], mouse[1]);
       },
       mouseOut: function mouseOut() {
         _this._setTooltip();
@@ -33059,7 +33942,7 @@ var TextEllipsis = _class2.default.extend({
 exports.default = TextEllipsis;
 
 /***/ }),
-/* 432 */
+/* 434 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33669,7 +34552,7 @@ exports.default = function () {
 }();
 
 /***/ }),
-/* 433 */
+/* 435 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
