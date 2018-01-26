@@ -1,4 +1,4 @@
-((function(){})({version: '"0.28.0"'}));(function webpackUniversalModuleDefinition(root, factory) {
+((function(){})({version: '"0.28.1"'}));(function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
@@ -7016,6 +7016,7 @@ var Reader = _class2.default.extend({
       var rows = result.rows,
           columns = result.columns;
 
+      _this._checkTimeParser(columns, parsers);
       _this.ensureDataIsCorrect(result, parsers);
 
       switch (true) {
@@ -7048,6 +7049,12 @@ var Reader = _class2.default.extend({
     });
   },
   ensureDataIsCorrect: function ensureDataIsCorrect() {},
+  _checkTimeParser: function _checkTimeParser(columns, parsers) {
+    var timeKey = columns[this.keySize];
+    if (!parsers[timeKey]) parsers[timeKey] = function (t) {
+      return t;
+    };
+  },
   _normalizeQuery: function _normalizeQuery(_query, parsers) {
     var query = Object.assign({}, _query);
     var _query$where = query.where,
@@ -7281,9 +7288,10 @@ var Marker = _model2.default.extend({
     this._super(name, value, parent, binds, persistent);
 
     this.on("change", "space", this.updateSpaceReferences.bind(this));
-    utils.defer(function () {
-      return _this.updateSpaceReferences();
-    });
+  },
+  setInterModelListeners: function setInterModelListeners() {
+    this._super();
+    this.updateSpaceReferences();
   },
   updateSpaceReferences: function updateSpaceReferences() {
     var _this2 = this;
@@ -7489,10 +7497,10 @@ var Marker = _model2.default.extend({
   },
   isSelected: function isSelected(d) {
     var _this = this;
-    var value = this._createValue(d);
+    var value = JSON.stringify(this._createValue(d));
 
     return this.select.map(function (d) {
-      return JSON.stringify(_this._createValue(d)) === JSON.stringify(value);
+      return JSON.stringify(_this._createValue(d)) === value;
     }).indexOf(true) !== -1;
   },
   _createValue: function _createValue(d) {
@@ -7574,9 +7582,9 @@ var Marker = _model2.default.extend({
    */
   isHighlighted: function isHighlighted(d) {
     var _this = this;
-    var value = this._createValue(d);
+    var value = JSON.stringify(this._createValue(d));
     return this.highlight.map(function (d) {
-      return JSON.stringify(_this._createValue(d)) === JSON.stringify(value);
+      return JSON.stringify(_this._createValue(d)) === value;
     }).indexOf(true) !== -1;
   },
 
@@ -8061,7 +8069,7 @@ var Marker = _model2.default.extend({
             steps.forEach(function (t) {
               _this.partialResult[cachePath][t][name] = {};
               keys.forEach(function (key) {
-                _this.partialResult[cachePath][t][name][utils.getKey(key, KEYS)] = key[hook.which];
+                _this.partialResult[cachePath][t][name][key[hook.which]] = key[hook.which];
               });
             });
           } else if (hook.which === TIME) {
@@ -10150,8 +10158,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  build: 1513413552525,
-  version: "0.28.0"
+  build: 1516906862576,
+  version: "0.28.1"
 };
 
 /***/ }),
@@ -12442,10 +12450,10 @@ var ColorModel = _hook2.default.extend({
     if (!args) return utils.warn("getColorShade() is missing arguments");
 
     // if colorID is not given or not found in the palette, replace it with default color
-    if (!args.colorID || !palette[args.colorID]) args.colorID = "_default";
+    //if (!args.colorID || !palette[args.colorID]) args.colorID = "_default";
 
     // if the resolved colr value is not an array (has only one shade) -- return it
-    if (!utils.isArray(palette[args.colorID])) return args.shadeID == "shade" ? d3.rgb(palette[args.colorID]).darker(0.5).toString() : palette[args.colorID];
+    if (!utils.isArray(palette[args.colorID])) return args.shadeID == "shade" ? d3.rgb(palette[args.colorID] || this.scale(args.colorID)).darker(0.5).toString() : palette[args.colorID];
 
     var conceptpropsColor = this.getConceptprops().color;
     var shade = args.shadeID && conceptpropsColor && conceptpropsColor.shades && conceptpropsColor.shades[args.shadeID] ? conceptpropsColor.shades[args.shadeID] : 0;
@@ -12477,7 +12485,7 @@ var ColorModel = _hook2.default.extend({
       //save the references here locally
       _this._syncModelReferences[modelName] = { model: model, marker: marker, entities: entities };
 
-      if (_this.isDiscrete()) _this._setSyncModel(model, marker, entities);
+      if (_this.isDiscrete() && _this.use !== "constant") _this._setSyncModel(model, marker, entities);
     });
   },
   _setSyncModel: function _setSyncModel(model, marker, entities) {
@@ -14435,7 +14443,8 @@ var CSVReader = _reader2.default.extend({
       WRONG_TIME_COLUMN_OR_UNITS: "reader/error/wrongTimeUnitsOrColumn",
       NOT_ENOUGH_ROWS_IN_FILE: "reader/error/notEnoughRows",
       UNDEFINED_DELIMITER: "reader/error/undefinedDelimiter",
-      EMPTY_HEADERS: "reader/error/emptyHeaders"
+      EMPTY_HEADERS: "reader/error/emptyHeaders",
+      DIFFERENT_SEPARATORS: "reader/error/differentSeparators"
     });
   },
   ensureDataIsCorrect: function ensureDataIsCorrect(_ref, parsers) {
@@ -14604,7 +14613,7 @@ var CSVReader = _reader2.default.extend({
   },
   _mapRows: function _mapRows(rows, query, parsers) {
     var mapRow = this._getRowMapper(query, parsers);
-
+    this._failedParseStrategies = 0;
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -14628,6 +14637,7 @@ var CSVReader = _reader2.default.extend({
             var parsed = mapRow(row);
 
             if (!this._isParseSuccessful) {
+              this._failedParseStrategies++;
               break;
             }
 
@@ -14649,6 +14659,9 @@ var CSVReader = _reader2.default.extend({
         }
 
         if (this._isParseSuccessful) {
+          if (this._failedParseStrategies === this._parseStrategies.length - 1) {
+            throw this.error(this.ERRORS.DIFFERENT_SEPARATORS);
+          }
           return result;
         }
       }
@@ -14669,7 +14682,7 @@ var CSVReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.28.0", build: 1513413552525 }
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
 
 });
 
@@ -16140,7 +16153,7 @@ var ColorLegend = _component2.default.extend({
     var _this = this;
 
     this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
-    this.KEY = this.model.entities.getDimension();
+    this.KEY = this.KEYS.join(",");
     this.colorlegendDim = this.KEY;
     this.canShowMap = false;
 
@@ -16148,7 +16161,7 @@ var ColorLegend = _component2.default.extend({
       if (!this.colorlegendMarker._ready) return;
 
       this.markerKeys = _this.model.marker.getKeys();
-      this.colorDataKey = _this.colorModel.getDataKeys()[0];
+      this.KEY = _this.colorModel.getDataKeys()[0];
 
       this.colorlegendDim = this.colorModel.getColorlegendEntities().getDimension();
 
@@ -16309,7 +16322,9 @@ var ColorLegend = _component2.default.extend({
         if (this.colorModel.which == "_default") {
           colorOptions = colorOptions.data([]);
         } else {
-          colorOptions = colorOptions.data(hideColorOptions ? [] : colorlegendKeys.length ? colorlegendKeys : Object.keys(this.colorModel.getPalette()).map(function (value) {
+          colorOptions = colorOptions.data(hideColorOptions ? [] : colorlegendKeys.length ? _this.colorlegendDim == KEY ? utils.unique(_this.markerKeys, function (key) {
+            return key[KEY];
+          }) : colorlegendKeys : Object.keys(this.colorModel.getPalette()).map(function (value) {
             var result = {};
             result[_this.colorlegendDim] = value;
             return result;
@@ -16392,6 +16407,7 @@ var ColorLegend = _component2.default.extend({
   },
   _interact: function _interact() {
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     var colorlegendDim = this.colorlegendDim;
 
@@ -16404,19 +16420,17 @@ var ColorLegend = _component2.default.extend({
         var view = d3.select(this);
         var target = d[colorlegendDim];
 
-        var colorDataKey = _this.colorDataKey;
-
         var filterHash = _this.colorModel.getValidItems()
         //filter so that only countries of the correct target remain
         .filter(function (f) {
           return f[_this.colorModel.which] == target;
-        }).reduce(function (result, item) {
-          result[item[colorDataKey]] = true;
+        }).reduce(function (result, d) {
+          result[d[KEY]] = true;
           return result;
         }, {});
 
         _this._highlight(_this.markerKeys.filter(function (key) {
-          return filterHash[key[colorDataKey]];
+          return filterHash[key[KEY]];
         }));
       },
       mouseout: function mouseout(d, i) {
@@ -16464,14 +16478,21 @@ var ColorLegend = _component2.default.extend({
         var view = d3.select(this);
         var target = d[colorlegendDim];
 
-        var select = _this.colorModel.getValidItems()
+        var filterHash = _this.colorModel.getValidItems()
         //filter so that only countries of the correct target remain
         .filter(function (f) {
           return f[_this.colorModel.which] == target;
         })
         //fish out the "key" field, leave the rest behind
-        .map(function (d) {
-          return utils.clone(d, [KEY]);
+        .reduce(function (result, d) {
+          result[d[KEY]] = true;
+          return result;
+        }, {});
+
+        var select = _this.markerKeys.filter(function (f) {
+          return filterHash[f[KEY]];
+        }).map(function (d) {
+          return utils.clone(d, KEYS);
         });
 
         if (select.filter(function (d) {
@@ -25766,6 +25787,14 @@ function _getQueryId(query, path, lastModified, readerName) {
   return utils.hashCode([query.select.key, query.where, query.from, query.join, query.dataset, query.version, query.language, path, lastModified, readerName]);
 }
 
+function getCacheKey(dataId, frames, keys) {
+  var result = frames[0] + " - " + frames[frames.length - 1] + " (" + frames.length + ")";
+  if (keys) {
+    result = result + "_" + keys.join();
+  }
+  return result;
+}
+
 var Storage = exports.Storage = function () {
   function Storage() {
     _classCallCheck(this, Storage);
@@ -26225,7 +26254,7 @@ var Storage = exports.Storage = function () {
     key: "getFrames",
     value: function getFrames(dataId, framesArray, keys, conceptprops) {
       var _this = this;
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       if (!this._collectionPromises[dataId][whatId]) {
         this._collectionPromises[dataId][whatId] = {
           queue: this.framesQueue(framesArray, whatId),
@@ -26250,7 +26279,7 @@ var Storage = exports.Storage = function () {
     key: "getFrame",
     value: function getFrame(dataId, framesArray, neededFrame, keys) {
       var _this = this;
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       return new Promise(function (resolve, reject) {
         if (_this._collection[dataId]["frames"][whatId] && _this._collection[dataId]["frames"][whatId][neededFrame]) {
           resolve(_this._collection[dataId]["frames"][whatId]);
@@ -26264,7 +26293,7 @@ var Storage = exports.Storage = function () {
   }, {
     key: "listenFrame",
     value: function listenFrame(dataId, framesArray, keys, cb) {
-      var whatId = this._getCacheKey(dataId, framesArray, keys);
+      var whatId = getCacheKey(dataId, framesArray, keys);
       this._collectionPromises[dataId][whatId]["queue"].defaultCallbacks.push(function (time) {
         cb(dataId, time);
       });
@@ -26640,15 +26669,6 @@ var Storage = exports.Storage = function () {
           }
         });
       });
-    }
-  }, {
-    key: "_getCacheKey",
-    value: function _getCacheKey(dataId, frames, keys) {
-      var result = frames[0] + " - " + frames[frames.length - 1] + " (" + frames.length + ")";
-      if (keys) {
-        result = result + "_" + keys.join();
-      }
-      return result;
     }
   }]);
 
@@ -27060,7 +27080,7 @@ var CSVTimeInColumnsReader = _csv2.default.extend({
   },
 
 
-  versionInfo: { version: "0.28.0", build: 1513413552525 }
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
 
 });
 
@@ -27184,7 +27204,7 @@ var InlineReader = _reader2.default.extend({
   },
 
 
-  versionInfo: { version: "0.28.0", build: 1513413552525 }
+  versionInfo: { version: "0.28.1", build: 1516906862576 }
 
 });
 

@@ -100,6 +100,7 @@ Vizabi.Tool.extend('combo', {
     locale: {},
     ui: {
       chart: {
+        superhighlightOnMinimapHover: true,
         whenHovering: {
           showProjectionLineX: true,
           showProjectionLineY: true,
@@ -110,8 +111,12 @@ Vizabi.Tool.extend('combo', {
           dragging: true,
           removeLabelBox: false
         },
+        margin: {
+          left: 0,
+          top: 0
+        },
         trails: false,
-        lockNonSelected: 0,
+        lockNonSelected: 0
       },
       presentation: false,
       panWithArrow: true,

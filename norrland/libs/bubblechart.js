@@ -85,7 +85,7 @@ var _component2 = _interopRequireDefault(_component);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "1.0.25", build: 1513414820356 };
+var VERSION_INFO = { version: "2.0.0", build: 1516969532263 };
 
 exports.default = Vizabi.Tool.extend("BubbleChart", {
 

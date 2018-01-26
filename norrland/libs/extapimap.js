@@ -89,7 +89,7 @@ __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "1.1.7", build: 1513414843171 };
+var VERSION_INFO = { version: "2.0.0", build: 1516906861986 };
 
 var ExtApiMap = Vizabi.Tool.extend("ExtApiMap", {
 
@@ -761,17 +761,18 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
   updateEntities: function updateEntities() {
 
     var _this = this;
+    var KEYS = this.KEYS;
     var KEY = this.KEY;
     var TIMEDIM = this.TIMEDIM;
 
     var getKeys = function getKeys(prefix) {
       prefix = prefix || "";
       return _this.model.marker.getKeys().map(function (d) {
-        var pointer = {};
-        pointer[KEY] = d[KEY];
+        var pointer = Object.assign({}, d);
+        //pointer[KEY] = d[KEY];
         pointer[TIMEDIM] = endTime;
         pointer.sortValue = _this.values.size[utils.getKey(d, _this.dataKeys.size)] || 0;
-        pointer[KEY] = prefix + d[KEY];
+        pointer[KEY] = prefix + utils.getKey(d, KEYS);
         return pointer;
       }).sort(function (a, b) {
         return b.sortValue - a.sortValue;
