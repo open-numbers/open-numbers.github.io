@@ -89,7 +89,7 @@ __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "2.0.0", build: 1516906861986 };
+var VERSION_INFO = { version: "2.1.0", build: 1520373631184 };
 
 var ExtApiMap = Vizabi.Tool.extend("ExtApiMap", {
 
@@ -145,13 +145,84 @@ var ExtApiMap = Vizabi.Tool.extend("ExtApiMap", {
   default_model: {
     state: {
       time: {
-        "delay": 100,
-        "delayThresholdX2": 50,
-        "delayThresholdX4": 25
+        "autoconfig": {
+          "type": "time"
+        }
       },
       entities: {
-        "opacitySelectDim": 0.3,
-        "opacityRegular": 1
+        "autoconfig": {
+          "type": "entity_domain",
+          "excludeIDs": ["tag"]
+        }
+      },
+      entities_colorlegend: {
+        "autoconfig": {
+          "type": "entity_domain",
+          "excludeIDs": ["tag"]
+        }
+      },
+      "entities_map_colorlegend": {
+        "autoconfig": {
+          "type": "entity_domain",
+          "excludeIDs": ["tag"]
+        }
+      },
+      entities_tags: {
+        "autoconfig": {
+          "type": "entity_domain",
+          "includeOnlyIDs": ["tag"]
+        }
+      },
+      marker_tags: {
+        space: ["entities_tags"],
+        label: {
+          use: "property",
+          which: "name"
+        },
+        hook_parent: {}
+      },
+      marker: {
+        limit: 1000,
+        space: ["entities", "time"],
+        label: {
+          use: "property",
+          "autoconfig": {
+            "includeOnlyIDs": ["name"],
+            "type": "string"
+          }
+        },
+        size: {
+          "autoconfig": {
+            index: 0,
+            type: "measure"
+          }
+        },
+        color: {
+          syncModels: ["marker_colorlegend"],
+          "autoconfig": {
+            index: 1,
+            type: "measure"
+          }
+        },
+        color_map: {
+          syncModels: ["marker_colorlegend"],
+          "autoconfig": {}
+        }
+      },
+      "marker_colorlegend": {
+        "space": ["entities_colorlegend"],
+        "label": {
+          "use": "property",
+          "which": "name"
+        },
+        "hook_rank": {
+          "use": "property",
+          "which": "rank"
+        },
+        "hook_geoshape": {
+          "use": "property",
+          "which": "shape_lores_svg"
+        }
       }
     },
     locale: {},
@@ -163,9 +234,9 @@ var ExtApiMap = Vizabi.Tool.extend("ExtApiMap", {
       panWithArrow: true,
       adaptMinMaxZoom: false,
       zoomOnScrolling: true,
-      "buttons": ["colors", "size", "show", "find", "moreoptions", "mapcolors", "zoom", "fullscreen", "presentation"],
+      "buttons": ["colors", "size", "find", "moreoptions", "mapcolors", "zoom", "fullscreen", "presentation"],
       "dialogs": {
-        "popup": ["colors", "mapcolors", "show", "find", "size", "zoom", "moreoptions"],
+        "popup": ["colors", "mapcolors", "find", "size", "zoom", "moreoptions"],
         "sidebar": ["colors", "find", "mapoptions", "zoom"],
         "moreoptions": ["mapoptions", "opacity", "speed", "size", "colors", "mapcolors", "zoom", "presentation", "about"]
       },
@@ -389,7 +460,6 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
     this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     this.KEY = this.KEYS.join(",");
     this.dataKeys = this.model.marker.getDataKeysPerHook();
-    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.updateUIStrings();
 
@@ -534,7 +604,6 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
     this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     this.KEY = this.KEYS.join(",");
     this.dataKeys = this.model.marker.getDataKeysPerHook();
-    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.updateUIStrings();
     this.updateIndicators();
@@ -846,10 +915,14 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
   },
   _getPosition: function _getPosition(d) {
     var dataKeys = this.dataKeys;
+    if (this.values.hook_lat && this.values.hook_lat[utils.getKey(d, dataKeys.hook_lat)]) {
+      return this.map.geo2Point(this.values.hook_lat[utils.getKey(d, dataKeys.hook_lat)], this.values.hook_lng[utils.getKey(d, dataKeys.hook_lng)]);
+    }
     if (this.values.hook_centroid && this.values.hook_centroid[utils.getKey(d, dataKeys.hook_centroid)]) {
       return this.map.centroid(this.values.hook_centroid[utils.getKey(d, dataKeys.hook_centroid)]);
     }
-    return this.map.geo2Point(this.values.hook_lat[utils.getKey(d, dataKeys.hook_lat)], this.values.hook_lng[utils.getKey(d, dataKeys.hook_lng)]);
+    utils.warn("_getPosition(): was unable to resolve bubble positions either via lat/long or centroid");
+    return [0, 0];
   },
   redrawDataPoints: function redrawDataPoints(duration, reposition) {
     var _this = this;
@@ -1188,7 +1261,7 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
       cache.labelY0 = valueY / this.height;
       cache.scaledS0 = valueS ? utils.areaToRadius(_this.sScale(valueS)) : null;
       cache.scaledC0 = valueC != null ? _this.cScale(valueC) : _this.COLOR_WHITEISH;
-      var labelText = this._getLabelText(this.values, this.labelNames, d);
+      var labelText = this.model.marker.getCompoundLabelText(d, values);
 
       this._labels.updateLabel(d, index, cache, valueX / this.width, valueY / this.height, valueS, valueC, labelText, valueLST, duration, showhide);
     }
@@ -1216,15 +1289,10 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
 
     this.nonSelectedOpacityZero = false;
   },
-  _getLabelText: function _getLabelText(values, labelNames, d) {
-    return this.KEYS.map(function (key) {
-      return values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key];
-    }).join(", ");
-  },
   _setTooltip: function _setTooltip(d) {
     if (d) {
       var KEY = this.KEY;
-      var values = this.values;
+      var _values = this.values;
       var labelValues = {};
       var tooltipCache = {};
       var cLoc = d.cLoc ? d.cLoc : this._getPosition(d);
@@ -1233,8 +1301,8 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
       });
       var x = cLoc[0] || mouse[0];
       var y = cLoc[1] || mouse[1];
-      labelValues.valueS = values.size[utils.getKey(d, this.dataKeys.size)];
-      labelValues.labelText = this._getLabelText(values, this.labelNames, d);
+      labelValues.valueS = _values.size[utils.getKey(d, this.dataKeys.size)];
+      labelValues.labelText = this.model.marker.getCompoundLabelText(d, _values);
       tooltipCache.labelX0 = labelValues.valueX = x / this.width;
       tooltipCache.labelY0 = labelValues.valueY = y / this.height;
       var offset = d.r || utils.areaToRadius(this.sScale(labelValues.valueS) || 0);
@@ -1576,6 +1644,7 @@ var TopojsonLayer = MapLayer.extend({
     this.shapes = null;
     this.mapLands = [];
     this.parent = parent;
+    this.resolvedCentroidCache = {};
     this.context = context;
     this.parent = parent;
     this.paths = {};
@@ -1719,7 +1788,10 @@ var TopojsonLayer = MapLayer.extend({
   },
   centroid: function centroid(key) {
     if ((key || key == 0) && this.paths[key]) {
-      return this.mapPath.centroid(this.paths[key]);
+      if (this.resolvedCentroidCache[key]) return this.geo2Point(this.resolvedCentroidCache[key][0], this.resolvedCentroidCache[key][1]);
+      var centroid = this.mapPath.centroid(this.paths[key]);
+      this.resolvedCentroidCache[key] = this.point2Geo(centroid[0], centroid[1]);
+      return centroid;
     }
     return null;
   },
@@ -1927,7 +1999,7 @@ var GoogleMapLayer = MapLayer.extend({
 
 var MapboxLayer = MapLayer.extend({
   init: function init(context, parent) {
-    _mapboxGl2.default.accessToken = "pk.eyJ1Ijoic2VyZ2V5ZiIsImEiOiJjaXlqeWo5YnYwMDBzMzJwZnlwZXJ2bnA2In0.e711ku9KzcFW_x5wmOZTag";
+    _mapboxGl2.default.accessToken = context.model.ui.map.accessToken || "pk.eyJ1Ijoic2VyZ2V5ZiIsImEiOiJjaXlqeWo5YnYwMDBzMzJwZnlwZXJ2bnA2In0.e711ku9KzcFW_x5wmOZTag";
     this.context = context;
     this.parent = parent;
   },

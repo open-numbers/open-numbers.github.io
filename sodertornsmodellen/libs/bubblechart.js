@@ -85,7 +85,7 @@ var _component2 = _interopRequireDefault(_component);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "2.0.0", build: 1516969532263 };
+var VERSION_INFO = { version: "2.0.2", build: 1520373437802 };
 
 exports.default = Vizabi.Tool.extend("BubbleChart", {
 
@@ -186,6 +186,7 @@ exports.default = Vizabi.Tool.extend("BubbleChart", {
         hook_parent: {}
       },
       marker: {
+        limit: 5000,
         space: ["entities", "time"],
         axis_x: {
           use: "indicator",
@@ -725,7 +726,6 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     this.KEY = this.KEYS.join(",");
     this.dataKeys = this.model.marker.getDataKeysPerHook();
-    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.updateUIStrings();
 
@@ -743,7 +743,6 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
     this.KEY = this.KEYS.join(",");
     this.dataKeys = this.model.marker.getDataKeysPerHook();
-    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.updateUIStrings();
     var endTime = this.model.time.end;
@@ -965,7 +964,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
    */
   updateEntities: function updateEntities() {
     var _this = this;
-    var dataKeys = this.dataKeys;
+    var dataKeys = this.dataKeys = this.model.marker.getDataKeysPerHook();
     var KEYS = this.KEYS;
     var KEY = this.KEY;
     var TIMEDIM = this.TIMEDIM;
@@ -1345,7 +1344,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     if (!this.entityBubbles) return utils.warn("redrawDataPointsOnlyColors(): no entityBubbles defined. likely a premature call, fix it!");
 
     var valuesNow = void 0;
-    var dataKeys = this.dataKeys;
+    var dataKeys = this.dataKeys = this.model.marker.getDataKeysPerHook();
     var KEYS = this.KEYS;
     var KEY = this.KEY;
 
@@ -1398,7 +1397,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
     var _this = this;
 
     var valuesNow = void 0;
-    var dataKeys = this.dataKeys;
+    var dataKeys = this.dataKeys = this.model.marker.getDataKeysPerHook();
     var KEYS = this.KEYS;
     var KEY = this.KEY;
 
@@ -1582,7 +1581,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
 
       var trailStartTime = _this.model.time.parse("" + select.trailStartTime);
 
-      var labelText = _this._getLabelText(values, this.labelNames, d, select.trailStartTime);
+      var labelText = _this._getLabelText(values, d, select.trailStartTime);
 
       if (showhide && d.hidden && _this.model.ui.chart.trails && trailStartTime && trailStartTime < _this.time) showhide = false;
       if (d.hidden && !_this.model.ui.chart.trails) showhide = true;
@@ -1590,11 +1589,8 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
       this._labels.updateLabel(d, index, cache, valueX, valueY, valueS, valueC, labelText, valueLST, duration, showhide);
     }
   },
-  _getLabelText: function _getLabelText(values, labelNames, d, time) {
-    var value = this.KEYS.map(function (key) {
-      return values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key];
-    }).join(", ");
-    return value + (time || time === 0 ? " " + time : "");
+  _getLabelText: function _getLabelText(values, d, time) {
+    return this.model.marker.getCompoundLabelText(d, values) + (time && this.model.time.start - this.model.time.end !== 0 ? " " + time : "");
   },
   _setTooltip: function _setTooltip(tooltipText, x, y, s, c, d) {
     if (tooltipText) {
@@ -1607,7 +1603,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
         labelValues.valueS = values.size[utils.getKey(d, dataKeys.size)];
         labelValues.valueC = values.color[utils.getKey(d, dataKeys.color)];
         labelValues.valueLST = values.size_label[utils.getKey(d, dataKeys.size_label)];
-        labelValues.labelText = this._getLabelText(values, this.labelNames, d, this.model.time.formatDate(this.time));
+        labelValues.labelText = this._getLabelText(values, d, this.model.time.formatDate(this.time));
       }
 
       var tooltipCache = {};
@@ -1772,7 +1768,7 @@ var BubbleChart = Vizabi.Component.extend("bubblechart", {
           hoverTrail = text !== _selectedData.trailStartTime && !d3.select(d3.event.target).classed("bubble-" + d[KEY]);
           text = text !== _selectedData.trailStartTime && _this.time === d[TIMEDIM] ? text : "";
         } else {
-          text = _this.model.marker.isSelected(d) ? "" : _this._getLabelText(values, _this.labelNames, d);
+          text = _this.model.marker.isSelected(d) ? "" : _this._getLabelText(values, d);
         }
 
         _this._labels.highlight(null, false);

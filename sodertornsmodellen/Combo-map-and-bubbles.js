@@ -9,9 +9,8 @@ VIZABI_MODEL = {
     },
     "entities": {
       "dim": "basomrade",
-      "show": {
-        "size": "big"
-      }
+      "filter": {"basomrade": {"size": "big"}},
+      "show": {}
     },
     "entities_colorlegend": {
       "dim": "municipality"

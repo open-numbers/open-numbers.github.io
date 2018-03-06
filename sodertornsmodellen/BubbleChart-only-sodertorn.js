@@ -9,8 +9,8 @@ VIZABI_MODEL = {
     },
     "entities": {
       "dim": "basomrade",
+      "filter": {"basomrade": {"size": "big"}},
       "show": {
-        "size": "big",
         "municipality": {"$in": ["0192_nynashamn","0127_botkyrka","0136_haninge","0126_huddinge","0128_salem","0138_tyreso"]}
       }
     },
@@ -81,14 +81,6 @@ VIZABI_MODEL = {
         "use": "property",
         "which": "parent"
       }
-    },
-    "marker_allpossible": {
-      "space": ["entities"],
-      "label": {
-        "use": "property",
-        "which": "name"
-      },
-      "skipFilter": true
     }
   },
   "ui": {
@@ -103,16 +95,13 @@ VIZABI_MODEL = {
     },
     "splash": true,
     "dialogs": {
-      "popup": ["colors", "show", "find", "size", "zoom", "moreoptions"],
+      "popup": ["colors", "find", "size", "zoom", "moreoptions"],
       "dialog": {
-        "show": {
-          enablePicker: false
-        },
         "find": {
           enablePicker: false
         }
       }
     },
-    "buttons": ["colors", "show", "find", "trails", "lock", "moreoptions", "fullscreen", "presentation"]
+    "buttons": ["colors", "find", "trails", "lock", "moreoptions", "fullscreen", "presentation"]
   }
 };

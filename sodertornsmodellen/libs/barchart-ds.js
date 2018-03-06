@@ -85,7 +85,7 @@ var _component2 = _interopRequireDefault(_component);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "2.0.0", build: 1516906861908 };
+var VERSION_INFO = { version: "2.0.0", build: 1520374668322 };
 
 //BAR CHART TOOL
 var BarChartDS = Vizabi.Tool.extend("BarChartDS", {

@@ -9,7 +9,8 @@ VIZABI_MODEL = {
     },
     "entities": {
       "dim": "basomrade",
-      "show": {"size": "big"}
+      "filter": {"basomrade": {"size": "big"}},
+      "show": {}
     },
     "entities_colorlegend": {
       "dim": "municipality"
@@ -52,14 +53,6 @@ VIZABI_MODEL = {
         "scaleType": "ordinal",
         "syncModels": ["marker_colorlegend"]
       }
-    },
-    "marker_allpossible": {
-      "space": ["entities"],
-      "label": {
-          "use": "property",
-          "which": "name"
-      },
-      "skipFilter": true
     },
     "marker_colorlegend": {
       "space": ["entities_colorlegend"],

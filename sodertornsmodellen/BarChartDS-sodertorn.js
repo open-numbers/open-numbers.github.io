@@ -36,6 +36,7 @@ VIZABI_MODEL = {
       "skipFilter": true
     },
     "marker_order": {
+      "limit": 5000,
       "space": ["entities", "time"],
       "hook_order": {
         "use": "indicator",
@@ -43,6 +44,7 @@ VIZABI_MODEL = {
       }
     },
     "marker": {
+      "limit": 5000,
       "space": ["entities", "time", "entities_side", "entities_geodomain"],
       "label_stack": {
         "use": "property",
@@ -103,6 +105,7 @@ VIZABI_MODEL = {
       "dim": "basomrade"
     },
     "marker_allpossible": {
+      "limit": 5000,
       "space": ["entities_allpossible"],
       "label": {
         "use": "property",
