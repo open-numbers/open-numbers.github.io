@@ -89,7 +89,7 @@ __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var VERSION_INFO = { version: "2.1.0", build: 1520373631184 };
+var VERSION_INFO = { version: "2.1.0", build: 1520866164520 };
 
 var ExtApiMap = Vizabi.Tool.extend("ExtApiMap", {
 
@@ -1261,7 +1261,7 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
       cache.labelY0 = valueY / this.height;
       cache.scaledS0 = valueS ? utils.areaToRadius(_this.sScale(valueS)) : null;
       cache.scaledC0 = valueC != null ? _this.cScale(valueC) : _this.COLOR_WHITEISH;
-      var labelText = this.model.marker.getCompoundLabelText(d, values);
+      var labelText = this.model.marker.getCompoundLabelText(d, this.values);
 
       this._labels.updateLabel(d, index, cache, valueX / this.width, valueY / this.height, valueS, valueC, labelText, valueLST, duration, showhide);
     }
@@ -1292,7 +1292,7 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
   _setTooltip: function _setTooltip(d) {
     if (d) {
       var KEY = this.KEY;
-      var _values = this.values;
+      var values = this.values;
       var labelValues = {};
       var tooltipCache = {};
       var cLoc = d.cLoc ? d.cLoc : this._getPosition(d);
@@ -1301,8 +1301,8 @@ var ExtApiMapComponent = Vizabi.Component.extend("extapimap", {
       });
       var x = cLoc[0] || mouse[0];
       var y = cLoc[1] || mouse[1];
-      labelValues.valueS = _values.size[utils.getKey(d, this.dataKeys.size)];
-      labelValues.labelText = this.model.marker.getCompoundLabelText(d, _values);
+      labelValues.valueS = values.size[utils.getKey(d, this.dataKeys.size)];
+      labelValues.labelText = this.model.marker.getCompoundLabelText(d, values);
       tooltipCache.labelX0 = labelValues.valueX = x / this.width;
       tooltipCache.labelY0 = labelValues.valueY = y / this.height;
       var offset = d.r || utils.areaToRadius(this.sScale(labelValues.valueS) || 0);
