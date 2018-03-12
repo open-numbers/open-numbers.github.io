@@ -172,11 +172,11 @@
           };
           
           VIZABI_MODEL.data = {
-            "reader": 'waffle',
-            "path": 'https://waffle-server.gapminder.org/api/ddf/ql',
-            "dataset": 'open-numbers/ddf--sodertornsmodellen',
-            "assetsPath": 'https://import-waffle-server.gapminder.org/api/ddf/assets/'
-            //"path": "https://raw.githubusercontent.com/open-numbers/ddf--sodertornsmodellen/master/"
+            "reader": 'ddf',
+            //"path": 'https://waffle-server.gapminder.org/api/ddf/ql',
+            //"dataset": 'open-numbers/ddf--sodertornsmodellen',
+            //"assetsPath": 'https://import-waffle-server.gapminder.org/api/ddf/assets/'
+            "path": "https://raw.githubusercontent.com/open-numbers/ddf--sodertornsmodellen/master/"
           };
           
           viz = Vizabi(tools[arg].toolID, document.getElementById('placeholder'), VIZABI_MODEL);
