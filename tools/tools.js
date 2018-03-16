@@ -46466,16 +46466,16 @@ module.exports = __webpack_require__.p + "assets/js/toolconfigs/PopByAge.js";
   "toolIds": ["bubblechart", "linechart", "barrankchart"],
   "datasource": {
     "reader": "waffle", 
-    "assetsPath": "http://35.187.176.237/api/ddf/assets/",
-    "path": "http://35.195.14.52/api/ddf/ql"
+    "assetsPath": "https://import-waffle-server-stage.gapminder.org/api/ddf/assets/",
+    "path": "https://waffle-server-stage.gapminder.org/api/ddf/ql"
   }
 },
 {
   "toolIds": ["popbyage"],
   "datasource": {
     "reader": "waffle", 
-    "assetsPath": "http://35.187.176.237/api/ddf/assets/",
-    "path": "http://35.195.14.52/api/ddf/ql",
+    "assetsPath": "https://import-waffle-server-stage.gapminder.org/api/ddf/assets/",
+    "path": "https://waffle-server-stage.gapminder.org/api/ddf/ql",
     "dataset": "open-numbers/ddf--gapminder--population"
   }
 },
@@ -46483,8 +46483,8 @@ module.exports = __webpack_require__.p + "assets/js/toolconfigs/PopByAge.js";
   "toolIds": ["bubblechart-sod"],
   "datasource": {
     "reader": "waffle",
-    "assetsPath": "http://35.187.176.237/api/ddf/assets/",
-    "path": "http://35.195.14.52/api/ddf/ql",
+    "assetsPath": "https://import-waffle-server-stage.gapminder.org/api/ddf/assets/",
+    "path": "https://waffle-server-stage.gapminder.org/api/ddf/ql",
     "dataset": "open-numbers/ddf--sodertornsmodellen"
   }
 },
