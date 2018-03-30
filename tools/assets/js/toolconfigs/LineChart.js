@@ -1,9 +1,6 @@
 var VIZABI_MODEL = {
   "state": {
     "time": {
-      "startOrigin": "1800",
-      "endOrigin": "2015",
-      "value": "2015",
       "dim": "time"
     },
     "entities": {
