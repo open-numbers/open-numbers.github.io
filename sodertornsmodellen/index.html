@@ -142,11 +142,11 @@
       
       var toolLinks = d3.select("#toolslist")
         .selectAll("a").data(d3.keys(tools)).enter().append("a")
-        .on("click", d => setTool(d));
+        .on("click", function(d) {return setTool(d)});
       
       var langLinks = d3.select("#langlist")
         .selectAll("a").data(d3.keys(locales)).enter().append("a")
-        .on("click", d => setLocale(d));
+        .on("click", function(d) {return setLocale(d)});
 
       function setLocale(arg){
         if (!arg) arg = appState.language;
@@ -188,11 +188,11 @@
       
       var updateView = function(){
         toolLinks
-          .classed("active", d => appState.tool === d)
-          .html(d => translate(d));
+          .classed("active", function(d) {return appState.tool === d})
+          .html(function(d) {return translate(d)});
         langLinks
-          .classed("active", d => appState.language === d)
-          .html(d => translate(d));
+          .classed("active", function(d) {return appState.language === d})
+          .html(function(d) {return translate(d)});
       }
       
       var loadJS = function(url, implementationCode, location){
