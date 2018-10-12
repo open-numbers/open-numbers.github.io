@@ -8,15 +8,13 @@ VIZABI_MODEL = {
       "delay": 700
     },
     "entities": {
-      "dim": "basomrade",
-      "filter": {"basomrade": {"size": "big"}},
-      "show": {}
+      "dim": "basomrade"
     },
     "entities_colorlegend": {
-      "dim": "municipality"
+      "dim": "basomrade"
     },
     "entities_map_colorlegend": {
-      "dim": "municipality"
+      "dim": "basomrade"
     },
     "marker": {
       "space": ["entities", "time"],
@@ -26,11 +24,11 @@ VIZABI_MODEL = {
       },
       "hook_centroid": {
         "use": "property",
-        "which": "baskod2010",
+        "which": "basomrade",
         "_important": true
       },
       "size": {
-        "which": "population_20xx_12_31",
+        "which": "Befolkning Total",
         "use": "indicator",
         "scaleType": "linear",
         "extent": [0, 0.4],
@@ -40,13 +38,13 @@ VIZABI_MODEL = {
       },
       "color": {
         "use": "indicator",
-        "which": "mean_income_aged_gt_20",
-        "scaleType": "log",
+        "which": "Befolkning Total",
+        "scaleType": "linear",
         "syncModels": ["marker_colorlegend"]
       },
       "color_map": {
         "use": "property",
-        "which": "municipality",
+        "which": "basomrade",
         "scaleType": "ordinal",
         "syncModels": ["marker_colorlegend"]
       }
@@ -79,9 +77,9 @@ VIZABI_MODEL = {
       "preserveAspectRatio": true,
       "mapEngine": "mapbox",
       "mapStyle": "mapbox://styles/mapbox/light-v9",
-      "showBubbles": true,
-      "showAreas": false,
-      "showMap": true,
+      "showBubbles": false,
+      "showAreas": true,
+      "showMap": false,
       "offset": {
         "top": 0.05,
         "bottom": -0.12,
@@ -97,12 +95,12 @@ VIZABI_MODEL = {
       },
       "projection": "mercator",
       "topology": {
-        "path": "assets/sodertorn-basomr2010.json",
+        "path": "data/basomr2010_110617_wgs84.json",
         "objects": {
-          "geo": "c1e171fae817c0bfc26dc7df82219e08",
-          "boundaries": "c1e171fae817c0bfc26dc7df82219e08"
+          "geo": "basomr2010_110617",
+          "boundaries": "basomr2010_110617"
         },
-        "geoIdProperty": "BASKOD2010"
+        "geoIdProperty": "BASKOD2000"
       }
     },
     "splash": true
