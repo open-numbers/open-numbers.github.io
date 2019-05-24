@@ -2,7 +2,7 @@ VIZABI_MODEL = {
   "state": {
     "time": {
       "startOrigin": "1993",
-      "endOrigin": "2015",
+      "endOrigin": "2018",
       "value": "2000",
       "dim": "year",
       "delay": 700
@@ -35,7 +35,7 @@ VIZABI_MODEL = {
         "scaleType": "linear"
       },
       "size": {
-        "which": "population_aged_gt_20",
+        "which": "population_total",
         "use": "indicator",
         "scaleType": "linear",
         "extent": [0, 1],
@@ -83,7 +83,7 @@ VIZABI_MODEL = {
   },
   "ui": {
     datawarning: {
-      doubtDomain: [2000, 2014],
+      doubtDomain: [2000, 2018],
       doubtRange: [0, 0]
     },
     "chart": {
