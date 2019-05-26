@@ -2,7 +2,7 @@ VIZABI_MODEL = {
   "state": {
     "time": {
       "startOrigin": "1993",
-      "endOrigin": "2015",
+      "endOrigin": "2018",
       "value": "2000",
       "dim": "year",
       "delay": 700
@@ -39,7 +39,7 @@ VIZABI_MODEL = {
         "zoomedMax": "700000"
       },
       "size": {
-        "which": "population_aged_gt_20",
+        "which": "population_total",
         "use": "indicator",
         "scaleType": "linear",
         "extent": [0, 0.4],
@@ -98,7 +98,7 @@ VIZABI_MODEL = {
   },
   "ui": {
     datawarning: {
-      doubtDomain: [2000, 2014],
+      doubtDomain: [2000, 2018],
       doubtRange: [0, 0]
     },
     "map": {
@@ -125,12 +125,12 @@ VIZABI_MODEL = {
       },
       "projection": "mercator",
       "topology": {
-        "path": "assets/sodertorn-basomr2010.json",
+        "path": "assets/sodertorn-basomr2000.json",
         "objects": {
-          "geo": "c1e171fae817c0bfc26dc7df82219e08",
-          "boundaries": "c1e171fae817c0bfc26dc7df82219e08"
+          "geo": "sodertorn-basomr2000",
+          "boundaries": "sodertorn-basomr2000"
         },
-        "geoIdProperty": "BASKOD2010"
+        "geoIdProperty": "BASKOD2000"
       }
     }
   

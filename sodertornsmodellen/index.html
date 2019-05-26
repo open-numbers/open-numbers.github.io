@@ -104,8 +104,7 @@
         "map-kommun": {config: "ExtApiMap-sodertorn-kommun.js", toolID: "ExtApiMap"},
         "map-basomrade": {config: "ExtApiMap-sodertorn.js", toolID: "ExtApiMap"},
         "combo": {config: "Combo-map-and-bubbles.js", toolID: "combo"},
-        "barchart-ds": {config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"},
-        "bubbles-sdrtrn": {config: "BubbleChart-only-sodertorn.js", toolID: "BubbleChart"}
+        "barchart-ds": {config: "BarChartDS-sodertorn.js", toolID: "BarChartDS"}
       }
       
       var TRANSLATION_DICTIONARY = {
@@ -176,7 +175,8 @@
             //"path": 'https://waffle-server.gapminder.org/api/ddf/ql',
             //"dataset": 'open-numbers/ddf--sodertornsmodellen',
             //"assetsPath": 'https://import-waffle-server.gapminder.org/api/ddf/assets/'
-            "path": "https://raw.githubusercontent.com/open-numbers/ddf--sodertornsmodellen/master/"
+            "path": "https://raw.githubusercontent.com/geoinfobyran/ddf--sodertornsmodellen/master/"
+            // "path": "/ddf--sodertornsmodellen-new"
           };
           
           viz = Vizabi(tools[arg].toolID, document.getElementById('placeholder'), VIZABI_MODEL);
