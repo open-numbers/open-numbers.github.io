@@ -34,7 +34,7 @@ However, a conceptual model is not enough for pragmatical use. We need to define
 [Read about DDFcsv](https://docs.google.com/a/gapminder.org/document/d/1aynARjsrSgOKsO1dEqboTqANRD1O9u7J_xmxy8m5jW8/edit?usp=drive_web)
 
 
-* **DDFmongo** is a document representation of DDF in a mongo database. This is used for the Gapminder tools page. This format is not documented yet.
+* **DDFsql** is a table representation of DDF in an sql database. This is used for the Gapminder tools page. This format is not documented yet.
 
 In the future, it is very well possible that DDF will be represented in other formats for different purposes.  
 
